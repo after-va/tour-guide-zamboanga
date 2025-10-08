@@ -2,7 +2,7 @@
 
 require "database.php";
 
-class Country_Code{
+class Country_Code extends Database{
     public $countrycode_ID = "";
     public $countrycode_name = "";
     public $countrycode_number = "";
@@ -10,14 +10,14 @@ class Country_Code{
     public function addCountryCode(){
         $sql = " INSERT INTO country_code(countrycode_name, countrycode_number) VALUE ( :countrycode_name, :countrycode_number) ";
         $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_name", this->countrycode_name);
-        $query->bindParam(":countrycode_number", this->countrycode_number);
+        $query->bindParam(":countrycode_name", $this->countrycode_name);
+        $query->bindParam(":countrycode_number", $this->countrycode_number);
 
         return $query->execute();
     }
 
     public function viewCountryCode($search){
-        if(!empty*($search)){
+        if(!empty($search)){
             $sql = "SELECT * FROM country_code WHERE name LIKE CONCAT(:search, '%') ORDER BY countrycode_name ASC";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":search", $search);
