@@ -9,7 +9,7 @@ CREATE TABLE Country_Code (
 CREATE TABLE Phone_Number (
     phone_ID INT AUTO_INCREMENT PRIMARY KEY,
     countrycode_ID INT,
-    phone_number VARCHAR(15) NOT NULL,
+    phone_number VARCHAR(15) UNIQUE NOT NULL ,
     FOREIGN KEY (countrycode_ID) REFERENCES Country_Code(countrycode_ID)
 );
 
@@ -59,8 +59,8 @@ CREATE TABLE Name_Info (
 CREATE TABLE Rating_Category (
     ratingcategory_ID INT AUTO_INCREMENT PRIMARY KEY,
     ratingcategory_name VARCHAR(100),
-    ratingcategory_from VARCHAR(225),
-    ratingcategory_to VARCHAR(225)
+    ratingcategory_from INT,
+    ratingcategory_to INT
 );
 
 -- Rating
@@ -105,7 +105,7 @@ CREATE TABLE Tour_Spots (
     spots_Description VARCHAR(225),
     spots_category VARCHAR(225),
     spots_Address VARCHAR(225),
-    spots_GoogleLink VARCHAR(225)
+    spots_GoogleLink VARCHAR(500)
 );
 
 -- Tour Package
@@ -133,18 +133,40 @@ CREATE TABLE Companion_Info (
     FOREIGN KEY (companioncategory_ID) REFERENCES Companion_Category(companioncategory_ID)
 );
 
+
+-- SCHEDULE
+CREATE TABLE Schedule (
+    schedule_ID INT AUTO_INCREMENT PRIMARY KEY,
+    tourPackage_ID INT, -- Links to the package this schedule is for
+    guide_ID INT,       -- Optional: Assign the guide who will lead this specific schedule
+    schedule_StartDateTime DATETIME NOT NULL,
+    schedule_EndDateTime DATETIME,
+    schedule_Capacity INT, -- The available slots for this scheduled trip
+    schedule_MeetingSpot VARCHAR(255),
+    FOREIGN KEY (tourPackage_ID) REFERENCES Tour_Package(tourPackage_ID),
+    FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) -- Guide is now linked here
+);
+
 -- Booking
 CREATE TABLE Booking (
     booking_ID INT AUTO_INCREMENT PRIMARY KEY,
     customer_ID INT,
-    tourPackage_ID INT,
-    guide_ID INT,
-    booking_Date DATE,
+    schedule_ID INT,       
+    tourPackage_ID INT,    
     booking_Status VARCHAR(225),
-    booking_PAX VARCHAR(50),
+    booking_PAX INT,
     FOREIGN KEY (customer_ID) REFERENCES Person(person_ID),
-    FOREIGN KEY (guide_ID) REFERENCES Person(person_ID),
-    FOREIGN KEY (tourPackage_ID) REFERENCES Tour_Package(tourPackage_ID)
+    FOREIGN KEY (tourPackage_ID) REFERENCES Tour_Package(tourPackage_ID),
+    FOREIGN KEY (schedule_ID) REFERENCES Schedule(schedule_ID)
+);
+
+-- Booking Companion Bundle
+CREATE TABLE Booking_Bundle (
+    bookingbundle_ID INT AUTO_INCREMENT PRIMARY KEY,
+    companion_ID INT,
+    booking_ID INT,
+    FOREIGN KEY (companion_ID) REFERENCES Companion_Info(companion_ID),
+    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
 );
 
 -- Payment
@@ -156,11 +178,5 @@ CREATE TABLE Payment_Info (
     FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
 );
 
--- Booking Companion Bundle
-CREATE TABLE Booking_Bundle (
-    bookingbundle_ID INT AUTO_INCREMENT PRIMARY KEY,
-    companion_ID INT,
-    booking_ID INT,
-    FOREIGN KEY (companion_ID) REFERENCES Companion_Info(companion_ID),
-    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
-);
+
+
