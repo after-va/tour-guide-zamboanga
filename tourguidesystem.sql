@@ -9,8 +9,9 @@ CREATE TABLE Country_Code (
 CREATE TABLE Phone_Number (
     phone_ID INT AUTO_INCREMENT PRIMARY KEY,
     countrycode_ID INT,
-    phone_number VARCHAR(15) UNIQUE NOT NULL ,
+    phone_number VARCHAR(15) NOT NULL ,
     FOREIGN KEY (countrycode_ID) REFERENCES Country_Code(countrycode_ID)
+    UNIQUE KEY unique_phone_per_country (countrycode_ID, phone_number
 );
 
 -- Address

@@ -8,9 +8,9 @@ class Phone_Number extends Database {
     public $phone_number = "";
 
     public function addPhoneNumber(){
-        $sql = "INSERT INTO phone_number(countrycode_id, phone_number) VALUES (:countrycode_id, :phone_number)";
+        $sql = "INSERT INTO phone_number(countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
         $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_id", $this->countrycode_id);
+        $query->bindParam(":countrycode_ID", $this->countrycode_ID);
         $query->bindParam(":phone_number", $this->phone_number);
 
         return $query->execute();
@@ -27,7 +27,7 @@ class Phone_Number extends Database {
     }
 
     public function deletePhoneNumber($pid){
-        $sql = "DELETE FROM phone_number WHERE phone_id = :id";
+        $sql = "DELETE FROM phone_number WHERE phone_ID = :id";
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":id", $pid);
 
