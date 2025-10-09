@@ -24,7 +24,7 @@ class Address_Info extends Database{
         $query->bindParam(":address_country", $this->address_country);
 
 
-        retun $query->execute();
+        return $query->execute();
     }
 
     public function getAddress($houseno, $street, $barangay, $city, $province, $country){
