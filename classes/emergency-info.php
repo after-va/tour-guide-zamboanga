@@ -4,7 +4,7 @@ require_once "database.php";
 
 class Emergency_Info extends Database{
     public $emergency_id = "";
-    public $phone_id = "";
+    public $phone_ID = "";
     public $emergency_name = "";
     public $emergency_relationship = "";
 

@@ -1,8 +1,8 @@
 <?php
 
-require_once "../classes/phone-number.php";
+require_once "../classes/emergency-info.php";
 
-$emergencyObj;
+$emergencyObj = new Emergency_Info();
 
 $emergency=[];
 $errors = [];
@@ -15,39 +15,72 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $emergency["countrycode_ID"] = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
 
      
-    if(empty($phone["countrycode_ID"])){
+    if(empty($emergency["countrycode_ID"])){
         $errors["countrycode_ID"] = "Country Code is required.";
     }
-    if(empty($phone["phone_number"])){
+    if(empty($emergency["phone_number"])){
         $errors["phone_number"] = "Phone Number is required.";
-    } elseif (strlen($phone["phone_number"]) < 10) {
+    } elseif (strlen($emergency["phone_number"]) < 10) {
         $errors["phone_number"] = "Phone Number must be exactly 10 digits long.";
     }
     
-    if(empty($phone["emergency_Name"])){
+    if(empty($emergency["emergency_Name"])){
         $errors["emergency_Name"] = "Emergency Contact Name is required.";
     }
 
-    if(empty($phone["emergency_Relationship"])){
+    if(empty($emergency["emergency_Relationship"])){
         $errors["emergency_Relationship"] = "Relationship is required.";
     }
 
 
     if(empty(array_filter($errors))){
-        $result = $emergencyObj->isPhoneExist($phone["countrycode_ID"], $phone["phone_number"]);
-        if(empty($result["phone_ID"])){
-            $phonenumberObj->countrycode_ID = $phone["countrycode_ID"];
-            $phonenumberObj->phone_number = $phone["phone_number"];
-            
-            if($phonenumberObj->addPhoneNumber()){
-                header("Location:add-phone-number.php");
-            }
-            else{
-                echo "failed";
-            }
+        $result = $emergencyObj->addEmergencyInfo($emergency["countrycode_ID"], $emergency["phone_number"], $emergency["emergency_Name"],$emergency["emergency_Relationship"] );
+
+         if($success){
+            header("Location: add-emergency-info.php");
+            exit;
+        } else {
+            $errors["general"] = "Failed to save data. Please check for duplicate phone number entries.";
         }
 
     }
 }
 
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Emergency Info</title>
+</head>
+<body>
+    <h1> Add Emergency Info</h1>
+    <form action="" method="post">
+
+    <label for="emergency_name"> Emergency Name </label>
+        <input type="text" name="emergency_name" id="emergency_name" value ="<?= $emergency["emergency_name"] ?? "" ?>" >
+
+    <label for="emergency_relationship"> Emergency Relationship </label>
+        <input type="text" name="emergency_relationship" id="" value = "<?= $emergency["emergency_relationship"] ?? "" ?>">
+
+    
+    <label for="countrycode_ID"> Country Code </label>
+        <select name="countrycode_ID" id="countrycode_ID">
+            <option value="">--SELECT COUNTRY CODE--</option>
+        <?php foreach ($emergencyObj->fetchCountryCode() as $e){ 
+            $temp = $e["countrycode_ID"];
+        ?>
+            <option value="<?= $temp ?>" <?= ($temp == ($emergency["countrycode_ID"] ?? "")) ? "selected" : "" ?>> <?= $e["countrycode_name"] ?> <?= $e["countrycode_number"] ?> </option>    
+
+        <?php } ?>
+        </select>
+        <p class="errors"> <?= $errors["countrycode_ID"] ?? "" ?> </p>
+    <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $phone["phone_number"] ?? "" ?>">
+    <input type="submit" value="Save Phone Number">
+    </form>
+
+
+</body>
+</html>
