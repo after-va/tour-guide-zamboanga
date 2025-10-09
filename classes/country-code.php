@@ -36,7 +36,7 @@ class Country_Code extends Database{
 
     }
 
-    public function isCountryCodeExist($cname){
+    public function isCountryNameExist($cname){
         $sql = "SELECT COUNT(*) as total FROM country_code WHERE countrycode_name = :countrycode_name";
         $query= $this->connect()->prepare($sql);
         $query->bindParam(":countrycode_name", $cname);
@@ -52,8 +52,9 @@ class Country_Code extends Database{
             return false;
         }
 
-
     }
+
+
 
     public function deleteCountryCode($cid){
         $sql = "DELETE FROM country_code WHERE countrycode_ID = :id";

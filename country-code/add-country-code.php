@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 
     if(empty($countrycode["countrycode_name"])){
         $errors["countrycode_name"] = "Country Name is required";
-    } else if($$countrycodeObj->isCountryCodeExist($countrycode["countrycode_name"])){
+    } else if($$countrycodeObj->isCountryNameExist($countrycode["countrycode_name"])){
         $errors["countrycode_name"] = "Country name is already exist";
     }
     
