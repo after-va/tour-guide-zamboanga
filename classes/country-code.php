@@ -43,7 +43,7 @@ class Country_Code extends Database{
         $record = null;
         
         if($query->execute()){
-            $record = quercy->fetch();
+            $record = $query->fetch();
         }
 
         if($record["total"] > 0){

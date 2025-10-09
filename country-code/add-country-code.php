@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 
     if(empty($countrycode["countrycode_name"])){
         $errors["countrycode_name"] = "Country Name is required";
-    } else if($$countrycodeObj->isCountryNameExist($countrycode["countrycode_name"])){
+    } else if($countrycodeObj->isCountryNameExist($countrycode["countrycode_name"])){
         $errors["countrycode_name"] = "Country name is already exist";
     }
     
@@ -51,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     <p class="errors"> <?= $errors["countrycode_name"] ?? "" ?> </p>
 
     <label for="">Number </label>
-    <input type="text" name="countrycode_number" id="countrycode_number" value="<?= $countrycode["countrycode_number"] ?? ""?>">
+    <input type="text" name="countrycode_number" id="countrycode_number" value="<?= $countrycode["countrycode_number"] ?? ""?>" maxlength = "3">
     <p class="errors"> <?= $errors["countrycode_number"] ?? "" ?> </p>
 
     <input type="submit" value="Save Country Code">
