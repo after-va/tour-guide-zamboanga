@@ -19,11 +19,12 @@ class Emergency_Info extends Database{
         }
     }
 
-    public function addgetPhoneNumber(){
-        $sql = "SELECT p.phone_ID AS phone_ID FROM phone_number p JOIN country_code c ON p.countrycode_ID=c.countrycode_ID WHERE p.phone_number = :phone_number AND c.countrycode_id = :countrycode_id ";
+    public function addgetPhoneNumber($countrycode_ID,$phone_number ){
+        $sql = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID ";
         $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_ID", $this->countrycode_ID);
-        $query->bindParam(":phone_number", $this->phone_number);
+        $query->bindParam(":countrycode_ID", $countrycode_ID);
+        $query->bindParam(":phone_number", $phone_number);
+        $query->execute();
         $result = $query->fetch();
 
         if($result){
@@ -32,21 +33,48 @@ class Emergency_Info extends Database{
 
         $sql = "INSERT INTO phone_number(countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
         $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_ID", $this->countrycode_ID);
-        $query->bindParam(":phone_number", $this->phone_number);
+        $query->bindParam(":countrycode_ID", $countrycode_ID);
+        $query->bindParam(":phone_number", $phone_number);
 
-        return $query->execute();
+        if ($query->execute()) {
+            return $this->connect()->lastInsertId();
+        } else {
+            return false;
+        }
     }
 
-    // public function isPhoneExist($countrycode_id, $phone_number){
-    //     $sql = "SELECT p.phone_ID AS phone_ID FROM phone_number p JOIN country_code c ON p.countrycode_ID=c.countrycode_ID WHERE p.phone_number = :phone_number AND c.countrycode_id = :countrycode_id ";
-    //     $query = $this->connect()->prepare($sql);
-    //     $result = $query->fetch();
+    public function addEmergencyInfo($countrycode_ID, $phone_number, $ename, $erelationship){
+        $query = $this->connect();
+        $db->beginTransaction();
         
-    //     if($result){
-    //         return $result["phone_ID"];
-    //     }
-    // }
+        try {
+            $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
+            
+            if(!$phone_ID){
+                $db->rollback();
+                return false;
+            }
+
+            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :ename, :erelationship)";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":phone_ID", $phone_ID);
+            $query->bindParam(":ename,", $ename);
+            $query->bindParam(":erelationship,", $erelationship);
+
+            if ($query->execute()){
+                $db->commit();
+                return true;
+            } else {
+                $db->rollBack();
+                return false;
+            }
+
+        } catch (PDOException $e) {
+            $db->rollBack();
+            return false;
+        }
+
+    }
 
     
 
