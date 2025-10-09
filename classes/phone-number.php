@@ -16,6 +16,16 @@ class Phone_Number extends Database {
         return $query->execute();
     }
 
+    public function fetchCountryCode(){
+        $sql = "SELECT * FROM country_code";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
     public function deletePhoneNumber($pid){
         $sql = "DELETE FROM phone_number WHERE phone_id = :id";
         $query = $this->connect()->prepare($sql);
