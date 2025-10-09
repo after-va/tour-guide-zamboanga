@@ -23,6 +23,16 @@ CREATE TABLE Address_Info (
     address_city VARCHAR(100) NOT NULL,
     address_province VARCHAR(100) NOT NULL,
     address_country VARCHAR(100) NOT NULL
+    
+    
+    UNIQUE KEY unique_full_address (
+    address_houseno, 
+    address_street, 
+    address_barangay, 
+    address_city, 
+    address_province, 
+    address_country
+);
 );
 
 -- Emergency Contact Info
