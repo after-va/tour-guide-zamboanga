@@ -43,6 +43,36 @@ class Tourists extends Database{
         }
     }
 
+    public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix){
+        $sql = "SELECT name_ID FROM name_info n WHERE n.name_first = :name_first AND n.name_last = :name_last AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) AND ( n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL) ) AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL));";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":name_first",$name_first);
+        $query->bindParam(":name_second",$name_second);
+        $query->bindParam(":name_middle",$name_middle);
+        $query->bindParam(":name_last",$name_last);
+        $query->bindParam(":name_suffix",$name_suffix);
+
+        $result = $query->fetch();
+
+        if($result){
+            return $result["name_ID"];
+        }
+
+        $db = $this->connect();
+        $sql = "INSERT INTO name_info (name_first, name_second, name_middle, name_last, name_suffix ) VALUES (:name_first, :name_second, :name_middle, :name_last, :name_suffix)";
+        $query->bindParam(":name_first",$name_first);
+        $query->bindParam(":name_second",$name_second);
+        $query->bindParam(":name_middle",$name_middle);
+        $query->bindParam(":name_last",$name_last);
+        $query->bindParam(":name_suffix",$name_suffix);
+        if ($query->execute()) {
+            return $db->lastInsertId(); 
+        } else {
+            return false;
+        }
+
+
+    }
 
 
 
