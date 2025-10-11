@@ -165,7 +165,7 @@ class Tourists extends Database{
     }
 
     // Contact Info
-    public function addContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email){
+    public function addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email){
         
         $db = $this->connect();
 
@@ -198,6 +198,61 @@ class Tourists extends Database{
         }
     }
 
+    //     role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID
+   
+    //     person_ID,
+    //     rating_ID
+
+    // Add Tourist
+    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $role_ID ){
+        $db = $this->connect();
+        $db->beginTransaction();
+        try{
+            $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix);
+            $contactinfo_ID =$this->addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email);
+            
+            
+           if (!$name_ID  || !$contactinfo_ID) {
+                $db->rollBack();
+                return false;
+            }
+
+            $sql = "INSERT INTO Person_Info(role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) VALUES (1, :name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            $query = $db->prepare($sql);
+            $query->bindParam(":name_ID", $name_ID);
+            $query->bindParam(":person_nationality", $person_nationality);
+            $query->bindParam(":person_gender", $person_gender);
+            $query->bindParam(":person_civilstatus", $person_civilstatus);
+            $query->bindParam(":person_dateofbirth", $person_dateofbirth);
+            $query->bindParam(":contactinfo_ID", $contactinfo_ID);
+
+            if ($query->execute()){
+                $db->commit();
+                return true; 
+            } else {
+                $db->rollBack();
+                return false;
+            }
+
+
+        }catch (PDOException $e) {
+            $db->rollBack();
+            // In a real application, you'd log the error $e->getMessage();
+            return false;
+        }
+
+    }
+
+    // fetch Country Code
+    public function fetchCountryCode(){
+        $sql = "SELECT * FROM country_code";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
 
 
 
