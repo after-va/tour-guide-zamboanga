@@ -220,3 +220,6 @@ INSERT INTO country_code(countrycode_name, countrycode_number) VALUES
 ('Yemen', '+967'),
 ('Zambia', '+260'),
 ('Zimbabwe', '+263');
+
+
+INSERT INTO Role_Info(role_name) VALUES ('tourist', 'guide');
