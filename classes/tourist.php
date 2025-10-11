@@ -43,6 +43,7 @@ class Tourists extends Database{
         }
     }
 
+    // Name Info
     public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix){
         $sql = "SELECT name_ID FROM name_info n WHERE n.name_first = :name_first AND n.name_last = :name_last AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) AND ( n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL) ) AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL));";
         $query = $this->connect()->prepare($sql);
@@ -71,8 +72,41 @@ class Tourists extends Database{
             return false;
         }
 
-
     }
+
+    // Address 
+    public function addgetAddress($houseno, $street, $barangay, $city, $province, $country){
+        $sql = "SELECT address_ID, address_houseno, address_street, address_barangay, address_city, address_province, address_country FROM address_info WHERE address_houseno=:houseno AND address_street=:street AND address_barangay=:barangay AND address_city=:city AND address_province=:province AND address_country=:country ";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":houseno",$houseno);
+        $query->bindParam(":street",$street);
+        $query->bindParam(":barangay",$barangay);
+        $query->bindParam(":city",$city);
+        $query->bindParam(":province",$province);
+        $query->bindParam(":country",$country);
+        $query->execute();
+        $result = $query->fetch();
+
+        if($result){
+            return $result["address_ID"];
+        }
+        $db = $this->connect();
+        $sql = "INSERT INTO address_info (address_houseno, address_street, address_barangay, address_city, address_province, address_country) VALUES (:address_houseno, :address_street, :address_barangay, :address_city, :address_province, :address_country)";
+        $query = $db->prepare($sql);
+        $query->bindParam(":address_houseno", $houseno);
+        $query->bindParam(":address_street", $street);
+        $query->bindParam(":address_barangay", $barangay);
+        $query->bindParam(":address_city", $city);
+        $query->bindParam(":address_province", $province);
+        $query->bindParam(":address_country", $country);
+
+        if ($query->execute()) {
+            return $db->lastInsertId();
+        } else {
+            return false;
+        }
+
+    }    
 
 
 
