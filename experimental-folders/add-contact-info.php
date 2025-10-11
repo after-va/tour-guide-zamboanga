@@ -18,10 +18,77 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $contactinfo["countrycode_ID"]  = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
     $contactinfo["phone_number"]  = trim(htmlspecialchars($_POST["phone_number"] ?? ""));
     
+    $contactinfo["emergency_countrycode_ID"]  = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
+    $contactinfo["emergency_phone_number"]  = trim(htmlspecialchars($_POST["phone_number"] ?? ""));
     $contactinfo["emergency_name"]  = trim(htmlspecialchars($_POST["emergency_name"] ?? ""));
     $contactinfo["emergency_relationship"]  = trim(htmlspecialchars($_POST["emergency_relationship"] ?? ""));
     
     $contactinfo["contactinfo_email"]  = trim(htmlspecialchars($_POST["contactinfo_email"] ?? ""));
+
+    // Address
+    if (empty($contactinfo["address_houseno"] )) {
+        $errors["address_houseno"] = "is required";
+    }
+
+    if (empty($contactinfo["address_street"] )) {
+        $errors["address_street"]="is required";
+    }
+    if (empty($contactinfo["address_barangay"])) {
+        $errors["address_barangay"] ="is required";
+    }
+    if (empty($contactinfo["address_city"] )) {
+        $errors["address_city"] ="is required";
+    }
+    if (empty($contactinfo["address_province"] )) {
+        $errors["address_province"] = "is required";
+    }
+    if (empty($contactinfo["address_country"] )) {
+        $errors["address_country"] = "Country is required";
+    }
+
+    // Phone Number
+    if(empty($contactinfo["countrycode_ID"])){
+        $errors["countrycode_ID"] = "Country Code is Required";
+    }
+
+    if(empty($contactinfo["phone_number"])){
+        $errors["phone_number"] = "Phone Number is needed.";
+    } else if (strlen($contactinfo["phone_number"]) < 10 ){
+        $errors["phone_number"] = "Phone Number must be 10 digits long.";
+    }
+
+    // Emergency Info
+    if(empty($contactinfo["emergency_countrycode_ID"])){
+        $errors["emergency_countrycode_ID"] = "Country Code is required.";
+    }
+    if(empty($contactinfo["emergency_phone_number"])){
+        $errors["emergency_phone_number"] = "Phone Number is required.";
+    } elseif (strlen($contactinfo["phone_number"]) < 10) {
+        $errors["emergency_phone_number"] = "Phone Number must be exactly 10 digits long.";
+    }
+    
+    if(empty($contactinfo["emergency_Name"])){
+        $errors["emergency_Name"] = "Emergency Contact Name is required.";
+    }
+
+    if(empty($contactinfo["emergency_Relationship"])){
+        $errors["emergency_Relationship"] = "Relationship is required.";
+    }
+
+    if(empty(array_filter($errors))){
+        $result = $contactinfoOBj->addContact_Info($contactinfo["address_houseno"] ,$contactinfo["address_street"], $contactinfo["address_barangay"], $contactinfo["address_city"], $contactinfo["address_province"], $contactinfo["address_country"] , $contactinfo["countrycode_ID"], $contactinfo["phone_number"], $contactinfo["emergency_name"], $contactinfo["emergency_countrycode_ID"], $contactinfo["emergency_phone_number"], $contactinfo["emergency_relationship"] , $contactinfo["contactinfo_email"]);
+
+        if($result){
+            header("Location: add-emergency-info.php");
+            exit;
+        } else {
+            $errors["general"] = "Failed to save data. Please check for duplicate phone number entries.";
+        }
+
+
+    }
+
+
 }
 ?>
 
@@ -61,9 +128,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <label for="countrycode_ID"> Country Code </label>
         <select name="countrycode_ID" id="countrycode_ID">
             <option value="">--SELECT COUNTRY CODE--</option>
-        <?php foreach ($contactinfoObj->fetchCountryCode() as $country_code){ 
-            $temp = $country_code["countrycode_ID"];
-        ?>
+            <?php foreach ($contactinfoOBj->fetchCountryCode() as $country_code){ 
+                $temp = $country_code["countrycode_ID"];
+            ?>
             <option value="<?= $temp ?>" <?= ($temp == ($contactinfo["countrycode_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["countrycode_name"] ?> <?= $country_code["countrycode_number"]?> </option>    
 
         <?php } ?>
@@ -72,7 +139,31 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <label for="phone_number">Phone Number</label>
         <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $contactinfo["phone_number"] ?? "" ?>">
         
-        <input type="submit" value="Save Phone Number">
+        <br><br>
+        <h3>Emergency Info</h3>
+        <label for="emergency_name"> Emergency Name </label>
+        <input type="text" name="emergency_name" id="emergency_name" value ="<?= $contactinfo["emergency_name"] ?? "" ?>" >
+
+        <label for="emergency_relationship"> Emergency Relationship </label>
+            <input type="text" name="emergency_relationship" id="" value = "<?= $contactinfo["emergency_relationship"] ?? "" ?>">
+
+        
+        <label for="emergency_countrycode_ID"> Country Code </label>
+        <select name="emergency_countrycode_ID" id="emergency_countrycode_ID">
+            <option value="">--SELECT COUNTRY CODE--</option>
+            <?php foreach ($contactinfoOBj->fetchCountryCode() as $country_code){ 
+                $temp = $country_code["countrycode_ID"];
+            ?>
+            <option value="<?= $temp ?>" <?= ($temp == ($contactinfo["emergency_countrycode_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["countrycode_name"] ?> <?= $country_code["countrycode_number"]?> </option>    
+
+        <?php } ?>
+        <p class="errors"> <?= $errors["emergency_countrycode_ID"] ?? "" ?> </p>
+        </select>
+        <label for="emergency_phone_number">Phone Number</label>
+        <input type="text" name="emergency_phone_number" id="emergency_phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $contactinfo["emergency_phone_number"] ?? "" ?>">
+
+        
+        <input type="submit" value="Save Contact Info">
     </form>
 
 </body>

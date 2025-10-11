@@ -11,7 +11,7 @@ class Contact_Info extends Database{
 
     // Address 
     public function addgetAddress($houseno, $street, $barangay, $city, $province, $country){
-        $sql = "SELECT address_houseno, address_street, address_barangay, address_city, address_province, address_country FROM address_info WHERE address_houseno=:houseno, address_street=:street, address_barangay=:barangay, address_city=:city, address_province=:province, address_country=:country ";
+        $sql = "SELECT address_houseno, address_street, address_barangay, address_city, address_province, address_country FROM address_info WHERE address_houseno=:houseno AND address_street=:street AND address_barangay=:barangay AND address_city=:city AND address_province=:province AND address_country=:country ";
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":houseno",$houseno);
         $query->bindParam(":street",$street);
@@ -70,24 +70,27 @@ class Contact_Info extends Database{
 
     // Emergency_ID
     public function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship){
+
         $query = $this->connect();
         $db->beginTransaction();
+
         try {
             $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
-            
+
             if(!$phone_ID){
-                $db->rollback();
+                $db->rollBack(); 
                 return false;
             }
 
             $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :ename, :erelationship)";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":ename,", $ename);
-            $query->bindParam(":erelationship,", $erelationship);
+            $query->bindParam(":ename", $ename); 
+            $query->bindParam(":erelationship", $erelationship); 
 
-            if ($query->execute()){            
-                return $this->connect()->lastInsertId();
+            if ($query->execute()){
+                $db->commit(); 
+                return $this->connect()->lastInsertId()->lastInsertId();
             } else {
                 $db->rollBack();
                 return false;
@@ -97,33 +100,46 @@ class Contact_Info extends Database{
             $db->rollBack();
             return false;
         }
-
     }
 
     // Contact Info
-    public function addContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $ename, $erelationship, $contactinfo_email){
+    public function addContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email){
+        
         $query = $this->connect();
         $db->beginTransaction();
-        
+
         try{
+            
             $address_ID = $this->addgetAddress($houseno, $street, $barangay, $city, $province, $country);
             $phone_ID = $this->addgetPhoneNumber($countrycode_ID,$phone_number);
-            $emergency_ID = $this->addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship);
+            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship);
+            
+            if (!$address_ID || !$phone_ID || !$emergency_ID) {
+                $db->rollBack();
+                return false;
+            }
 
             $sql = "INSERT INTO Contact_Info (address_ID,phone_ID,emergency_ID, contactinfo_email) VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
-            $query = $this->connect()->prepare($sql);
+            $query = $db->prepare($sql); 
             $query->bindParam(":address_ID", $address_ID);
-            $query->bindParam(":phone_ID",$phone_ID);
-            $query->bindParam(":emergency_ID",$emergency_ID);
-            $query->bindParam(":contactinfo_email",$contactinfo_email);
-//            $query->bindParam(":",$);
+            $query->bindParam(":phone_ID", $phone_ID);
+            $query->bindParam(":emergency_ID", $emergency_ID);
+            $query->bindParam(":contactinfo_email", $contactinfo_email);
+
+            if ($query->execute()){
+                $db->commit();
+                return true; 
+            } else {
+                $db->rollBack();
+                return false;
+            }
+
 
         }catch (PDOException $e) {
             $db->rollBack();
+            // In a real application, you'd log the error $e->getMessage();
             return false;
         }
-
-
     }
 
     // fetch Country Code

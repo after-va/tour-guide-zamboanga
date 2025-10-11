@@ -5,8 +5,8 @@ require_once "database.php";
 class Emergency_Info extends Database{
     public $emergency_id = "";
     public $phone_ID = "";
-    public $emergency_name = "";
-    public $emergency_relationship = "";
+    public $emergency_Name = "";
+    public $emergency_Relationship = "";
 
    
     public function fetchCountryCode(){
@@ -43,7 +43,7 @@ class Emergency_Info extends Database{
         }
     }
 
-    public function addEmergencyInfo($countrycode_ID, $phone_number, $ename, $erelationship){
+    public function addEmergencyInfo($countrycode_ID, $phone_number, $emergency_Name, $emergency_Relationship){
         $query = $this->connect();
         $db->beginTransaction();
         
@@ -55,11 +55,11 @@ class Emergency_Info extends Database{
                 return false;
             }
 
-            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :ename, :erelationship)";
+            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :emergency_Name, :erelationship)";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":ename,", $ename);
-            $query->bindParam(":erelationship,", $erelationship);
+            $query->bindParam(":emergency_Name,", $emergency_Name);
+            $query->bindParam(":emergency_Relationship,", $emergency_Relationship);
 
             if ($query->execute()){
                 $db->commit();

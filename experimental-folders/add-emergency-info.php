@@ -34,7 +34,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 
     if(empty(array_filter($errors))){
-        $result = $emergencyObj->addEmergencyInfo($emergency["countrycode_ID"], $emergency["phone_number"], $emergency["emergency_Name"],$emergency["emergency_Relationship"] );
+        $result = $emergencyObj->addEmergencyInfo($emergency["countrycode_ID"], $emergency["phone_number"], $emergency["emergency_Name"], $emergency["emergency_Relationship"] );
 
          if($success){
             header("Location: add-emergency-info.php");
@@ -77,7 +77,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <?php } ?>
         </select>
         <p class="errors"> <?= $errors["countrycode_ID"] ?? "" ?> </p>
-    <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $phone["phone_number"] ?? "" ?>">
+    <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $emergency["phone_number"] ?? "" ?>">
     <input type="submit" value="Save Phone Number">
     </form>
 
