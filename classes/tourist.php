@@ -204,7 +204,7 @@ class Tourists extends Database{
     //     rating_ID
 
     // Add Tourist
-    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $role_ID ){
+    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,$person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $role_ID ){
         $db = $this->connect();
         $db->beginTransaction();
         try{
@@ -237,7 +237,6 @@ class Tourists extends Database{
 
         }catch (PDOException $e) {
             $db->rollBack();
-            // In a real application, you'd log the error $e->getMessage();
             return false;
         }
 
