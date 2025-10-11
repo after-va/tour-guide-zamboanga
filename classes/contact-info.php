@@ -126,5 +126,15 @@ class Contact_Info extends Database{
 
     }
 
+    // fetch Country Code
+    public function fetchCountryCode(){
+        $sql = "SELECT * FROM country_code";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
 
 }
