@@ -27,16 +27,17 @@ class Contact_Info extends Database{
         }
 
         $sql = "INSERT INTO address_info (address_houseno, address_street, address_barangay, address_city, address_province, address_country) VALUES (:address_houseno, :address_street, :address_barangay, :address_city, :address_province, :address_country)";
-        $query = $this->connect()->prepare($sql);
-        $query->bindParam(":houseno",$houseno);
-        $query->bindParam(":street",$street);
-        $query->bindParam(":barangay",$barangay);
-        $query->bindParam(":city",$city);
-        $query->bindParam(":province",$province);
-        $query->bindParam(":country",$country);
+        $db = $this->connect(); 
+        $query = $db->prepare($sql);
+        $query->bindParam(":address_houseno", $houseno);
+        $query->bindParam(":address_street", $street);
+        $query->bindParam(":address_barangay", $barangay);
+        $query->bindParam(":address_city", $city);
+        $query->bindParam(":address_province", $province);
+        $query->bindParam(":address_country", $country)
 
         if ($query->execute()) {
-            return $this->connect()->lastInsertId();
+            return $db->lastInsertId();
         } else {
             return false;
         }
@@ -71,11 +72,11 @@ class Contact_Info extends Database{
     // Emergency_ID
     public function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship){
 
-        $query = $this->connect();
+        $db = $this->connect(); 
         $db->beginTransaction();
 
         try {
-            $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
+             $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
 
             if(!$phone_ID){
                 $db->rollBack(); 
@@ -83,14 +84,14 @@ class Contact_Info extends Database{
             }
 
             $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :ename, :erelationship)";
-            $query = $this->connect()->prepare($sql);
+            $query = $db->prepare($sql); // Use $db to prepare the statement
             $query->bindParam(":phone_ID", $phone_ID);
             $query->bindParam(":ename", $ename); 
             $query->bindParam(":erelationship", $erelationship); 
 
             if ($query->execute()){
                 $db->commit(); 
-                return $this->connect()->lastInsertId()->lastInsertId();
+                return $db->lastInsertId();
             } else {
                 $db->rollBack();
                 return false;
@@ -105,7 +106,7 @@ class Contact_Info extends Database{
     // Contact Info
     public function addContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email){
         
-        $query = $this->connect();
+        $db = $this->connect();
         $db->beginTransaction();
 
         try{
@@ -114,13 +115,14 @@ class Contact_Info extends Database{
             $phone_ID = $this->addgetPhoneNumber($countrycode_ID,$phone_number);
             $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship);
             
-            if (!$address_ID || !$phone_ID || !$emergency_ID) {
-                $db->rollBack();
-                return false;
+           if (!$address_ID || !$phone_ID || !$emergency_ID) {
+            $db->rollBack();
+            return false;
             }
 
             $sql = "INSERT INTO Contact_Info (address_ID,phone_ID,emergency_ID, contactinfo_email) VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
-            $query = $db->prepare($sql); 
+            $query = $db->prepare($sql); // Use $db to prepare the statement
+            
             $query->bindParam(":address_ID", $address_ID);
             $query->bindParam(":phone_ID", $phone_ID);
             $query->bindParam(":emergency_ID", $emergency_ID);
