@@ -18,12 +18,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $contactinfo["countrycode_ID"]  = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
     $contactinfo["phone_number"]  = trim(htmlspecialchars($_POST["phone_number"] ?? ""));
     
-    $contactinfo["emergency_countrycode_ID"]  = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
-    $contactinfo["emergency_phone_number"]  = trim(htmlspecialchars($_POST["phone_number"] ?? ""));
+    $contactinfo["emergency_countrycode_ID"]  = trim(htmlspecialchars($_POST["emergency_countrycode_ID"] ?? ""));
+    $contactinfo["emergency_phone_number"]  = trim(htmlspecialchars($_POST["emergency_phone_number"] ?? ""));
+    
     $contactinfo["emergency_name"]  = trim(htmlspecialchars($_POST["emergency_name"] ?? ""));
     $contactinfo["emergency_relationship"]  = trim(htmlspecialchars($_POST["emergency_relationship"] ?? ""));
     
     $contactinfo["contactinfo_email"]  = trim(htmlspecialchars($_POST["contactinfo_email"] ?? ""));
+    
 
     // Address
     if (empty($contactinfo["address_houseno"] )) {
@@ -63,29 +65,28 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
     if(empty($contactinfo["emergency_phone_number"])){
         $errors["emergency_phone_number"] = "Phone Number is required.";
-    } elseif (strlen($contactinfo["phone_number"]) < 10) {
+    } 
+    elseif (strlen($contactinfo["emergency_phone_number"]) < 10) {
         $errors["emergency_phone_number"] = "Phone Number must be exactly 10 digits long.";
     }
     
-    if(empty($contactinfo["emergency_Name"])){
-        $errors["emergency_Name"] = "Emergency Contact Name is required.";
+    if(empty($contactinfo["emergency_name"])){
+        $errors["emergency_name"] = "Emergency Contact Name is required.";
     }
 
-    if(empty($contactinfo["emergency_Relationship"])){
-        $errors["emergency_Relationship"] = "Relationship is required.";
+    if(empty($contactinfo["emergency_relationship"])){
+        $errors["emergency_relationship"] = "Relationship is required.";
     }
 
     if(empty(array_filter($errors))){
         $result = $contactinfoOBj->addContact_Info($contactinfo["address_houseno"] ,$contactinfo["address_street"], $contactinfo["address_barangay"], $contactinfo["address_city"], $contactinfo["address_province"], $contactinfo["address_country"] , $contactinfo["countrycode_ID"], $contactinfo["phone_number"], $contactinfo["emergency_name"], $contactinfo["emergency_countrycode_ID"], $contactinfo["emergency_phone_number"], $contactinfo["emergency_relationship"] , $contactinfo["contactinfo_email"]);
 
         if($result){
-            header("Location: add-emergency-info.php");
+            header("Location: add-contact-info.php");
             exit;
         } else {
             $errors["general"] = "Failed to save data. Please check for duplicate phone number entries.";
         }
-
-
     }
 
 
