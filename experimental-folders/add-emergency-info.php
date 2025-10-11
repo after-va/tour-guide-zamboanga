@@ -8,14 +8,14 @@ $emergency=[];
 $errors = [];
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-    
     $emergency["emergency_name"] = trim(htmlspecialchars($_POST["emergency_name"] ?? ""));
     $emergency["emergency_relationship"] = trim(htmlspecialchars($_POST["emergency_relationship"] ?? ""));
     $emergency["phone_number"] = trim(htmlspecialchars($_POST["phone_number"] ?? ""));
     $emergency["countrycode_ID"] = trim(htmlspecialchars($_POST["countrycode_ID"] ?? ""));
 
+
      
-    if(empty($emergency["countrycode_ID"])){
+     if(empty($emergency["countrycode_ID"])){
         $errors["countrycode_ID"] = "Country Code is required.";
     }
     if(empty($emergency["phone_number"])){
@@ -23,20 +23,24 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     } elseif (strlen($emergency["phone_number"]) < 10) {
         $errors["phone_number"] = "Phone Number must be exactly 10 digits long.";
     }
-    
-    if(empty($emergency["emergency_Name"])){
-        $errors["emergency_Name"] = "Emergency Contact Name is required.";
+
+    // Corrected array key from "emergency_Name" to "emergency_name"
+    if(empty($emergency["emergency_name"])){
+        $errors["emergency_name"] = "Emergency Contact Name is required.";
     }
 
-    if(empty($emergency["emergency_Relationship"])){
-        $errors["emergency_Relationship"] = "Relationship is required.";
+    // Corrected array key from "emergency_Relationship" to "emergency_relationship"
+    if(empty($emergency["emergency_relationship"])){
+        $errors["emergency_relationship"] = "Relationship is required.";
     }
 
 
     if(empty(array_filter($errors))){
-        $result = $emergencyObj->addEmergencyInfo($emergency["countrycode_ID"], $emergency["phone_number"], $emergency["emergency_Name"], $emergency["emergency_Relationship"] );
+        // Corrected array keys passed to the method
+        $result = $emergencyObj->addEmergencyInfo($emergency["countrycode_ID"], $emergency["phone_number"], $emergency["emergency_name"], $emergency["emergency_relationship"] );
 
-         if($success){
+        // Corrected variable from $success to $result
+        if($result){
             header("Location: add-emergency-info.php");
             exit;
         } else {

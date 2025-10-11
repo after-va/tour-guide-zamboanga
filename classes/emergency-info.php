@@ -44,22 +44,24 @@ class Emergency_Info extends Database{
     }
 
     public function addEmergencyInfo($countrycode_ID, $phone_number, $emergency_Name, $emergency_Relationship){
-        $query = $this->connect();
-        $db->beginTransaction();
-        
+        $db = $this->connect(); // Renamed $query to $db for clarity
+        $db->beginTransaction(); // Use $db
+
         try {
             $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
-            
+
             if(!$phone_ID){
-                $db->rollback();
+                $db->rollBack();
                 return false;
             }
 
-            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :emergency_Name, :erelationship)";
-            $query = $this->connect()->prepare($sql);
+            // Corrected the placeholder :erelationship to :emergency_Relationship
+            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :emergency_Name, :emergency_Relationship)";
+            $query = $db->prepare($sql); // Use $db to prepare the statement
             $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":emergency_Name,", $emergency_Name);
-            $query->bindParam(":emergency_Relationship,", $emergency_Relationship);
+            // Removed the trailing commas from param names
+            $query->bindParam(":emergency_Name", $emergency_Name);
+            $query->bindParam(":emergency_Relationship", $emergency_Relationship);
 
             if ($query->execute()){
                 $db->commit();
@@ -71,13 +73,10 @@ class Emergency_Info extends Database{
 
         } catch (PDOException $e) {
             $db->rollBack();
+            // Optionally log $e->getMessage() for debugging
             return false;
         }
-
     }
-
-    
-
 
 
 }
