@@ -59,7 +59,6 @@ class Emergency_Info extends Database{
             $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :emergency_Name, :emergency_Relationship)";
             $query = $db->prepare($sql); // Use $db to prepare the statement
             $query->bindParam(":phone_ID", $phone_ID);
-            // Removed the trailing commas from param names
             $query->bindParam(":emergency_Name", $emergency_Name);
             $query->bindParam(":emergency_Relationship", $emergency_Relationship);
 

@@ -77,6 +77,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty($contactinfo["emergency_relationship"])){
         $errors["emergency_relationship"] = "Relationship is required.";
     }
+    if(empty($contactinfo["contactinfo_email"])){
+        $errors["contactinfo_email"] = "Email address is required.";
+    }
 
     if(empty(array_filter($errors))){
         $result = $contactinfoOBj->addContact_Info($contactinfo["address_houseno"] ,$contactinfo["address_street"], $contactinfo["address_barangay"], $contactinfo["address_city"], $contactinfo["address_province"], $contactinfo["address_country"] , $contactinfo["countrycode_ID"], $contactinfo["phone_number"], $contactinfo["emergency_name"], $contactinfo["emergency_countrycode_ID"], $contactinfo["emergency_phone_number"], $contactinfo["emergency_relationship"] , $contactinfo["contactinfo_email"]);
@@ -102,26 +105,33 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 </head>
 <body>
     <h1>Add Contact form</h1>
+    <p style="color: red; font-weight: bold;"> <?= $errors["general"] ?? "" ?> </p>
 
     <form action="" method="post">
         <h3>Address</h3>
         <label for="address_houseno">House No</label>
         <input type="text" name="address_houseno" id="address_houseno" value="<?= $contactinfo["address_houseno"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_houseno"] ?? "" ?> </p>
 
         <label for="address_street">Street</label>
         <input type="text" name="address_street" id="address_street" value="<?= $contactinfo["address_street"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_street"] ?? "" ?> </p>
 
         <label for="address_barangay">Barangay</label>
         <input type="text" name="address_barangay" id="address_barangay" value="<?= $contactinfo["address_barangay"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_barangay"] ?? "" ?> </p>
 
         <label for="address_city">City</label>
         <input type="text" name="address_city" id="address_city" value="<?= $contactinfo["address_city"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_city"] ?? "" ?> </p>
 
         <label for="address_province">Province</label>
         <input type="text" name="address_province" id="address_province" value="<?= $contactinfo["address_province"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_province"] ?? "" ?> </p>
 
         <label for="address_country">Country</label>
         <input type="text" name="address_country" id="address_country" value="<?= $contactinfo["address_country"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["address_country"] ?? "" ?> </p>
 
         <br> <br>
 
@@ -129,24 +139,29 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <label for="countrycode_ID"> Country Code </label>
         <select name="countrycode_ID" id="countrycode_ID">
             <option value="">--SELECT COUNTRY CODE--</option>
+
             <?php foreach ($contactinfoOBj->fetchCountryCode() as $country_code){ 
                 $temp = $country_code["countrycode_ID"];
             ?>
-            <option value="<?= $temp ?>" <?= ($temp == ($contactinfo["countrycode_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["countrycode_name"] ?> <?= $country_code["countrycode_number"]?> </option>    
+            <option value="<?= $temp ?>" <?= ($temp == ($contactinfo["countrycode_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["countrycode_name"] ?> <?= $country_code["countrycode_number"]?> </option> 
+               
 
         <?php } ?>
         <p class="errors"> <?= $errors["countrycode_ID"] ?? "" ?> </p>
         </select>
         <label for="phone_number">Phone Number</label>
         <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $contactinfo["phone_number"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["phone_number"] ?? "" ?> </p>
         
         <br><br>
         <h3>Emergency Info</h3>
         <label for="emergency_name"> Emergency Name </label>
         <input type="text" name="emergency_name" id="emergency_name" value ="<?= $contactinfo["emergency_name"] ?? "" ?>" >
+        <p style="color: red; font-weight: bold;"> <?= $errors["emergency_name"] ?? "" ?> </p>
 
         <label for="emergency_relationship"> Emergency Relationship </label>
             <input type="text" name="emergency_relationship" id="" value = "<?= $contactinfo["emergency_relationship"] ?? "" ?>">
+            <p style="color: red; font-weight: bold;"> <?= $errors["emergency_relationship"] ?? "" ?> </p>
 
         
         <label for="emergency_countrycode_ID"> Country Code </label>
@@ -162,6 +177,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         </select>
         <label for="emergency_phone_number">Phone Number</label>
         <input type="text" name="emergency_phone_number" id="emergency_phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $contactinfo["emergency_phone_number"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["emergency_phone_number"] ?? "" ?> </p>
+
+        <label for="contactinfo_email"> Email Address</label>
+        <input type="email" name="contactinfo_email" id="contactinfo_email" value ="<?= $contactinfo["contactinfo_email"] ?? "" ?>">
+        <p style="color: red; font-weight: bold;"> <?= $errors["contactinfo_email"] ?? "" ?> </p>
 
         
         <input type="submit" value="Save Contact Info">
