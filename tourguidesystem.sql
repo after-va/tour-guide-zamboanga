@@ -74,16 +74,16 @@ CREATE TABLE Rating_Category (
     ratingcategory_to INT
 );
 
--- Rating
+-- Rating 
 CREATE TABLE Rating (
     rating_ID INT AUTO_INCREMENT PRIMARY KEY,
-    rating_from INT,
-    rating_to INT, 
-    rating_value DECIMAL(2,1) NOT NULL DEFAULT 0.0,
-    rating_description VARCHAR(225),
-    category_ID INT,
-    rating_date DATE,
-    FOREIGN KEY (category_ID) REFERENCES Rating_Category(ratingcategory_ID)
+    rater_ID INT NOT NULL,       
+    rated_ID INT NOT NULL,     
+    rating_value DECIMAL(2,1) NOT NULL, 
+    rating_description VARCHAR(255),
+    rating_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (rater_ID) REFERENCES Person(person_ID),
+    FOREIGN KEY (rated_ID) REFERENCES Person(person_ID)
 );
 
 -- Role Info
@@ -101,11 +101,10 @@ CREATE TABLE Person (
     person_Gender VARCHAR(225),
     person_CivilStatus VARCHAR(225),
     person_DateOfBirth DATE,
-    rating_ID INT,
+    person_RatingScore DECIMAL(2,1) NOT NULL DEFAULT 0.0,
     contactinfo_ID INT, 
     FOREIGN KEY (role_ID) REFERENCES Role_Info(role_ID),
     FOREIGN KEY (name_ID) REFERENCES Name_Info(name_ID),
-    FOREIGN KEY (rating_ID) REFERENCES Rating(rating_ID),
     FOREIGN KEY (contactinfo_ID) REFERENCES Contact_Info(contactinfo_ID)
 );
 

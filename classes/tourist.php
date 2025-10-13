@@ -1,16 +1,8 @@
 <?php
 
 require_once "database.php";
-//     person_ID
-//     role_ID
-//     name_ID
-//     person_Nationality
-//     person_Gender
-//     person_CivilStatus
-//     person_DateOfBirth
-//     rating_ID
-//     contactinfo_ID
-class Tourists extends Database{
+
+class Tourist extends Database{
     public $person_ID = "";
     public $person_nationality = "";
     public $person_gender = "";
@@ -44,106 +36,104 @@ class Tourists extends Database{
     }
 
     // Name Info
-    public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix){
-        $sql = "SELECT name_ID FROM name_info n WHERE n.name_first = :name_first AND n.name_last = :name_last AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) AND ( n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL) ) AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL));";
-        $query = $this->connect()->prepare($sql);
-        $query->bindParam(":name_first",$name_first);
-        $query->bindParam(":name_second",$name_second);
-        $query->bindParam(":name_middle",$name_middle);
-        $query->bindParam(":name_last",$name_last);
-        $query->bindParam(":name_suffix",$name_suffix);
-
-        $result = $query->fetch();
+    public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db){
+        
+        $sql_select = "SELECT name_ID FROM name_info n WHERE n.name_first = :name_first AND n.name_last = :name_last AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) AND ( n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL) ) AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL));";
+        $query_select = $db->prepare($sql_select); 
+        $query_select->bindParam(":name_first",$name_first);
+        $query_select->bindParam(":name_second",$name_second);
+        $query_select->bindParam(":name_middle",$name_middle);
+        $query_select->bindParam(":name_last",$name_last);
+        $query_select->bindParam(":name_suffix",$name_suffix);
+        $query_select->execute();
+        $result = $query_select->fetch();
 
         if($result){
             return $result["name_ID"];
         }
 
-        $db = $this->connect();
-        $sql = "INSERT INTO name_info (name_first, name_second, name_middle, name_last, name_suffix ) VALUES (:name_first, :name_second, :name_middle, :name_last, :name_suffix)";
-        $query->bindParam(":name_first",$name_first);
-        $query->bindParam(":name_second",$name_second);
-        $query->bindParam(":name_middle",$name_middle);
-        $query->bindParam(":name_last",$name_last);
-        $query->bindParam(":name_suffix",$name_suffix);
-        if ($query->execute()) {
-            return $db->lastInsertId(); 
-        } else {
-            return false;
-        }
-
-    }
-
-    // Address 
-    public function addgetAddress($houseno, $street, $barangay, $city, $province, $country){
-        $sql = "SELECT address_ID, address_houseno, address_street, address_barangay, address_city, address_province, address_country FROM address_info WHERE address_houseno=:houseno AND address_street=:street AND address_barangay=:barangay AND address_city=:city AND address_province=:province AND address_country=:country ";
-        $query = $this->connect()->prepare($sql);
-        $query->bindParam(":houseno",$houseno);
-        $query->bindParam(":street",$street);
-        $query->bindParam(":barangay",$barangay);
-        $query->bindParam(":city",$city);
-        $query->bindParam(":province",$province);
-        $query->bindParam(":country",$country);
-        $query->execute();
-        $result = $query->fetch();
-
-        if($result){
-            return $result["address_ID"];
-        }
-        $db = $this->connect();
-        $sql = "INSERT INTO address_info (address_houseno, address_street, address_barangay, address_city, address_province, address_country) VALUES (:address_houseno, :address_street, :address_barangay, :address_city, :address_province, :address_country)";
-        $query = $db->prepare($sql);
-        $query->bindParam(":address_houseno", $houseno);
-        $query->bindParam(":address_street", $street);
-        $query->bindParam(":address_barangay", $barangay);
-        $query->bindParam(":address_city", $city);
-        $query->bindParam(":address_province", $province);
-        $query->bindParam(":address_country", $country);
-
-        if ($query->execute()) {
+        $sql_insert = "INSERT INTO name_info (name_first, name_second, name_middle, name_last, name_suffix ) VALUES (:name_first, :name_second, :name_middle, :name_last, :name_suffix)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":name_first",$name_first);
+        $query_insert->bindParam(":name_second",$name_second);
+        $query_insert->bindParam(":name_middle",$name_middle);
+        $query_insert->bindParam(":name_last",$name_last);
+        $query_insert->bindParam(":name_suffix",$name_suffix);
+        
+        if ($query_insert->execute()) {
             return $db->lastInsertId();
         } else {
             return false;
         }
+    }
 
+    // Address 
+    public function addgetAddress($houseno, $street, $barangay, $city, $province, $country, $db){
+       
+        $sql_select = "SELECT address_ID, address_houseno, address_street, address_barangay, address_city, address_province, address_country FROM address_info WHERE address_houseno=:houseno AND address_street=:street AND address_barangay=:barangay AND address_city=:city AND address_province=:province AND address_country=:country ";
+        $query_select = $db->prepare($sql_select); 
+        $query_select->bindParam(":houseno",$houseno);
+        $query_select->bindParam(":street",$street);
+        $query_select->bindParam(":barangay",$barangay);
+        $query_select->bindParam(":city",$city);
+        $query_select->bindParam(":province",$province);
+        $query_select->bindParam(":country",$country);
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["address_ID"];
+        }
+        
+        $sql_insert = "INSERT INTO address_info (address_houseno, address_street, address_barangay, address_city, address_province, address_country) VALUES (:address_houseno, :address_street, :address_barangay, :address_city, :address_province, :address_country)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":address_houseno", $houseno);
+        $query_insert->bindParam(":address_street", $street);
+        $query_insert->bindParam(":address_barangay", $barangay);
+        $query_insert->bindParam(":address_city", $city);
+        $query_insert->bindParam(":address_province", $province);
+        $query_insert->bindParam(":address_country", $country);
+
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
+        } else {
+            return false;
+        }
     }
     
-    
     //Phone_ID
-    public function addgetPhoneNumber($countrycode_ID,$phone_number){
-        $sql = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID ";
-        $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_ID", $countrycode_ID);
-        $query->bindParam(":phone_number", $phone_number);
-        $query->execute();
-        $result = $query->fetch();
+    public function addgetPhoneNumber($countrycode_ID,$phone_number, $db){
+        
+        $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID ";
+        $query_select = $db->prepare($sql_select); 
+        $query_select->bindParam(":countrycode_ID", $countrycode_ID);
+        $query_select->bindParam(":phone_number", $phone_number);
+        $query_select->execute();
+        $result = $query_select->fetch();
 
         if($result){
             return $result["phone_ID"];
         }
-        $db = $this->connect();
-        $sql = "INSERT INTO phone_number(countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
-        $query = $db->prepare($sql);
-        $query->bindParam(":countrycode_ID", $countrycode_ID);
-        $query->bindParam(":phone_number", $phone_number);
+        
+        $sql_insert = "INSERT INTO phone_number(countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
+        $query_insert = $db->prepare($sql_insert); 
+        $query_insert->bindParam(":countrycode_ID", $countrycode_ID);
+        $query_insert->bindParam(":phone_number", $phone_number);
 
-        if ($query->execute()) {
-            return $db->lastInsertId(); 
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
         } else {
             return false;
         }
     }
 
     // Emergency_ID
-    public function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship){
-
-        $db = $this->connect(); 
+    public function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship, $db){
 
         try {
-             $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
+             $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number, $db);
 
             if(!$phone_ID){
-                $db->rollBack(); 
                 return false;
             }
             
@@ -165,17 +155,15 @@ class Tourists extends Database{
     }
 
     // Contact Info
-    public function addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email){
+    public function addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $db){
         
-        $db = $this->connect();
-
         try{
             
-            $address_ID = $this->addgetAddress($houseno, $street, $barangay, $city, $province, $country);
-            $phone_ID = $this->addgetPhoneNumber($countrycode_ID,$phone_number);
-            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship);
+            $address_ID = $this->addgetAddress($houseno, $street, $barangay, $city, $province, $country, $db);
+            $phone_ID = $this->addgetPhoneNumber($countrycode_ID,$phone_number, $db);
+            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
             
-           if (!$address_ID || !$phone_ID || !$emergency_ID) {
+            if (!$address_ID || !$phone_ID || !$emergency_ID) {
                 return false;
             }
 
@@ -198,27 +186,30 @@ class Tourists extends Database{
         }
     }
 
-    //     role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID
-   
-    //     person_ID,
-    //     rating_ID
-
     // Add Tourist
-    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,$person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $role_ID ){
+    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,$person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth){
         $db = $this->connect();
         $db->beginTransaction();
         try{
-            $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix);
-            $contactinfo_ID =$this->addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email);
+            // Pass the single $db connection to all helper methods
+            $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
+            $contactinfo_ID = $this->addgetContact_Info($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $db);
             
+            $role_ID = 1; // Assuming 'Tourist' is role_ID 1
+            // person_RatingScore will default to 0.0 in the database
             
-           if (!$name_ID  || !$contactinfo_ID) {
+            if (!$name_ID || !$contactinfo_ID) {
                 $db->rollBack();
                 return false;
             }
 
-            $sql = "INSERT INTO Person_Info(role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) VALUES (1, :name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            // **FINAL FIX: rating_ID column permanently removed from INSERT**
+            // We assume 'Person' table now has a default for the rating score.
+            $sql = "INSERT INTO Person(role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) 
+                    VALUES (:role_ID, :name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            
             $query = $db->prepare($sql);
+            $query->bindParam(":role_ID", $role_ID);
             $query->bindParam(":name_ID", $name_ID);
             $query->bindParam(":person_nationality", $person_nationality);
             $query->bindParam(":person_gender", $person_gender);
@@ -237,9 +228,10 @@ class Tourists extends Database{
 
         }catch (PDOException $e) {
             $db->rollBack();
+            // **IMPORTANT: Use this log to check for a remaining 'role_ID' failure.**
+            error_log("Tourist Registration Error: " . $e->getMessage()); 
             return false;
         }
-
     }
 
     // fetch Country Code
@@ -252,7 +244,4 @@ class Tourists extends Database{
             return null;
         }
     }
-
-
-
 }
