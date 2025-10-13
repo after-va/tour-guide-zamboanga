@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Payment - Tourismo Zamboanga</title>
+
+  <!-- Favicons -->
+  <link href="../assets/img/favicon.png" rel="icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS -->
+  <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Payment CSS -->
+  <link href="../assets/css/payment.css" rel="stylesheet">
+</head>
+
+<body style="background: #f5f7fa;">
+
+  <div class="payment-container">
+    <div class="payment-card">
+      
+      <!-- Payment Header -->
+      <div class="payment-header">
+        <h2><i class="bi bi-credit-card"></i> Secure Payment</h2>
+        <p>Complete your booking payment</p>
+      </div>
+
+      <!-- Payment Body -->
+      <div class="payment-body">
+        
+        <!-- Booking Summary -->
+        <div class="booking-summary">
+          <h4><i class="bi bi-receipt"></i> Booking Summary</h4>
+          <div class="summary-item">
+            <span>Tour Package:</span>
+            <strong>Great Santa Cruz Island Tour</strong>
+          </div>
+          <div class="summary-item">
+            <span>Tour Guide:</span>
+            <strong>Maria Santos</strong>
+          </div>
+          <div class="summary-item">
+            <span>Date:</span>
+            <strong>October 20, 2024</strong>
+          </div>
+          <div class="summary-item">
+            <span>Time:</span>
+            <strong>9:00 AM - 3:00 PM</strong>
+          </div>
+          <div class="summary-item">
+            <span>Number of Persons:</span>
+            <strong>4 people</strong>
+          </div>
+          <div class="summary-item">
+            <span>Base Price:</span>
+            <strong>₱2,000</strong>
+          </div>
+          <div class="summary-item">
+            <span>Service Fee:</span>
+            <strong>₱200</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total Amount:</span>
+            <strong>₱2,200</strong>
+          </div>
+        </div>
+
+        <!-- Security Badge -->
+        <div class="security-badge">
+          <i class="bi bi-shield-check"></i>
+          <div>
+            <strong>Secure Payment</strong>
+            <p style="margin: 0; font-size: 0.9rem;">Your payment information is encrypted and secure</p>
+          </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="payment-methods">
+          <h4 style="margin-bottom: 20px;">Select Payment Method</h4>
+          
+          <div class="payment-method active" onclick="selectPaymentMethod('card')">
+            <input type="radio" name="payment_method" value="card" checked>
+            <div class="payment-method-icon">
+              <i class="bi bi-credit-card"></i>
+            </div>
+            <div class="payment-method-info">
+              <h5>Credit/Debit Card</h5>
+              <p>Visa, Mastercard, JCB</p>
+            </div>
+          </div>
+
+          <div class="payment-method" onclick="selectPaymentMethod('gcash')">
+            <input type="radio" name="payment_method" value="gcash">
+            <div class="payment-method-icon" style="background: #007dfe; color: white;">
+              <i class="bi bi-phone"></i>
+            </div>
+            <div class="payment-method-info">
+              <h5>GCash</h5>
+              <p>Pay using GCash wallet</p>
+            </div>
+          </div>
+
+          <div class="payment-method" onclick="selectPaymentMethod('paymaya')">
+            <input type="radio" name="payment_method" value="paymaya">
+            <div class="payment-method-icon" style="background: #00d632; color: white;">
+              <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="payment-method-info">
+              <h5>PayMaya</h5>
+              <p>Pay using PayMaya wallet</p>
+            </div>
+          </div>
+
+          <div class="payment-method" onclick="selectPaymentMethod('bank')">
+            <input type="radio" name="payment_method" value="bank">
+            <div class="payment-method-icon">
+              <i class="bi bi-bank"></i>
+            </div>
+            <div class="payment-method-info">
+              <h5>Bank Transfer</h5>
+              <p>Direct bank deposit</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Form (Card) -->
+        <div id="card-form" class="payment-form">
+          <h5 style="margin-bottom: 20px;">Card Information</h5>
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" placeholder="John Doe" class="form-control">
+          </div>
+          <div class="card-row">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" placeholder="MM/YY" maxlength="5" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="text" placeholder="123" maxlength="3" class="form-control">
+            </div>
+          </div>
+        </div>
+
+        <!-- GCash Form (Hidden by default) -->
+        <div id="gcash-form" class="payment-form" style="display: none;">
+          <h5 style="margin-bottom: 20px;">GCash Payment</h5>
+          <div class="qr-code-container">
+            <p>Scan QR Code with your GCash app</p>
+            <div class="qr-code">
+              <i class="bi bi-qr-code" style="font-size: 5rem; color: #007dfe;"></i>
+            </div>
+            <p style="color: #666;">Or enter your GCash number below</p>
+          </div>
+          <div class="form-group">
+            <label>GCash Mobile Number</label>
+            <input type="tel" placeholder="09XX XXX XXXX" class="form-control">
+          </div>
+        </div>
+
+        <!-- PayMaya Form (Hidden by default) -->
+        <div id="paymaya-form" class="payment-form" style="display: none;">
+          <h5 style="margin-bottom: 20px;">PayMaya Payment</h5>
+          <div class="qr-code-container">
+            <p>Scan QR Code with your PayMaya app</p>
+            <div class="qr-code">
+              <i class="bi bi-qr-code" style="font-size: 5rem; color: #00d632;"></i>
+            </div>
+            <p style="color: #666;">Or enter your PayMaya number below</p>
+          </div>
+          <div class="form-group">
+            <label>PayMaya Mobile Number</label>
+            <input type="tel" placeholder="09XX XXX XXXX" class="form-control">
+          </div>
+        </div>
+
+        <!-- Bank Transfer Form (Hidden by default) -->
+        <div id="bank-form" class="payment-form" style="display: none;">
+          <h5 style="margin-bottom: 20px;">Bank Transfer Details</h5>
+          <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #e0e0e0;">
+            <p><strong>Bank Name:</strong> BDO Unibank</p>
+            <p><strong>Account Name:</strong> Tourismo Zamboanga Inc.</p>
+            <p><strong>Account Number:</strong> 1234-5678-9012</p>
+            <p><strong>Amount:</strong> ₱2,200</p>
+            <hr>
+            <p style="color: #666; font-size: 0.9rem;">Please upload proof of payment after transfer</p>
+          </div>
+          <div class="form-group" style="margin-top: 20px;">
+            <label>Upload Receipt</label>
+            <input type="file" accept="image/*" class="form-control">
+          </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div style="margin: 20px 0;">
+          <label style="display: flex; align-items: start; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="terms" style="margin-top: 4px;">
+            <span style="font-size: 0.9rem; color: #666;">
+              I agree to the <a href="#" style="color: #667eea;">Terms and Conditions</a> and <a href="#" style="color: #667eea;">Cancellation Policy</a>
+            </span>
+          </label>
+        </div>
+
+        <!-- Pay Button -->
+        <button class="btn-pay" onclick="processPayment()">
+          <i class="bi bi-lock"></i> Pay ₱2,200
+        </button>
+
+        <p style="text-align: center; color: #999; font-size: 0.85rem; margin-top: 15px;">
+          <i class="bi bi-shield-check"></i> Secured by 256-bit SSL encryption
+        </p>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Vendor JS -->
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function selectPaymentMethod(method) {
+      // Remove active class from all methods
+      document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // Add active class to selected method
+      event.currentTarget.classList.add('active');
+
+      // Hide all forms
+      document.getElementById('card-form').style.display = 'none';
+      document.getElementById('gcash-form').style.display = 'none';
+      document.getElementById('paymaya-form').style.display = 'none';
+      document.getElementById('bank-form').style.display = 'none';
+
+      // Show selected form
+      if (method === 'card') {
+        document.getElementById('card-form').style.display = 'block';
+      } else if (method === 'gcash') {
+        document.getElementById('gcash-form').style.display = 'block';
+      } else if (method === 'paymaya') {
+        document.getElementById('paymaya-form').style.display = 'block';
+      } else if (method === 'bank') {
+        document.getElementById('bank-form').style.display = 'block';
+      }
+    }
+
+    function processPayment() {
+      const termsChecked = document.getElementById('terms').checked;
+      
+      if (!termsChecked) {
+        alert('Please agree to the Terms and Conditions');
+        return;
+      }
+
+      // Show loading state
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+
+      // Simulate payment processing
+      setTimeout(() => {
+        alert('Payment successful! Your booking is confirmed.');
+        window.location.href = 'payment-success.html';
+      }, 2000);
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Guide Dashboard - Tourismo Zamboanga</title>
+  <meta name="description" content="Manage your tours and clients">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f5f7fa;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    .dashboard-header {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f5576c;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .sidebar {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 20px;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 10px;
+    }
+
+    .sidebar-menu a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 15px;
+      color: #666;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: #fff0f5;
+      color: #f5576c;
+    }
+
+    .dashboard-card {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    .booking-request {
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s;
+    }
+
+    .booking-request:hover {
+      border-color: #f5576c;
+      box-shadow: 0 5px 15px rgba(245, 87, 108, 0.1);
+    }
+
+    .btn-accept {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .btn-decline {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border: none;
+      padding: 10px 25px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+    }
+
+    .earnings-card {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .review-item {
+      border-bottom: 1px solid #e0e0e0;
+      padding: 15px 0;
+    }
+
+    .review-item:last-child {
+      border-bottom: none;
+    }
+
+    .rating-stars {
+      color: #ffc107;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-nav">
+        <h2 style="margin: 0;">Guide Dashboard</h2>
+        <div class="user-info">
+          <span>Welcome, <strong>Maria Santos!</strong></span>
+          <div class="user-avatar">M</div>
+          <a href="index.html" style="color: white; text-decoration: none; margin-left: 15px;">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+      
+      <!-- Sidebar -->
+      <div class="col-lg-3">
+        <div class="sidebar">
+          <ul class="sidebar-menu">
+            <li><a href="#" class="active"><i class="bi bi-grid"></i> Dashboard</a></li>
+            <li><a href="#bookings"><i class="bi bi-calendar-check"></i> Bookings</a></li>
+            <li><a href="#schedule"><i class="bi bi-calendar3"></i> My Schedule</a></li>
+            <li><a href="#earnings"><i class="bi bi-cash-coin"></i> Earnings</a></li>
+            <li><a href="#reviews"><i class="bi bi-star"></i> Reviews</a></li>
+            <li><a href="#profile"><i class="bi bi-person"></i> My Profile</a></li>
+            <li><a href="#packages"><i class="bi bi-box"></i> Tour Packages</a></li>
+            <li><a href="#settings"><i class="bi bi-gear"></i> Settings</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9">
+        
+        <!-- Stats Overview -->
+        <div class="row">
+          <div class="col-md-3">
+            <div class="stat-card">
+              <div class="stat-value">8</div>
+              <div class="stat-label">Pending Requests</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <div class="stat-value">15</div>
+              <div class="stat-label">Upcoming Tours</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <div class="stat-value">650</div>
+              <div class="stat-label">Total Tours</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+              <div class="stat-value">5.0</div>
+              <div class="stat-label">Average Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Earnings Overview -->
+        <div class="earnings-card">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h5 style="margin-bottom: 10px;">Total Earnings This Month</h5>
+              <h2 style="font-size: 3rem; margin: 0;">₱45,600</h2>
+              <p style="margin-top: 10px; opacity: 0.9;">
+                <i class="bi bi-arrow-up"></i> 23% increase from last month
+              </p>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn" style="background: white; color: #11998e; font-weight: 600;">
+                <i class="bi bi-download"></i> Download Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Requests -->
+        <div class="dashboard-card" id="bookings">
+          <h4 style="margin-bottom: 20px;">New Booking Requests</h4>
+          
+          <div class="booking-request">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Island Hopping Tour Request</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person"></i> Tourist: John Smith<br>
+                  <i class="bi bi-calendar3"></i> Requested Date: October 22, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 9:00 AM - 3:00 PM<br>
+                  <i class="bi bi-people"></i> Group Size: 4 people
+                </p>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #f5576c; margin-bottom: 15px;">₱2,000</h4>
+                <button class="btn-accept">Accept</button>
+                <button class="btn-decline">Decline</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-request">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Beach Adventure Tour</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person"></i> Tourist: Sarah Johnson<br>
+                  <i class="bi bi-calendar3"></i> Requested Date: October 24, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 8:00 AM - 5:00 PM<br>
+                  <i class="bi bi-people"></i> Group Size: 6 people
+                </p>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #f5576c; margin-bottom: 15px;">₱3,000</h4>
+                <button class="btn-accept">Accept</button>
+                <button class="btn-decline">Decline</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-request">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Half Day Island Tour</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person"></i> Tourist: Michael Chen<br>
+                  <i class="bi bi-calendar3"></i> Requested Date: October 26, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 1:00 PM - 5:00 PM<br>
+                  <i class="bi bi-people"></i> Group Size: 2 people
+                </p>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #f5576c; margin-bottom: 15px;">₱1,500</h4>
+                <button class="btn-accept">Accept</button>
+                <button class="btn-decline">Decline</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Schedule -->
+        <div class="dashboard-card" id="schedule">
+          <h4 style="margin-bottom: 20px;">Upcoming Schedule</h4>
+          
+          <div style="border-left: 4px solid #f5576c; padding-left: 20px; margin-bottom: 20px;">
+            <div style="background: #fff0f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+              <strong>October 20, 2024 - 9:00 AM</strong>
+              <p style="margin: 5px 0; color: #666;">Great Santa Cruz Island Tour with Juan Dela Cruz (5 people)</p>
+            </div>
+            <div style="background: #fff0f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+              <strong>October 21, 2024 - 2:00 PM</strong>
+              <p style="margin: 5px 0; color: #666;">Beach Adventure with Emma Wilson (3 people)</p>
+            </div>
+            <div style="background: #fff0f5; padding: 15px; border-radius: 8px;">
+              <strong>October 23, 2024 - 10:00 AM</strong>
+              <p style="margin: 5px 0; color: #666;">Full Day Island Hopping with David Park (8 people)</p>
+            </div>
+          </div>
+
+          <button class="btn btn-primary">View Full Calendar</button>
+        </div>
+
+        <!-- Recent Reviews -->
+        <div class="dashboard-card" id="reviews">
+          <h4 style="margin-bottom: 20px;">Recent Reviews</h4>
+          
+          <div class="review-item">
+            <div class="rating-stars">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <p style="margin: 10px 0; color: #333;">"Maria was an amazing guide! Very knowledgeable and friendly. The island hopping tour was unforgettable!"</p>
+            <small style="color: #999;">- John Smith, 2 days ago</small>
+          </div>
+
+          <div class="review-item">
+            <div class="rating-stars">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <p style="margin: 10px 0; color: #333;">"Best tour guide ever! Maria made our trip so special. Highly recommended!"</p>
+            <small style="color: #999;">- Sarah Johnson, 5 days ago</small>
+          </div>
+
+          <div class="review-item">
+            <div class="rating-stars">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-half"></i>
+            </div>
+            <p style="margin: 10px 0; color: #333;">"Great experience! Maria knows all the best spots and took amazing photos for us."</p>
+            <small style="color: #999;">- Emma Wilson, 1 week ago</small>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="dashboard-card">
+              <h5 style="margin-bottom: 15px;">Performance This Month</h5>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span>Tours Completed:</span>
+                <strong>28</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span>Cancellation Rate:</span>
+                <strong style="color: #28a745;">2%</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span>Response Time:</span>
+                <strong style="color: #28a745;">< 1 hour</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>Repeat Customers:</span>
+                <strong>45%</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-card">
+              <h5 style="margin-bottom: 15px;">Tour Packages</h5>
+              <div style="margin-bottom: 15px;">
+                <strong>Half Day Tour</strong>
+                <p style="color: #666; margin: 5px 0;">₱2,000 • 6 hours</p>
+              </div>
+              <div style="margin-bottom: 15px;">
+                <strong>Full Day Tour</strong>
+                <p style="color: #666; margin: 5px 0;">₱3,000 • Full day</p>
+              </div>
+              <button class="btn btn-primary btn-sm">Edit Packages</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Tourist Dashboard - Tourismo Zamboanga</title>
+  <meta name="description" content="Manage your tours and bookings">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  
+</head>
+
+<body>
+
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="dashboard-nav">
+        <h2 style="margin: 0;">Tourismo Zamboanga</h2>
+        <div class="user-info">
+          <span>Welcome, <strong>Juan!</strong></span>
+          <div class="user-avatar">J</div>
+          <a href="index.html" style="color: white; text-decoration: none; margin-left: 15px;">
+            <i class="bi bi-box-arrow-right"></i> Logout
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 30px; margin-bottom: 50px;">
+    <div class="row">
+      
+      <!-- Sidebar -->
+      <div class="col-lg-3">
+        <div class="sidebar">
+          <ul class="sidebar-menu">
+            <li><a href="#" class="active"><i class="bi bi-grid"></i> Dashboard</a></li>
+            <li><a href="#bookings"><i class="bi bi-calendar-check"></i> My Bookings</a></li>
+            <li><a href="tour-guides.html"><i class="bi bi-people"></i> Browse Guides</a></li>
+            <li><a href="#destinations"><i class="bi bi-map"></i> Destinations</a></li>
+            <li><a href="#profile"><i class="bi bi-person"></i> My Profile</a></li>
+            <li><a href="#settings"><i class="bi bi-gear"></i> Settings</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9">
+        
+        <!-- Stats Overview -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="stat-card">
+              <div class="stat-value">3</div>
+              <div class="stat-label">Upcoming Tours</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <div class="stat-value">12</div>
+              <div class="stat-label">Completed Tours</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <div class="stat-value">5</div>
+              <div class="stat-label">Favorite Guides</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="dashboard-card">
+          <h4 style="margin-bottom: 20px;">Quick Actions</h4>
+          <div class="row">
+            <div class="col-md-4">
+              <a href="tour-guides.html" class="btn btn-primary w-100 mb-3">
+                <i class="bi bi-search"></i> Find a Guide
+              </a>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary w-100 mb-3">
+                <i class="bi bi-calendar-plus"></i> Book a Tour
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button class="btn btn-primary w-100 mb-3">
+                <i class="bi bi-star"></i> Leave a Review
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upcoming Bookings -->
+        <div class="dashboard-card" id="bookings">
+          <h4 style="margin-bottom: 20px;">Upcoming Bookings</h4>
+          
+          <div class="booking-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Great Santa Cruz Island Tour</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person-circle"></i> Guide: Maria Santos<br>
+                  <i class="bi bi-calendar3"></i> Date: October 20, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 9:00 AM - 3:00 PM
+                </p>
+                <span class="status-badge status-confirmed">Confirmed</span>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #667eea; margin-bottom: 15px;">₱2,000</h4>
+                <button class="btn btn-primary btn-sm">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Cultural Heritage Tour</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person-circle"></i> Guide: Juan dela Cruz<br>
+                  <i class="bi bi-calendar3"></i> Date: October 25, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 10:00 AM - 2:00 PM
+                </p>
+                <span class="status-badge status-pending">Pending Confirmation</span>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #667eea; margin-bottom: 15px;">₱1,500</h4>
+                <button class="btn btn-primary btn-sm">View Details</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="booking-card">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 style="margin-bottom: 10px;">Food Tour Experience</h5>
+                <p style="color: #666; margin-bottom: 10px;">
+                  <i class="bi bi-person-circle"></i> Guide: Carlos Reyes<br>
+                  <i class="bi bi-calendar3"></i> Date: October 28, 2024<br>
+                  <i class="bi bi-clock"></i> Time: 5:00 PM - 8:00 PM
+                </p>
+                <span class="status-badge status-confirmed">Confirmed</span>
+              </div>
+              <div class="col-md-4 text-end">
+                <h4 style="color: #667eea; margin-bottom: 15px;">₱1,200</h4>
+                <button class="btn btn-primary btn-sm">View Details</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popular Destinations -->
+        <div class="dashboard-card" id="destinations">
+          <h4 style="margin-bottom: 20px;">Explore Popular Destinations</h4>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="destination-card">
+                <img src="assets/img/slider/slider-14.webp" alt="Destination" class="destination-img">
+                <div class="destination-content">
+                  <h6>Great Santa Cruz Island</h6>
+                  <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Famous pink sand beach</p>
+                  <button class="btn btn-primary btn-sm w-100">Book Tour</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="destination-card">
+                <img src="assets/img/slider/slider-13.webp" alt="Destination" class="destination-img">
+                <div class="destination-content">
+                  <h6>Fort Pilar</h6>
+                  <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Historic Spanish fortress</p>
+                  <button class="btn btn-primary btn-sm w-100">Book Tour</button>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="destination-card">
+                <img src="assets/img/slider/slider-16.webp" alt="Destination" class="destination-img">
+                <div class="destination-content">
+                  <h6>Paseo del Mar</h6>
+                  <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Beautiful waterfront</p>
+                  <button class="btn btn-primary btn-sm w-100">Book Tour</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="dashboard-card">
+          <h4 style="margin-bottom: 20px;">Recent Activity</h4>
+          <div style="border-left: 3px solid #667eea; padding-left: 20px;">
+            <div style="margin-bottom: 20px;">
+              <small style="color: #999;">2 days ago</small>
+              <p style="margin: 5px 0;">You booked a tour with <strong>Maria Santos</strong></p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <small style="color: #999;">5 days ago</small>
+              <p style="margin: 5px 0;">You left a 5-star review for <strong>Juan dela Cruz</strong></p>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <small style="color: #999;">1 week ago</small>
+              <p style="margin: 5px 0;">You completed a tour at <strong>Merloquet Falls</strong></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

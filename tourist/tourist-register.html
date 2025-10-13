@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Tourist Registration - Tourismo Zamboanga</title>
+  <meta name="description" content="Register as a tourist to book tours">
+  <meta name="keywords" content="tourist registration, Zamboanga tours">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/css/register.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <div class="register-container" data-aos="fade-up">
+    <a href="index.html" class="back-link"><i class="bi bi-arrow-left"></i> Back to Home</a>
+    
+    <div class="register-header">
+      <h2>Create Tourist Account</h2>
+      <p style="color: #666;">Join thousands of happy tourists exploring Zamboanga</p>
+    </div>
+
+    <form id="registerForm" onsubmit="return handleRegister(event)">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Juan" required>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Dela Cruz" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="juan@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" class="form-control" placeholder="+63 917 123 4567" required>
+      </div>
+
+      <div class="form-group">
+        <label for="country">Country</label>
+        <select id="country" name="country" class="form-control" required>
+          <option value="">Select Country</option>
+          <option value="Philippines">Philippines</option>
+          <option value="USA">United States</option>
+          <option value="Japan">Japan</option>
+          <option value="Korea">South Korea</option>
+          <option value="China">China</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Minimum 8 characters" required minlength="8">
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Re-enter password" required>
+      </div>
+
+      <div class="form-group">
+        <label style="display: flex; align-items: start; gap: 10px; cursor: pointer;">
+          <input type="checkbox" required style="margin-top: 4px;">
+          <span style="font-size: 14px; color: #666;">I agree to the <a href="#" style="color: #667eea;">Terms and Conditions</a> and <a href="#" style="color: #667eea;">Privacy Policy</a></span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn-register">Create Account</button>
+    </form>
+
+    <div class="login-link">
+      Already have an account? <a href="tourist-login.html">Login here</a>
+    </div>
+  </div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+
+  <script>
+    AOS.init();
+
+    function handleRegister(event) {
+      event.preventDefault();
+      
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return false;
+      }
+
+      // In production, this would send data to backend
+      alert('Registration successful! Please login to continue.');
+      window.location.href = 'tourist-login.html';
+
+      return false;
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Admin Dashboard - Tourismo Zamboanga</title>
+
+  <!-- Favicons -->
+  <link href="../assets/img/favicon.png" rel="icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS -->
+  <link href="../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Admin CSS -->
+  <link href="../assets/css/admin.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- Admin Header -->
+  <div class="admin-header">
+    <div class="container-fluid">
+      <div class="admin-nav">
+        <a href="dashboard.html" class="admin-logo">
+          <i class="bi bi-shield-check"></i> Tourismo Admin
+        </a>
+        <div class="admin-user">
+          <span>Admin User</span>
+          <div class="admin-avatar">A</div>
+          <a href="admin-login.html" style="color: white; text-decoration: none; margin-left: 15px;">
+            <i class="bi bi-box-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <ul class="admin-menu">
+      <li><a href="dashboard.html" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li><a href="users.html"><i class="bi bi-people"></i> Users Management</a></li>
+      <li><a href="guides.html"><i class="bi bi-person-badge"></i> Tour Guides</a></li>
+      <li><a href="bookings.html"><i class="bi bi-calendar-check"></i> Bookings</a></li>
+      <li><a href="payments.html"><i class="bi bi-credit-card"></i> Payments</a></li>
+      <li><a href="destinations.html"><i class="bi bi-map"></i> Destinations</a></li>
+      <li><a href="packages.html"><i class="bi bi-box-seam"></i> Tour Packages</a></li>
+      <li><a href="reviews.html"><i class="bi bi-star"></i> Reviews</a></li>
+      <li><a href="reports.html"><i class="bi bi-graph-up"></i> Reports</a></li>
+      <li><a href="settings.html"><i class="bi bi-gear"></i> Settings</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="admin-main">
+    <h2 style="margin-bottom: 30px;">Dashboard Overview</h2>
+
+    <!-- Stats Row -->
+    <div class="row">
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-box primary">
+          <div class="stat-icon">
+            <i class="bi bi-people"></i>
+          </div>
+          <div class="stat-number">1,245</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-box success">
+          <div class="stat-icon">
+            <i class="bi bi-person-badge"></i>
+          </div>
+          <div class="stat-number">52</div>
+          <div class="stat-label">Active Guides</div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-box warning">
+          <div class="stat-icon">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+          <div class="stat-number">387</div>
+          <div class="stat-label">Total Bookings</div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <div class="stat-box danger">
+          <div class="stat-icon">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="stat-number">₱458K</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h4>Recent Bookings</h4>
+            <a href="bookings.html" class="btn-admin primary">View All</a>
+          </div>
+          <div class="admin-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Tourist</th>
+                  <th>Guide</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#BK-1001</td>
+                  <td>John Smith</td>
+                  <td>Maria Santos</td>
+                  <td>Oct 20, 2024</td>
+                  <td>₱2,000</td>
+                  <td><span class="badge-admin success">Confirmed</span></td>
+                  <td>
+                    <button class="btn-admin primary"><i class="bi bi-eye"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>#BK-1002</td>
+                  <td>Sarah Johnson</td>
+                  <td>Juan dela Cruz</td>
+                  <td>Oct 22, 2024</td>
+                  <td>₱1,500</td>
+                  <td><span class="badge-admin warning">Pending</span></td>
+                  <td>
+                    <button class="btn-admin primary"><i class="bi bi-eye"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>#BK-1003</td>
+                  <td>Michael Chen</td>
+                  <td>Carlos Reyes</td>
+                  <td>Oct 25, 2024</td>
+                  <td>₱2,200</td>
+                  <td><span class="badge-admin success">Confirmed</span></td>
+                  <td>
+                    <button class="btn-admin primary"><i class="bi bi-eye"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>#BK-1004</td>
+                  <td>Emma Wilson</td>
+                  <td>Rosa Martinez</td>
+                  <td>Oct 28, 2024</td>
+                  <td>₱1,800</td>
+                  <td><span class="badge-admin info">Completed</span></td>
+                  <td>
+                    <button class="btn-admin primary"><i class="bi bi-eye"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>#BK-1005</td>
+                  <td>David Park</td>
+                  <td>Miguel Torres</td>
+                  <td>Oct 30, 2024</td>
+                  <td>₱2,400</td>
+                  <td><span class="badge-admin warning">Pending</span></td>
+                  <td>
+                    <button class="btn-admin primary"><i class="bi bi-eye"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h4>Pending Actions</h4>
+          </div>
+          <div style="padding: 10px 0;">
+            <div style="padding: 15px; border-left: 4px solid #f39c12; background: #fff3cd; border-radius: 5px; margin-bottom: 15px;">
+              <strong>8 Guide Applications</strong>
+              <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #856404;">Awaiting verification</p>
+            </div>
+            <div style="padding: 15px; border-left: 4px solid #e74c3c; background: #f8d7da; border-radius: 5px; margin-bottom: 15px;">
+              <strong>3 Payment Disputes</strong>
+              <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #721c24;">Requires attention</p>
+            </div>
+            <div style="padding: 15px; border-left: 4px solid #3498db; background: #d1ecf1; border-radius: 5px; margin-bottom: 15px;">
+              <strong>12 New Reviews</strong>
+              <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #0c5460;">Pending moderation</p>
+            </div>
+            <div style="padding: 15px; border-left: 4px solid #27ae60; background: #d4edda; border-radius: 5px;">
+              <strong>5 Refund Requests</strong>
+              <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #155724;">Needs processing</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card" style="margin-top: 20px;">
+          <div class="admin-card-header">
+            <h4>Quick Stats</h4>
+          </div>
+          <div style="padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ecf0f1;">
+              <span>Today's Bookings</span>
+              <strong style="color: #27ae60;">15</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ecf0f1;">
+              <span>Active Tours</span>
+              <strong style="color: #3498db;">8</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ecf0f1;">
+              <span>New Users (Week)</span>
+              <strong style="color: #f39c12;">42</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px 0;">
+              <span>Revenue (Month)</span>
+              <strong style="color: #e74c3c;">₱125,400</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Guides -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h4>Top Performing Guides</h4>
+        <a href="guides.html" class="btn-admin primary">View All</a>
+      </div>
+      <div class="row">
+        <div class="col-md-3">
+          <div style="text-align: center; padding: 20px; border: 1px solid #ecf0f1; border-radius: 10px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #3498db; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem;">M</div>
+            <h5>Maria Santos</h5>
+            <div class="rating-stars" style="color: #ffc107; margin: 10px 0;">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <p style="color: #7f8c8d; margin: 0;">650 Tours</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="text-align: center; padding: 20px; border: 1px solid #ecf0f1; border-radius: 10px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #27ae60; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem;">J</div>
+            <h5>Juan dela Cruz</h5>
+            <div class="rating-stars" style="color: #ffc107; margin: 10px 0;">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-half"></i>
+            </div>
+            <p style="color: #7f8c8d; margin: 0;">500 Tours</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="text-align: center; padding: 20px; border: 1px solid #ecf0f1; border-radius: 10px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #f39c12; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem;">C</div>
+            <h5>Carlos Reyes</h5>
+            <div class="rating-stars" style="color: #ffc107; margin: 10px 0;">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <p style="color: #7f8c8d; margin: 0;">420 Tours</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div style="text-align: center; padding: 20px; border: 1px solid #ecf0f1; border-radius: 10px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #e74c3c; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 2rem;">M</div>
+            <h5>Miguel Torres</h5>
+            <div class="rating-stars" style="color: #ffc107; margin: 10px 0;">
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <p style="color: #7f8c8d; margin: 0;">720 Tours</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Vendor JS -->
+  <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
