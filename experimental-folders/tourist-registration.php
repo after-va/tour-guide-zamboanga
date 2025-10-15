@@ -1,7 +1,7 @@
 <?php
 
 // $name_first, $name_second, $name_middle, $name_last, $name_suffix,$houseno, $street, $barangay, $city, $province, $country, $countrycode_ID,$phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email,$person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth,
-require_once "../classes/tourist.php";
+require_once "../assets/classes/tourist.php";
 
 $touristObj = new Tourist();
 
