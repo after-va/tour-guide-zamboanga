@@ -95,17 +95,29 @@ CREATE TABLE Role_Info (
 -- Person
 CREATE TABLE Person (
     person_ID INT AUTO_INCREMENT PRIMARY KEY,
-    role_ID INT,
     name_ID INT,
     person_Nationality VARCHAR(225),
     person_Gender VARCHAR(225),
-    person_CivilStatus VARCHAR(225),
     person_DateOfBirth DATE,
     person_RatingScore DECIMAL(2,1) NOT NULL DEFAULT 0.0,
-    contactinfo_ID INT, 
-    FOREIGN KEY (role_ID) REFERENCES Role_Info(role_ID),
+    contactinfo_ID INT,
     FOREIGN KEY (name_ID) REFERENCES Name_Info(name_ID),
     FOREIGN KEY (contactinfo_ID) REFERENCES Contact_Info(contactinfo_ID)
+);
+
+CREATE TABLE Account_Info (
+    account_ID INT AUTO_INCREMENT PRIMARY KEY,
+    person_ID INT,
+    role_ID INT,
+    account_email VARCHAR(100) NOT NULL UNIQUE,
+    account_Username VARCHAR(100) NOT NULL UNIQUE,
+    account_PasswordHash VARCHAR(255) NOT NULL,
+    account_CreationDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    account_UpdateDate DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    account_isActive BOOLEAN DEFAULT TRUE,
+    account_lastLogin DATETIME,
+    FOREIGN KEY (person_ID) REFERENCES Person(person_ID),
+    FOREIGN KEY (role_ID) REFERENCES Role_Info(role_ID)
 );
 
 -- Tour Spots
