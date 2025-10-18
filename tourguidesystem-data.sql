@@ -222,4 +222,15 @@ INSERT INTO country_code(countrycode_name, countrycode_number) VALUES
 ('Zimbabwe', '+263');
 
 
-INSERT INTO Role_Info(role_name) VALUES ('tourist', 'guide');
+INSERT INTO Role_Info (role_ID, role_name) VALUES 
+(1, 'Admin'),
+(2, 'Tour Guide'),
+(3, 'Tourist')
+ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
+
+INSERT INTO User_Status (status_ID, status_name) VALUES 
+(1, 'Active'),
+(2, 'Inactive'),
+(3, 'Suspended')
+ON DUPLICATE KEY UPDATE status_name = VALUES(status_name);
+

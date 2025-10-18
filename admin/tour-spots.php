@@ -32,6 +32,25 @@ $spots = $tourSpot->getAllTourSpots();
     <hr>
     
     <h2>All Tour Spots</h2>
+    
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success">
+            <?php 
+                echo $_SESSION['success']; 
+                unset($_SESSION['success']);
+            ?>
+        </div>
+    <?php endif; ?>
+    
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-error">
+            <?php 
+                echo $_SESSION['error']; 
+                unset($_SESSION['error']);
+            ?>
+        </div>
+    <?php endif; ?>
+    
     <p><a href="add-tour-spot.php">Add New Spot</a></p>
     
     <table border="1">
@@ -45,14 +64,14 @@ $spots = $tourSpot->getAllTourSpots();
         </tr>
         <?php foreach ($spots as $s): ?>
         <tr>
-            <td><?php echo $s['spots_ID']; ?></td>
-            <td><?php echo $s['spots_Name']; ?></td>
-            <td><?php echo $s['spots_Description']; ?></td>
-            <td><?php echo $s['spots_category']; ?></td>
-            <td><?php echo $s['spots_Address']; ?></td>
+            <td><?= $s['spots_ID']; ?></td>
+            <td><?= $s['spots_Name']; ?></td>
+            <td><?= $s['spots_Description']; ?></td>
+            <td><?= $s['spots_category']; ?></td>
+            <td><?= $s['spots_Address']; ?></td>
             <td>
-                <a href="edit-tour-spot.php?id=<?php echo $s['spots_ID']; ?>">Edit</a> |
-                <a href="delete-tour-spot.php?id=<?php echo $s['spots_ID']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
+                <a href="edit-tour-spot.php?id=<?= $s['spots_ID']; ?>">Edit</a> |
+                <a href="delete-tour-spot.php?id=<?= $s['spots_ID']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
             </td>
         </tr>
         <?php endforeach; ?>
