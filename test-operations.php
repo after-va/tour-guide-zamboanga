@@ -1,8 +1,5 @@
 <?php
-/**
- * Test Operations for Tour Guide System
- * This file tests basic operations of all classes
- */
+
 
 require_once "php/Database.php";
 require_once "php/User.php";
