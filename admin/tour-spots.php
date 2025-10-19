@@ -55,16 +55,16 @@ $spots = $tourSpot->getAllTourSpots();
     
     <table border="1">
         <tr>
-            <th>ID</th>
+            <th>No.</th>
             <th>Name</th>
             <th>Description</th>
             <th>Category</th>
             <th>Address</th>
             <th>Actions</th>
         </tr>
-        <?php foreach ($spots as $s): ?>
+        <?php $no = 1; foreach ($spots as $s):  ?>
         <tr>
-            <td><?= $s['spots_ID']; ?></td>
+            <td><?= $no++; ?></td>
             <td><?= $s['spots_Name']; ?></td>
             <td><?= $s['spots_Description']; ?></td>
             <td><?= $s['spots_category']; ?></td>

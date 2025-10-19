@@ -36,25 +36,35 @@ $packages = $tourPackage->getAllTourPackages();
     
     <table border="1">
         <tr>
-            <th>ID</th>
+            <th>No.</th>
             <th>Package Name</th>
             <th>Description</th>
-            <th>Spot</th>
+            <th>Tour Spots</th>
             <th>Capacity</th>
             <th>Duration</th>
             <th>Actions</th>
         </tr>
-        <?php foreach ($packages as $p): ?>
+        <?php $no = 1; foreach ($packages as $p): ?>
         <tr>
-            <td><?php echo $p['tourPackage_ID']; ?></td>
-            <td><?php echo $p['tourPackage_Name']; ?></td>
-            <td><?php echo $p['tourPackage_Description']; ?></td>
-            <td><?php echo $p['spots_Name']; ?></td>
-            <td><?php echo $p['tourPackage_Capacity']; ?></td>
-            <td><?php echo $p['tourPackage_Duration']; ?></td>
+            <td><?= $no++; ?></td>
+            <td><?= htmlspecialchars($p['tourPackage_Name']); ?></td>
+            <td><?= htmlspecialchars($p['tourPackage_Description']); ?></td>
             <td>
-                <a href="edit-tour-package.php?id=<?php echo $p['tourPackage_ID']; ?>">Edit</a> |
-                <a href="delete-tour-package.php?id=<?php echo $p['tourPackage_ID']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
+                <?php if (!empty($p['spots'])): ?>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <?php foreach ($p['spots'] as $spot): ?>
+                            <li><?= htmlspecialchars($spot['spots_Name']); ?> <em style="color: #666;">(<?= $spot['spots_category']; ?>)</em></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <em style="color: #999;">No spots assigned</em>
+                <?php endif; ?>
+            </td>
+            <td><?= htmlspecialchars($p['tourPackage_Capacity']); ?></td>
+            <td><?= htmlspecialchars($p['tourPackage_Duration']); ?></td>
+            <td>
+                <a href="edit-tour-package.php?id=<?= $p['tourPackage_ID']; ?>">Edit</a> |
+                <a href="delete-tour-package.php?id=<?= $p['tourPackage_ID']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
             </td>
         </tr>
         <?php endforeach; ?>

@@ -11,9 +11,29 @@ require_once "../php/TourSpot.php";
 $success = "";
 $error = "";
 
-// Get all tour spots for dropdown
+// Get package ID from URL
+$tourPackage_ID = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if ($tourPackage_ID <= 0) {
+    header("Location: tour-packages.php");
+    exit();
+}
+
+// Get all tour spots for checkboxes
 $tourSpot = new TourSpot();
 $spots = $tourSpot->getAllTourSpots();
+
+// Get existing package data
+$tourPackageObj = new TourPackage();
+$package = $tourPackageObj->getTourPackageById($tourPackage_ID);
+
+if (!$package) {
+    header("Location: tour-packages.php");
+    exit();
+}
+
+// Get selected spot IDs
+$selectedSpotIDs = array_column($package['spots'], 'spots_ID');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tourPackage_Name = trim($_POST['tourPackage_Name']);
@@ -34,22 +54,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (empty($spots_IDs)) {
         $error = "Please select at least one tour spot";
     } else {
-        $tourPackage = new TourPackage();
-        $result = $tourPackage->createTourPackage($tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $spots_IDs);
+        $result = $tourPackageObj->updateTourPackage($tourPackage_ID, $tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $spots_IDs);
         
-        if ($result !== false) {
-            $success = "Tour package added successfully!";
-            $_POST = array();
+        if ($result) {
+            $success = "Tour package updated successfully!";
+            // Refresh package data
+            $package = $tourPackageObj->getTourPackageById($tourPackage_ID);
+            $selectedSpotIDs = array_column($package['spots'], 'spots_ID');
         } else {
-            $error = "Failed to add tour package. Please try again.";
+            $error = "Failed to update tour package. Please try again.";
         }
     }
+} else {
+    // Pre-fill form with existing data
+    $_POST['tourPackage_Name'] = $package['tourPackage_Name'];
+    $_POST['tourPackage_Description'] = $package['tourPackage_Description'];
+    $_POST['tourPackage_Capacity'] = $package['tourPackage_Capacity'];
+    $_POST['tourPackage_Duration'] = $package['tourPackage_Duration'];
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Tour Package - Admin</title>
+    <title>Edit Tour Package - Admin</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -143,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </style>
 </head>
 <body>
-    <h1>Add New Tour Package</h1>
+    <h1>Edit Tour Package</h1>
     
     <nav>
         <a href="dashboard.php">Dashboard</a> |
@@ -167,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         <?php if (empty($spots)): ?>
             <div class="alert alert-error">
-                <strong>No tour spots available!</strong> Please <a href="add-tour-spot.php">add a tour spot</a> first before creating packages.
+                <strong>No tour spots available!</strong> Please <a href="add-tour-spot.php">add a tour spot</a> first.
             </div>
         <?php endif; ?>
         
@@ -197,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <div style="margin-bottom: 8px;">
                                 <label style="font-weight: normal; cursor: pointer; display: flex; align-items: center;">
                                     <input type="checkbox" name="spots_IDs[]" value="<?php echo $spot['spots_ID']; ?>" 
-                                           <?php echo (isset($_POST['spots_IDs']) && in_array($spot['spots_ID'], $_POST['spots_IDs'])) ? 'checked' : ''; ?>
+                                           <?php echo in_array($spot['spots_ID'], $selectedSpotIDs) ? 'checked' : ''; ?>
                                            style="margin-right: 8px;">
                                     <span>
                                         <strong><?php echo htmlspecialchars($spot['spots_Name']); ?></strong>
@@ -230,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             
             <div class="form-group">
-                <button type="submit" class="btn btn-primary" <?php echo empty($spots) ? 'disabled' : ''; ?>>Add Tour Package</button>
+                <button type="submit" class="btn btn-primary" <?php echo empty($spots) ? 'disabled' : ''; ?>>Update Tour Package</button>
                 <a href="tour-packages.php" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
