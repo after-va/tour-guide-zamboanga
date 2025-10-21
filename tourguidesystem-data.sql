@@ -222,11 +222,6 @@ INSERT INTO country_code(countrycode_name, countrycode_number) VALUES
 ('Zimbabwe', '+263');
 
 
-INSERT INTO Role_Info (role_ID, role_name) VALUES 
-(1, 'Admin'),
-(2, 'Tour Guide'),
-(3, 'Tourist')
-ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
 
 INSERT INTO User_Status (status_ID, status_name) VALUES 
 (1, 'Active'),
@@ -234,3 +229,35 @@ INSERT INTO User_Status (status_ID, status_name) VALUES
 (3, 'Suspended')
 ON DUPLICATE KEY UPDATE status_name = VALUES(status_name);
 
+-- Insert default roles
+INSERT INTO Role_Info (role_name) VALUES 
+('Admin'),
+('Tour Guide'),
+('Tourist')
+ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
+
+-- Insert default payment methods
+INSERT INTO Payment_Method (method_name, method_type, processing_fee) VALUES
+('Credit Card', 'card', 2.50),
+('Debit Card', 'card', 2.50),
+('GCash', 'ewallet', 1.00),
+('PayMaya', 'ewallet', 1.00),
+('Bank Transfer', 'bank', 0.00),
+('Cash', 'cash', 0.00)
+ON DUPLICATE KEY UPDATE method_name = VALUES(method_name);
+
+-- Insert default system settings
+INSERT INTO System_Settings (setting_key, setting_value, setting_type, description) VALUES
+('site_name', 'Tourismo Zamboanga', 'text', 'Website name'),
+('site_email', 'info@tourismozamboanga.com', 'email', 'Contact email'),
+('booking_fee', '200', 'number', 'Service fee per booking in PHP'),
+('cancellation_hours', '24', 'number', 'Hours before tour to allow cancellation'),
+('max_booking_days', '90', 'number', 'Maximum days in advance for booking'),
+('min_booking_hours', '24', 'number', 'Minimum hours in advance for booking')
+ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
+
+
+INSERT INTO tour_spots(spots_Name, spots_Description, spots_category, spots_Address, spots_GoogleLink) VALUES 
+('Great Santa Cruz Island (Pink Sand Beach)', 'Famous for its unique pink-hued sand, which gets its color from crushed red organ pipe corals mixing with the white sand. It\'s a great spot for swimming, picnicking, and has a mangrove lagoon tour.', 'Beach', 'Zamboanga City', 'https://www.google.com/maps/place/Great+Santa+Cruz+Island+(Pink+Sand+Beach)/@10.283333333333333,122.91666666666667,17z/data=!3m1!4b1!4m5!3m4!1s0x3352b4c0b0b0b0b0:0x3352b4c0b0b0b0b0!8m2!3d10.283333333333333!4d122.91666666666667'), 
+('Fort Pilar','A 17th-century military defense fortress built by the Spanish. It is now a Latin American-style outdoor shrine dedicated to the Our Lady of the Pillar and houses the National Museum Western-Southern Mindanao Regional Museum.','Historical','N.S. Valderosa St., Zamboanga City','https://maps.app.goo.gl/KfRWjCMRfhtMSn9Z7'),
+('Once Islas (Eleven Islands)','A new eco-cultural island hopping destination with pristine, uncrowded islands like Bisaya-Bisaya and Baung-Baung, offering clear waters and white-sand beaches.','Beach','The islands are off the coast of the city, accessible from a separate port, usually in the East Coast area (e.g., Barangay Panubigan or similar).','https://maps.app.goo.gl/89793RAZPoypQHtY8'),
