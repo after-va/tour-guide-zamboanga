@@ -4,21 +4,22 @@ require_once "Database.php";
 
 class TourPackage extends Database {
     
-    // Create a new tour package with multiple spots
-    public function createTourPackage($tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $spots_IDs = []) {
+    // Create a new tour package with detailed itinerary
+    public function createTourPackage($tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $tourPackage_TotalDays, $itinerary_items = []) {
         try {
             $conn = $this->connect();
             $conn->beginTransaction();
             
             // Insert tour package
-            $sql = "INSERT INTO Tour_Package (tourPackage_Name, tourPackage_Description, tourPackage_Capacity, tourPackage_Duration) 
-                    VALUES (:tourPackage_Name, :tourPackage_Description, :tourPackage_Capacity, :tourPackage_Duration)";
+            $sql = "INSERT INTO Tour_Package (tourPackage_Name, tourPackage_Description, tourPackage_Capacity, tourPackage_Duration, tourPackage_TotalDays) 
+                    VALUES (:tourPackage_Name, :tourPackage_Description, :tourPackage_Capacity, :tourPackage_Duration, :tourPackage_TotalDays)";
             
             $query = $conn->prepare($sql);
             $query->bindParam(":tourPackage_Name", $tourPackage_Name);
             $query->bindParam(":tourPackage_Description", $tourPackage_Description);
             $query->bindParam(":tourPackage_Capacity", $tourPackage_Capacity);
             $query->bindParam(":tourPackage_Duration", $tourPackage_Duration);
+            $query->bindParam(":tourPackage_TotalDays", $tourPackage_TotalDays);
             
             if (!$query->execute()) {
                 $conn->rollBack();
@@ -27,18 +28,26 @@ class TourPackage extends Database {
             
             $packageId = $conn->lastInsertId();
             
-            // Insert package spots if provided
-            if (!empty($spots_IDs) && is_array($spots_IDs)) {
-                $spotSql = "INSERT INTO Package_Spots (tourPackage_ID, spots_ID, spot_order) VALUES (:packageId, :spotId, :order)";
-                $spotQuery = $conn->prepare($spotSql);
+            // Insert itinerary items if provided
+            if (!empty($itinerary_items) && is_array($itinerary_items)) {
+                $itinerarySql = "INSERT INTO Tour_Package_Itinerary 
+                                (tourPackage_ID, spots_ID, day_number, sequence_order, start_time, end_time, activity_description, notes) 
+                                VALUES (:packageId, :spotId, :dayNumber, :sequenceOrder, :startTime, :endTime, :activityDescription, :notes)";
+                $itineraryQuery = $conn->prepare($itinerarySql);
                 
-                foreach ($spots_IDs as $index => $spotId) {
-                    $spotQuery->bindParam(":packageId", $packageId);
-                    $spotQuery->bindParam(":spotId", $spotId);
-                    $order = $index + 1;
-                    $spotQuery->bindParam(":order", $order);
+                foreach ($itinerary_items as $item) {
+                    $itineraryQuery->bindParam(":packageId", $packageId);
+                    // Allow NULL for spots_ID (for break times like Lunch, Break, Sleep)
+                    $spotId = !empty($item['spots_ID']) ? $item['spots_ID'] : null;
+                    $itineraryQuery->bindParam(":spotId", $spotId, PDO::PARAM_INT);
+                    $itineraryQuery->bindParam(":dayNumber", $item['day_number']);
+                    $itineraryQuery->bindParam(":sequenceOrder", $item['sequence_order']);
+                    $itineraryQuery->bindParam(":startTime", $item['start_time']);
+                    $itineraryQuery->bindParam(":endTime", $item['end_time']);
+                    $itineraryQuery->bindParam(":activityDescription", $item['activity_description']);
+                    $itineraryQuery->bindParam(":notes", $item['notes']);
                     
-                    if (!$spotQuery->execute()) {
+                    if (!$itineraryQuery->execute()) {
                         $conn->rollBack();
                         return false;
                     }
@@ -56,7 +65,7 @@ class TourPackage extends Database {
         }
     }
     
-    // Get all tour packages with their spots
+    // Get all tour packages with their itinerary
     public function getAllTourPackages() {
         $sql = "SELECT tp.*
                 FROM Tour_Package tp
@@ -66,11 +75,10 @@ class TourPackage extends Database {
         if ($query->execute()) {
             $packages = $query->fetchAll();
             
-            // Get spots for each package
+            // Get itinerary for each package
             foreach ($packages as &$package) {
-                $package['spots'] = $this->getPackageSpots($package['tourPackage_ID']);
-                // For backward compatibility, set first spot name
-                $package['spots_Name'] = !empty($package['spots']) ? $package['spots'][0]['spots_Name'] : 'No spots';
+                $package['itinerary'] = $this->getPackageItinerary($package['tourPackage_ID']);
+                $package['total_spots'] = count($package['itinerary']);
             }
             
             return $packages;
@@ -78,7 +86,7 @@ class TourPackage extends Database {
         return [];
     }
     
-    // Get tour package by ID with all spots
+    // Get tour package by ID with full itinerary
     public function getTourPackageById($tourPackage_ID) {
         $sql = "SELECT tp.*
                 FROM Tour_Package tp
@@ -90,15 +98,15 @@ class TourPackage extends Database {
         if ($query->execute()) {
             $package = $query->fetch();
             if ($package) {
-                $package['spots'] = $this->getPackageSpots($tourPackage_ID);
+                $package['itinerary'] = $this->getPackageItinerary($tourPackage_ID);
             }
             return $package;
         }
         return null;
     }
     
-    // Update tour package with multiple spots
-    public function updateTourPackage($tourPackage_ID, $tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $spots_IDs = []) {
+    // Update tour package with detailed itinerary
+    public function updateTourPackage($tourPackage_ID, $tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, $tourPackage_Duration, $tourPackage_TotalDays, $itinerary_items = []) {
         try {
             $conn = $this->connect();
             $conn->beginTransaction();
@@ -108,7 +116,8 @@ class TourPackage extends Database {
                     SET tourPackage_Name = :tourPackage_Name, 
                         tourPackage_Description = :tourPackage_Description, 
                         tourPackage_Capacity = :tourPackage_Capacity, 
-                        tourPackage_Duration = :tourPackage_Duration
+                        tourPackage_Duration = :tourPackage_Duration,
+                        tourPackage_TotalDays = :tourPackage_TotalDays
                     WHERE tourPackage_ID = :tourPackage_ID";
             
             $query = $conn->prepare($sql);
@@ -117,30 +126,39 @@ class TourPackage extends Database {
             $query->bindParam(":tourPackage_Description", $tourPackage_Description);
             $query->bindParam(":tourPackage_Capacity", $tourPackage_Capacity);
             $query->bindParam(":tourPackage_Duration", $tourPackage_Duration);
+            $query->bindParam(":tourPackage_TotalDays", $tourPackage_TotalDays);
             
             if (!$query->execute()) {
                 $conn->rollBack();
                 return false;
             }
             
-            // Delete existing package spots
-            $deleteSql = "DELETE FROM Package_Spots WHERE tourPackage_ID = :tourPackage_ID";
+            // Delete existing itinerary items
+            $deleteSql = "DELETE FROM Tour_Package_Itinerary WHERE tourPackage_ID = :tourPackage_ID";
             $deleteQuery = $conn->prepare($deleteSql);
             $deleteQuery->bindParam(":tourPackage_ID", $tourPackage_ID);
             $deleteQuery->execute();
             
-            // Insert new package spots
-            if (!empty($spots_IDs) && is_array($spots_IDs)) {
-                $spotSql = "INSERT INTO Package_Spots (tourPackage_ID, spots_ID, spot_order) VALUES (:packageId, :spotId, :order)";
-                $spotQuery = $conn->prepare($spotSql);
+            // Insert new itinerary items
+            if (!empty($itinerary_items) && is_array($itinerary_items)) {
+                $itinerarySql = "INSERT INTO Tour_Package_Itinerary 
+                                (tourPackage_ID, spots_ID, day_number, sequence_order, start_time, end_time, activity_description, notes) 
+                                VALUES (:packageId, :spotId, :dayNumber, :sequenceOrder, :startTime, :endTime, :activityDescription, :notes)";
+                $itineraryQuery = $conn->prepare($itinerarySql);
                 
-                foreach ($spots_IDs as $index => $spotId) {
-                    $spotQuery->bindParam(":packageId", $tourPackage_ID);
-                    $spotQuery->bindParam(":spotId", $spotId);
-                    $order = $index + 1;
-                    $spotQuery->bindParam(":order", $order);
+                foreach ($itinerary_items as $item) {
+                    $itineraryQuery->bindParam(":packageId", $tourPackage_ID);
+                    // Allow NULL for spots_ID (for break times like Lunch, Break, Sleep)
+                    $spotId = !empty($item['spots_ID']) ? $item['spots_ID'] : null;
+                    $itineraryQuery->bindParam(":spotId", $spotId, PDO::PARAM_INT);
+                    $itineraryQuery->bindParam(":dayNumber", $item['day_number']);
+                    $itineraryQuery->bindParam(":sequenceOrder", $item['sequence_order']);
+                    $itineraryQuery->bindParam(":startTime", $item['start_time']);
+                    $itineraryQuery->bindParam(":endTime", $item['end_time']);
+                    $itineraryQuery->bindParam(":activityDescription", $item['activity_description']);
+                    $itineraryQuery->bindParam(":notes", $item['notes']);
                     
-                    if (!$spotQuery->execute()) {
+                    if (!$itineraryQuery->execute()) {
                         $conn->rollBack();
                         return false;
                     }
@@ -166,13 +184,15 @@ class TourPackage extends Database {
         return $query->execute();
     }
     
-    // Get all spots for a specific package
-    public function getPackageSpots($tourPackage_ID) {
-        $sql = "SELECT ts.*, ps.spot_order
-                FROM Package_Spots ps
-                INNER JOIN Tour_Spots ts ON ps.spots_ID = ts.spots_ID
-                WHERE ps.tourPackage_ID = :tourPackage_ID
-                ORDER BY ps.spot_order ASC";
+    // Get full itinerary for a specific package
+    public function getPackageItinerary($tourPackage_ID) {
+        $sql = "SELECT tpi.*, ts.spots_Name, ts.spots_Description, ts.spots_category, ts.spots_Address, ts.spots_GoogleLink,
+                       TIME_FORMAT(tpi.start_time, '%h:%i %p') as start_time_formatted,
+                       TIME_FORMAT(tpi.end_time, '%h:%i %p') as end_time_formatted
+                FROM Tour_Package_Itinerary tpi
+                INNER JOIN Tour_Spots ts ON tpi.spots_ID = ts.spots_ID
+                WHERE tpi.tourPackage_ID = :tourPackage_ID
+                ORDER BY tpi.day_number ASC, tpi.sequence_order ASC";
         
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":tourPackage_ID", $tourPackage_ID);
@@ -181,6 +201,22 @@ class TourPackage extends Database {
             return $query->fetchAll();
         }
         return [];
+    }
+    
+    // Get itinerary grouped by day
+    public function getPackageItineraryByDay($tourPackage_ID) {
+        $itinerary = $this->getPackageItinerary($tourPackage_ID);
+        $grouped = [];
+        
+        foreach ($itinerary as $item) {
+            $day = $item['day_number'];
+            if (!isset($grouped[$day])) {
+                $grouped[$day] = [];
+            }
+            $grouped[$day][] = $item;
+        }
+        
+        return $grouped;
     }
     
     // Get available schedules for a package

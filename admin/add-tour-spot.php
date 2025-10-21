@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Initialize character counters
         document.addEventListener('DOMContentLoaded', function() {
             updateCharCounter('spots_Name', 'name-counter', 225);
-            updateCharCounter('spots_Description', 'description-counter', 500);
+            updateCharCounter('spots_Description', 'description-counter', 225);
             updateCharCounter('spots_Address', 'address-counter', 225);
             updateCharCounter('spots_GoogleLink', 'link-counter', 500);
         });
