@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $db = new Database();
             $conn = $db->connect();
             
-            // Check if username or email already exists
+            // Check if username already exists
             $checkSql = "SELECT COUNT(*) as count FROM User_Login WHERE username = :username";
             $checkQuery = $conn->prepare($checkSql);
             $checkQuery->bindParam(":username", $username);
@@ -61,16 +61,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($result['count'] > 0) {
                 $error = "Username already exists. Please choose another.";
             } else {
-                $conn->beginTransaction();
+                // Check for duplicate email
+                $emailCheckSql = "SELECT COUNT(*) as count FROM Contact_Info WHERE contactinfo_email = :email";
+                $emailCheckQuery = $conn->prepare($emailCheckSql);
+                $emailCheckQuery->bindParam(":email", $email);
+                $emailCheckQuery->execute();
+                $emailResult = $emailCheckQuery->fetch();
                 
-                // Get Philippines country code
-                $countrySql = "SELECT countrycode_ID FROM Country_Code WHERE countrycode_name = 'Philippines' LIMIT 1";
-                $countryQuery = $conn->prepare($countrySql);
-                $countryQuery->execute();
-                $country = $countryQuery->fetch();
-                $countrycode_ID = $country['countrycode_ID'];
-                
-                // Insert phone number
+                if ($emailResult['count'] > 0) {
+                    $error = "This email address is already registered. Please use a different email or login to your existing account.";
+                } else {
+                    // Get Philippines country code
+                    $countrySql = "SELECT countrycode_ID FROM Country_Code WHERE countrycode_name = 'Philippines' LIMIT 1";
+                    $countryQuery = $conn->prepare($countrySql);
+                    $countryQuery->execute();
+                    $country = $countryQuery->fetch();
+                    $countrycode_ID = $country['countrycode_ID'];
+                    
+                    // Check for duplicate phone number
+                    $phoneCheckSql = "SELECT COUNT(*) as count FROM Phone_Number WHERE countrycode_ID = :countrycode_ID AND phone_number = :phone_number";
+                    $phoneCheckQuery = $conn->prepare($phoneCheckSql);
+                    $phoneCheckQuery->bindParam(":countrycode_ID", $countrycode_ID);
+                    $phoneCheckQuery->bindParam(":phone_number", $phone_number);
+                    $phoneCheckQuery->execute();
+                    $phoneResult = $phoneCheckQuery->fetch();
+                    
+                    if ($phoneResult['count'] > 0) {
+                        $error = "This phone number is already registered. Please use a different phone number or login to your existing account.";
+                    } else {
+                        // Check for duplicate person (same name, birthdate, and gender)
+                        $personCheckSql = "SELECT COUNT(*) as count FROM Person p 
+                                          INNER JOIN Name_Info n ON p.name_ID = n.name_ID 
+                                          WHERE n.name_first = :name_first 
+                                          AND (n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL))
+                                          AND n.name_last = :name_last 
+                                          AND p.person_DateOfBirth = :dob
+                                          AND p.person_Gender = :gender";
+                        $personCheckQuery = $conn->prepare($personCheckSql);
+                        $personCheckQuery->bindParam(":name_first", $name_first);
+                        $personCheckQuery->bindParam(":name_middle", $name_middle);
+                        $personCheckQuery->bindParam(":name_last", $name_last);
+                        $personCheckQuery->bindParam(":dob", $date_of_birth);
+                        $personCheckQuery->bindParam(":gender", $gender);
+                        $personCheckQuery->execute();
+                        $personResult = $personCheckQuery->fetch();
+                        
+                        if ($personResult['count'] > 0) {
+                            $error = "An account with the same name, birthdate, and gender already exists. If this is you, please login to your existing account.";
+                        } else {
+                            $conn->beginTransaction();
+                            
+                            // Insert phone number
                 $phoneSql = "INSERT INTO Phone_Number (countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
                 $phoneQuery = $conn->prepare($phoneSql);
                 $phoneQuery->bindParam(":countrycode_ID", $countrycode_ID);
@@ -165,6 +206,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 $success = "Registration successful! Your application is pending admin approval. You will be notified once approved.";
                 $step = 3; // Show success message
+                        }
+                    }
+                }
             }
         } catch (Exception $e) {
             if ($conn->inTransaction()) {

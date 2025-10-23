@@ -4,7 +4,64 @@ require_once "Database.php";
 
 class Tourist extends Database {
     
-    // Check if tourist exists
+    // Check if email already exists
+    public function checkEmailExists($email) {
+        $sql = "SELECT COUNT(*) AS total FROM Contact_Info WHERE contactinfo_email = :email";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":email", $email);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+    
+    // Check if phone number already exists
+    public function checkPhoneExists($countrycode_ID, $phone_number) {
+        $sql = "SELECT COUNT(*) AS total FROM Phone_Number 
+                WHERE countrycode_ID = :countrycode_ID AND phone_number = :phone_number";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":countrycode_ID", $countrycode_ID);
+        $query->bindParam(":phone_number", $phone_number);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+    
+    // Check if person with same name and birthdate exists
+    public function checkPersonExists($name_first, $name_second, $name_middle, $name_last, $name_suffix, 
+                                     $person_dateofbirth, $person_gender) {
+        $sql = "SELECT COUNT(*) AS total FROM Person p 
+                INNER JOIN Name_Info n ON p.name_ID = n.name_ID 
+                WHERE n.name_first = :name_first 
+                AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) 
+                AND (n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL)) 
+                AND n.name_last = :name_last 
+                AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL)) 
+                AND p.person_DateOfBirth = :person_dateofbirth
+                AND p.person_Gender = :person_gender";
+        
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":name_first", $name_first);
+        $query->bindParam(":name_second", $name_second);
+        $query->bindParam(":name_middle", $name_middle);
+        $query->bindParam(":name_last", $name_last);
+        $query->bindParam(":name_suffix", $name_suffix);
+        $query->bindParam(":person_dateofbirth", $person_dateofbirth);
+        $query->bindParam(":person_gender", $person_gender);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+    
+    // Check if tourist exists (legacy method kept for compatibility)
     public function isTouristExist($name_first, $name_second, $name_middle, $name_last, $name_suffix, 
                                     $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth) {
         $sql = "SELECT COUNT(*) AS total FROM Person p 
@@ -44,6 +101,22 @@ class Tourist extends Database {
                                      $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship,
                                      $contactinfo_email, $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth,
                                      $username, $password) {
+        // Check for duplicate email
+        if ($this->checkEmailExists($contactinfo_email)) {
+            return "email_exists";
+        }
+        
+        // Check for duplicate phone number
+        if ($this->checkPhoneExists($countrycode_ID, $phone_number)) {
+            return "phone_exists";
+        }
+        
+        // Check for duplicate person (same name, birthdate, and gender)
+        if ($this->checkPersonExists($name_first, $name_second, $name_middle, $name_last, $name_suffix, 
+                                     $person_dateofbirth, $person_gender)) {
+            return "person_exists";
+        }
+        
         $db = $this->connect();
         $db->beginTransaction();
         

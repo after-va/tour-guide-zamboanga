@@ -1,41 +1,109 @@
 <?php
 require_once "php/Tourist.php";
 
-$tourist = new Tourist();
-$countryCodes = $tourist->fetchCountryCode();
+$touristObj = new Tourist();
+$countryCodes = $touristObj->fetchCountryCode();
+$tourist = [];
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $result = $tourist->registerTourist(
-        $_POST['name_first'],
-        $_POST['name_second'] ?? null,
-        $_POST['name_middle'] ?? null,
-        $_POST['name_last'],
-        $_POST['name_suffix'] ?? null,
-        $_POST['houseno'],
-        $_POST['street'],
-        $_POST['barangay'],
-        $_POST['city'],
-        $_POST['province'],
-        $_POST['country'],
-        $_POST['countrycode_ID'],
-        $_POST['phone_number'],
-        $_POST['emergency_name'],
-        $_POST['emergency_countrycode_ID'],
-        $_POST['emergency_phonenumber'],
-        $_POST['emergency_relationship'],
-        $_POST['contactinfo_email'],
-        $_POST['person_nationality'],
-        $_POST['person_gender'],
-        $_POST['person_civilstatus'],
-        $_POST['person_dateofbirth'],
-        $_POST['username'],
-        $_POST['password']
-    );
-    
-    if ($result) {
-        $success = "Registration successful! You can now login.";
-    } else {
-        $error = "Registration failed. Please try again.";
+
+    $tourist["name_first"] = trim(htmlspecialchars($_POST["name_first"]));
+    $tourist["name_second"] = trim(htmlspecialchars($_POST["name_second"]));
+    $tourist["name_middle"] = trim(htmlspecialchars($_POST["name_middle"]));
+    $tourist["name_last"] = trim(htmlspecialchars($_POST["name_last"]));
+    $tourist["name_suffix"] = trim(htmlspecialchars($_POST["name_suffix"]));
+    $tourist["houseno"] = trim(htmlspecialchars($_POST["houseno"]));
+    $tourist["street"] = trim(htmlspecialchars($_POST["street"]));
+    $tourist["barangay"] = trim(htmlspecialchars($_POST["barangay"]));
+    $tourist["city"] = trim(htmlspecialchars($_POST["city"]));
+    $tourist["province"] = trim(htmlspecialchars($_POST["province"]));
+    $tourist["country"] = trim(htmlspecialchars($_POST["country"]));
+    $tourist["countrycode_ID"] = trim(htmlspecialchars($_POST["countrycode_ID"]));
+    $tourist["phone_number"] = trim(htmlspecialchars($_POST["phone_number"]));
+    $tourist["emergency_name"] = trim(htmlspecialchars($_POST["emergency_name"]));
+    $tourist["emergency_countrycode_ID"] = trim(htmlspecialchars($_POST["emergency_countrycode_ID"]));
+    $tourist["emergency_phonenumber"] = trim(htmlspecialchars($_POST["emergency_phonenumber"]));
+    $tourist["emergency_relationship"] = trim(htmlspecialchars($_POST["emergency_relationship"]));
+    $tourist["contactinfo_email"] = trim(htmlspecialchars($_POST["contactinfo_email"]));
+    $tourist["person_nationality"] = trim(htmlspecialchars($_POST["person_nationality"]));
+    $tourist["person_gender"] = trim(htmlspecialchars($_POST["person_gender"]));
+    $tourist["person_civilstatus"] = trim(htmlspecialchars($_POST["person_civilstatus"]));
+    $tourist["person_dateofbirth"] = trim(htmlspecialchars($_POST["person_dateofbirth"]));
+    $tourist["username"] = trim(htmlspecialchars($_POST["username"]));
+    $tourist["password"] = trim(htmlspecialchars($_POST["password"]));
+    $tourist["role_ID"] = trim(htmlspecialchars($_POST["role_ID"]));
+    $tourist["name_ID"] = trim(htmlspecialchars($_POST["name_ID"]));
+    $tourist["contactinfo_ID"] = trim(htmlspecialchars($_POST["contactinfo_ID"]));
+
+    if(empty($tourist["name_first"])){
+        $error = "First name is required.";
+    }
+
+    if(empty($tourist["name_last"])){
+        $error = "Last name is required.";
+    }
+
+    if(empty($tourist["person_dateofbirth"])){
+        $error = "Date of birth is required.";
+    }
+
+    if(empty($tourist["username"])){
+        $error = "Username is required.";
+    }
+
+    if(empty($tourist["password"])){
+        $error = "Password is required.";
+    }
+
+    if(empty($tourist["role_ID"])){
+        $error = "Role is required.";
+    }
+
+
+    if(empty($tourist["contactinfo_ID"])){
+        $error = "Contact info ID is required.";
+    }
+
+    if(!isset($error)){
+        $result = $touristObj->registerTourist(
+            $tourist['name_first'],
+            !empty($tourist['name_second']) ? $tourist['name_second'] : null,
+            !empty($tourist['name_middle']) ? $tourist['name_middle'] : null,
+            $tourist['name_last'],
+            !empty($tourist['name_suffix']) ? $tourist['name_suffix'] : null,
+            $tourist['houseno'],
+            $tourist['street'],
+            $tourist['barangay'],
+            $tourist['city'],
+            $tourist['province'],
+            $tourist['country'],
+            $tourist['countrycode_ID'],
+            $tourist['phone_number'],
+            $tourist['emergency_name'],
+            $tourist['emergency_countrycode_ID'],
+            $tourist['emergency_phonenumber'],
+            $tourist['emergency_relationship'],
+            $tourist['contactinfo_email'],
+            $tourist['person_nationality'],
+            $tourist['person_gender'],
+            $tourist['person_civilstatus'],
+            $tourist['person_dateofbirth'],
+            $tourist['username'],
+            $tourist['password']
+        );
+        
+        if ($result === true) {
+            $success = "Registration successful! You can now login.";
+        } elseif ($result === "email_exists") {
+            $error = "This email address is already registered. Please use a different email or login to your existing account.";
+        } elseif ($result === "phone_exists") {
+            $error = "This phone number is already registered. Please use a different phone number or login to your existing account.";
+        } elseif ($result === "person_exists") {
+            $error = "An account with the same name, birthdate, and gender already exists. If this is you, please login to your existing account.";
+        } else {
+            $error = "Registration failed. Please try again.";
+        }
     }
 }
 ?>
