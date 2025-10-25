@@ -9,13 +9,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = new User();
     $result = $user->login($username, $password);
     
-    if ($result && $result['role_ID'] == 3) {
-        $_SESSION['user_id'] = $result['person_ID'];
-        $_SESSION['username'] = $result['username'];
-        $_SESSION['role_id'] = $result['role_ID'];
-        $_SESSION['full_name'] = $result['full_name'];
-        header("Location: dashboard.php");
-        exit();
+    if ($result && isset($result['roles'])) {
+        // Check if user has tourist role (role_ID = 3)
+        $hasTouristRole = false;
+        $touristAccountRoleID = null;
+        foreach ($result['roles'] as $role) {
+            if ($role['role_ID'] == 3 && $role['is_active'] == 1) {
+                $hasTouristRole = true;
+                $touristAccountRoleID = $role['account_role_ID'];
+                break;
+            }
+        }
+        
+        if ($hasTouristRole) {
+            $_SESSION['user_id'] = $result['person_ID'];
+            $_SESSION['username'] = $result['username'];
+            $_SESSION['login_id'] = $result['login_ID'];
+            $_SESSION['role_id'] = 3;
+            $_SESSION['account_role_id'] = $touristAccountRoleID;
+            $_SESSION['full_name'] = $result['full_name'];
+            $_SESSION['roles'] = $result['roles'];
+            header("Location: dashboard.php");
+            exit();
+        } else {
+            $error = "Invalid credentials or not a tourist account";
+        }
     } else {
         $error = "Invalid credentials or not a tourist account";
     }

@@ -106,11 +106,10 @@ class Guide extends Database {
             }
             
             // Insert person
-            $sql = "INSERT INTO Person(role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) 
-                    VALUES (:role_ID, :name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) 
+                    VALUES (:name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
             
             $query = $db->prepare($sql);
-            $query->bindParam(":role_ID", $role_ID);
             $query->bindParam(":name_ID", $name_ID);
             $query->bindParam(":person_nationality", $person_nationality);
             $query->bindParam(":person_gender", $person_gender);
@@ -130,8 +129,21 @@ class Guide extends Database {
                 $query_login->bindParam(":password_hash", $password_hash);
                 
                 if ($query_login->execute()) {
-                    $db->commit();
-                    return true;
+                    $login_ID = $db->lastInsertId();
+                    
+                    // Add guide role to account
+                    $sql_role = "INSERT INTO Account_Role (login_ID, role_ID) VALUES (:login_ID, :role_ID)";
+                    $query_role = $db->prepare($sql_role);
+                    $query_role->bindParam(":login_ID", $login_ID);
+                    $query_role->bindParam(":role_ID", $role_ID);
+                    
+                    if ($query_role->execute()) {
+                        $db->commit();
+                        return true;
+                    } else {
+                        $db->rollBack();
+                        return false;
+                    }
                 } else {
                     $db->rollBack();
                     return false;
@@ -151,12 +163,14 @@ class Guide extends Database {
     // Get all guides
     public function getAllGuides() {
         $sql = "SELECT p.person_ID, CONCAT(n.name_first, ' ', n.name_last) as full_name, 
-                       p.person_RatingScore, ci.contactinfo_email, ph.phone_number
+                       ar.role_rating_score, ci.contactinfo_email, ph.phone_number, ar.account_role_ID
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
                 INNER JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
-                WHERE p.role_ID = 2";
+                INNER JOIN User_Login ul ON p.person_ID = ul.person_ID
+                INNER JOIN Account_Role ar ON ul.login_ID = ar.login_ID
+                WHERE ar.role_ID = 2 AND ar.is_active = 1";
         
         $query = $this->connect()->prepare($sql);
         if ($query->execute()) {
@@ -167,7 +181,7 @@ class Guide extends Database {
     
     // Get guide by ID
     public function getGuideById($guide_ID) {
-        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, e.*, em.*
+        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, e.*, em.*, ar.role_rating_score, ar.account_role_ID
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
                 INNER JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
@@ -175,7 +189,9 @@ class Guide extends Database {
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
                 LEFT JOIN Emergency_Info e ON ci.emergency_ID = e.emergency_ID
                 LEFT JOIN Phone_Number em ON e.phone_ID = em.phone_ID
-                WHERE p.person_ID = :guide_ID AND p.role_ID = 2";
+                INNER JOIN User_Login ul ON p.person_ID = ul.person_ID
+                INNER JOIN Account_Role ar ON ul.login_ID = ar.login_ID
+                WHERE p.person_ID = :guide_ID AND ar.role_ID = 2 AND ar.is_active = 1";
         
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":guide_ID", $guide_ID);

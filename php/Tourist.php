@@ -122,13 +122,10 @@ class Tourist extends Database {
         
         try {
             // Create name info
-            $name_ID = $this->addNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
+            $name_ID = $this->addgetNameID($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
             
             // Create contact info
-            $contactinfo_ID = $this->addContactInfo($houseno, $street, $barangay, $city, $province, $country,
-                                                     $countrycode_ID, $phone_number,
-                                                     $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship,
-                                                     $contactinfo_email, $db);
+            $contactinfo_ID = $this->addgetContactID($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID, $phone_number, $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $db);
             
             // Role ID for tourist is 3
             $role_ID = 3;
@@ -139,11 +136,10 @@ class Tourist extends Database {
             }
             
             // Insert person
-            $sql = "INSERT INTO Person(role_ID, name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) 
-                    VALUES (:role_ID, :name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID) 
+                    VALUES (:name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
             
             $query = $db->prepare($sql);
-            $query->bindParam(":role_ID", $role_ID);
             $query->bindParam(":name_ID", $name_ID);
             $query->bindParam(":person_nationality", $person_nationality);
             $query->bindParam(":person_gender", $person_gender);
@@ -163,8 +159,21 @@ class Tourist extends Database {
                 $query_login->bindParam(":password_hash", $password_hash);
                 
                 if ($query_login->execute()) {
-                    $db->commit();
-                    return true;
+                    $login_ID = $db->lastInsertId();
+                    
+                    // Add tourist role to account
+                    $sql_role = "INSERT INTO Account_Role (login_ID, role_ID) VALUES (:login_ID, :role_ID)";
+                    $query_role = $db->prepare($sql_role);
+                    $query_role->bindParam(":login_ID", $login_ID);
+                    $query_role->bindParam(":role_ID", $role_ID);
+                    
+                    if ($query_role->execute()) {
+                        $db->commit();
+                        return true;
+                    } else {
+                        $db->rollBack();
+                        return false;
+                    }
                 } else {
                     $db->rollBack();
                     return false;
@@ -184,12 +193,14 @@ class Tourist extends Database {
     // Get all tourists
     public function getAllTourists() {
         $sql = "SELECT p.person_ID, CONCAT(n.name_first, ' ', n.name_last) as full_name,
-                       ci.contactinfo_email, ph.phone_number, p.person_Nationality
+                       ci.contactinfo_email, ph.phone_number, p.person_Nationality, ar.account_role_ID
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
                 INNER JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
-                WHERE p.role_ID = 3
+                INNER JOIN User_Login ul ON p.person_ID = ul.person_ID
+                INNER JOIN Account_Role ar ON ul.login_ID = ar.login_ID
+                WHERE ar.role_ID = 3 AND ar.is_active = 1
                 ORDER BY p.person_ID DESC";
         
         $query = $this->connect()->prepare($sql);
@@ -201,7 +212,7 @@ class Tourist extends Database {
     
     // Get tourist by ID
     public function getTouristById($tourist_ID) {
-        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, e.*, em.*
+        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, e.*, em.*, ar.role_rating_score, ar.account_role_ID
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
                 INNER JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
@@ -209,7 +220,9 @@ class Tourist extends Database {
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
                 LEFT JOIN Emergency_Info e ON ci.emergency_ID = e.emergency_ID
                 LEFT JOIN Phone_Number em ON e.phone_ID = em.phone_ID
-                WHERE p.person_ID = :tourist_ID AND p.role_ID = 3";
+                INNER JOIN User_Login ul ON p.person_ID = ul.person_ID
+                INNER JOIN Account_Role ar ON ul.login_ID = ar.login_ID
+                WHERE p.person_ID = :tourist_ID AND ar.role_ID = 3 AND ar.is_active = 1";
         
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":tourist_ID", $tourist_ID);
@@ -231,7 +244,7 @@ class Tourist extends Database {
     }
     
     // Helper methods
-    private function addNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db) {
+    private function addgetNameID($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db) {
         $sql_select = "SELECT name_ID FROM name_info WHERE name_first = :name_first AND name_last = :name_last 
                        AND (name_second = :name_second OR (name_second IS NULL AND :name_second IS NULL)) 
                        AND (name_middle = :name_middle OR (name_middle IS NULL AND :name_middle IS NULL)) 
@@ -265,13 +278,10 @@ class Tourist extends Database {
         return false;
     }
     
-    private function addContactInfo($houseno, $street, $barangay, $city, $province, $country,
-                                    $countrycode_ID, $phone_number,
-                                    $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship,
-                                    $contactinfo_email, $db) {
-        $address_ID = $this->addAddress($houseno, $street, $barangay, $city, $province, $country, $db);
-        $phone_ID = $this->addPhoneNumber($countrycode_ID, $phone_number, $db);
-        $emergency_ID = $this->addEmergencyInfo($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
+    private function addgetContactID($houseno, $street, $barangay, $city, $province, $country, $countrycode_ID, $phone_number, $emergency_name,$emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $db) {
+        $address_ID = $this->addgetAddressID($houseno, $street, $barangay, $city, $province, $country, $db);
+        $phone_ID = $this->addgetPhoneID($countrycode_ID, $phone_number, $db);
+        $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
         
         if (!$address_ID || !$phone_ID || !$emergency_ID) {
             return false;
@@ -291,7 +301,7 @@ class Tourist extends Database {
         return false;
     }
     
-    private function addAddress($houseno, $street, $barangay, $city, $province, $country, $db) {
+    private function addgetAddressID($houseno, $street, $barangay, $city, $province, $country, $db) {
         $sql_select = "SELECT address_ID FROM address_info WHERE address_houseno=:houseno AND address_street=:street 
                        AND address_barangay=:barangay AND address_city=:city AND address_province=:province AND address_country=:country";
         $query_select = $db->prepare($sql_select);
@@ -324,7 +334,7 @@ class Tourist extends Database {
         return false;
     }
     
-    private function addPhoneNumber($countrycode_ID, $phone_number, $db) {
+    private function addgetPhoneID($countrycode_ID, $phone_number, $db) {
         $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID";
         $query_select = $db->prepare($sql_select);
         $query_select->bindParam(":countrycode_ID", $countrycode_ID);
@@ -347,8 +357,8 @@ class Tourist extends Database {
         return false;
     }
     
-    private function addEmergencyInfo($countrycode_ID, $phone_number, $ename, $erelationship, $db) {
-        $phone_ID = $this->addPhoneNumber($countrycode_ID, $phone_number, $db);
+    private function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship, $db) {
+        $phone_ID = $this->addgetPhoneID($countrycode_ID, $phone_number, $db);
         
         if (!$phone_ID) {
             return false;

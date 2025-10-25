@@ -76,7 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $countryQuery = $conn->prepare($countrySql);
                     $countryQuery->execute();
                     $country = $countryQuery->fetch();
-                    $countrycode_ID = $country['countrycode_ID'];
+                    
+                    if (!$country) {
+                        $error = "Country code for Philippines not found in database. Please contact administrator.";
+                    } else {
+                        $countrycode_ID = $country['countrycode_ID'];
                     
                     // Check for duplicate phone number
                     $phoneCheckSql = "SELECT COUNT(*) as count FROM Phone_Number WHERE countrycode_ID = :countrycode_ID AND phone_number = :phone_number";
@@ -207,6 +211,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $success = "Registration successful! Your application is pending admin approval. You will be notified once approved.";
                 $step = 3; // Show success message
                         }
+                    }
+                }
                     }
                 }
             }

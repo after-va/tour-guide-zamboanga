@@ -6,11 +6,10 @@ class User extends Database {
     
     // Login user
     public function login($username, $password) {
-        $sql = "SELECT ul.*, p.person_ID, p.role_ID, r.role_name,
+        $sql = "SELECT ul.*, p.person_ID,
                        CONCAT(n.name_first, ' ', n.name_last) as full_name
                 FROM User_Login ul
                 INNER JOIN Person p ON ul.person_ID = p.person_ID
-                INNER JOIN Role_Info r ON p.role_ID = r.role_ID
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
                 WHERE ul.username = :username AND ul.is_active = 1";
         
@@ -26,6 +25,9 @@ class User extends Database {
                 
                 // Log activity
                 $this->logActivity($user['person_ID'], 'login', 'User logged in');
+                
+                // Get user roles
+                $user['roles'] = $this->getUserRoles($user['login_ID']);
                 
                 return $user;
             }
@@ -58,10 +60,9 @@ class User extends Database {
     
     // Get user by ID
     public function getUserById($person_ID) {
-        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, r.role_name, ul.username, ul.last_login
+        $sql = "SELECT p.*, n.*, ci.*, a.*, ph.*, ul.username, ul.last_login, ul.login_ID
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
-                INNER JOIN Role_Info r ON p.role_ID = r.role_ID
                 LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Address_Info a ON ci.address_ID = a.address_ID
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
@@ -72,7 +73,11 @@ class User extends Database {
         $query->bindParam(":person_ID", $person_ID);
         
         if ($query->execute()) {
-            return $query->fetch();
+            $user = $query->fetch();
+            if ($user && isset($user['login_ID'])) {
+                $user['roles'] = $this->getUserRoles($user['login_ID']);
+            }
+            return $user;
         }
         return null;
     }
@@ -81,18 +86,21 @@ class User extends Database {
     public function getAllUsers() {
         $sql = "SELECT p.person_ID, 
                        CONCAT(n.name_first, ' ', n.name_last) as full_name,
-                       r.role_name,
                        ci.contactinfo_email,
                        ph.phone_number,
                        ul.username,
                        ul.last_login,
-                       ul.is_active
+                       ul.is_active,
+                       ul.login_ID,
+                       GROUP_CONCAT(r.role_name SEPARATOR ', ') as roles
                 FROM Person p
                 INNER JOIN Name_Info n ON p.name_ID = n.name_ID
-                INNER JOIN Role_Info r ON p.role_ID = r.role_ID
                 LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
                 LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
                 LEFT JOIN User_Login ul ON p.person_ID = ul.person_ID
+                LEFT JOIN Account_Role ar ON ul.login_ID = ar.login_ID AND ar.is_active = 1
+                LEFT JOIN Role_Info r ON ar.role_ID = r.role_ID
+                GROUP BY p.person_ID, ul.login_ID
                 ORDER BY p.person_ID DESC";
         
         $query = $this->connect()->prepare($sql);
@@ -126,6 +134,46 @@ class User extends Database {
         $sql = "SELECT COUNT(*) as count FROM User_Login WHERE username = :username";
         $query = $this->connect()->prepare($sql);
         $query->bindParam(":username", $username);
+        
+        if ($query->execute()) {
+            $result = $query->fetch();
+            return $result['count'] > 0;
+        }
+        return false;
+    }
+    
+    // Get user roles
+    public function getUserRoles($login_ID) {
+        $sql = "SELECT ar.account_role_ID, ar.role_ID, r.role_name, ar.role_rating_score, ar.is_active
+                FROM Account_Role ar
+                INNER JOIN Role_Info r ON ar.role_ID = r.role_ID
+                WHERE ar.login_ID = :login_ID";
+        
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":login_ID", $login_ID);
+        
+        if ($query->execute()) {
+            return $query->fetchAll();
+        }
+        return [];
+    }
+    
+    // Add role to user account
+    public function addUserRole($login_ID, $role_ID) {
+        $sql = "INSERT INTO Account_Role (login_ID, role_ID) VALUES (:login_ID, :role_ID)";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":login_ID", $login_ID);
+        $query->bindParam(":role_ID", $role_ID);
+        return $query->execute();
+    }
+    
+    // Check if user has specific role
+    public function hasRole($login_ID, $role_ID) {
+        $sql = "SELECT COUNT(*) as count FROM Account_Role 
+                WHERE login_ID = :login_ID AND role_ID = :role_ID AND is_active = 1";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":login_ID", $login_ID);
+        $query->bindParam(":role_ID", $role_ID);
         
         if ($query->execute()) {
             $result = $query->fetch();

@@ -268,3 +268,80 @@ INSERT INTO tour_spots(spots_Name, spots_Description, spots_category, spots_Addr
 ('Zamboanga City Hall','A beautiful, well-preserved colonial-era building with historical significance, often included in a city walking tour.','Historical','N S Valderosa St., Zone IV, Zamboanga City','https://maps.app.goo.gl/T2yXcvBQaj1NBZrU6'), 
 ('Taluksangay Mosque','The oldest mosque in the Zamboanga Peninsula (built in 1885), distinguished by its distinctive red domes and recognized as a significant center for the propagation of Islam.','Religious','Brgy. Taluksangay, Zamboanga City','https://maps.app.goo.gl/tyEbMvVsNan8aeDR7'), 
 ('Metropolitan Cathedral of the Immaculate Conception','The main Catholic cathedral in the city, known for its distinct, modern architectural design.','Religious','La Purisima St., Zamboanga City','https://maps.app.goo.gl/vU5hH8E3MMMHbn7g7');
+
+
+
+
+
+
+CREATE INDEX idx_booking_status ON Booking(booking_Status);
+CREATE INDEX idx_booking_customer ON Booking(customer_ID);
+CREATE INDEX idx_schedule_guide ON Schedule(guide_ID);
+CREATE INDEX idx_schedule_date ON Schedule(schedule_StartDateTime);
+CREATE INDEX idx_payment_booking ON Payment_Info(booking_ID);
+CREATE INDEX idx_rating_rated ON Rating(rated_ID);
+CREATE INDEX idx_user_login_username ON User_Login(username);
+CREATE INDEX idx_activity_log_user ON Activity_Log(user_ID);
+CREATE INDEX idx_notifications_user ON Notifications(user_ID, is_read);
+
+-- Create views for common queries
+CREATE OR REPLACE VIEW v_user_details AS
+SELECT 
+    p.person_ID,
+    p.role_ID,
+    r.role_name,
+    CONCAT(n.name_first, ' ', n.name_last) as full_name,
+    n.name_first,
+    n.name_last,
+    ci.contactinfo_email as email,
+    ph.phone_number,
+    p.person_RatingScore as rating,
+    ul.username,
+    ul.last_login,
+    ul.is_active
+FROM Person p
+LEFT JOIN Role_Info r ON p.role_ID = r.role_ID
+LEFT JOIN Name_Info n ON p.name_ID = n.name_ID
+LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
+LEFT JOIN User_Login ul ON p.person_ID = ul.person_ID;
+
+CREATE OR REPLACE VIEW v_booking_details AS
+SELECT 
+    b.booking_ID,
+    b.booking_Status,
+    b.booking_PAX,
+    CONCAT(tn.name_first, ' ', tn.name_last) as tourist_name,
+    CONCAT(gn.name_first, ' ', gn.name_last) as guide_name,
+    tp.tourPackage_Name,
+    ts.spots_Name,
+    s.schedule_StartDateTime,
+    s.schedule_EndDateTime,
+    s.schedule_MeetingSpot,
+    pi.paymentinfo_Amount,
+    pi.paymentinfo_Date,
+    pt.transaction_status as payment_status
+FROM Booking b
+LEFT JOIN Person t ON b.customer_ID = t.person_ID
+LEFT JOIN Name_Info tn ON t.name_ID = tn.name_ID
+LEFT JOIN Schedule s ON b.schedule_ID = s.schedule_ID
+LEFT JOIN Person g ON s.guide_ID = g.person_ID
+LEFT JOIN Name_Info gn ON g.name_ID = gn.name_ID
+LEFT JOIN Tour_Package tp ON b.tourPackage_ID = tp.tourPackage_ID
+LEFT JOIN Tour_Spots ts ON tp.spots_ID = ts.spots_ID
+LEFT JOIN Payment_Info pi ON b.booking_ID = pi.booking_ID
+LEFT JOIN Payment_Transaction pt ON pi.paymentinfo_ID = pt.paymentinfo_ID;
+
+CREATE TABLE IF NOT EXISTS Package_Spots (
+    package_spot_ID INT AUTO_INCREMENT PRIMARY KEY,
+    tourPackage_ID INT NOT NULL,
+    spots_ID INT NOT NULL,
+    spot_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tourPackage_ID) REFERENCES Tour_Package(tourPackage_ID) ON DELETE CASCADE,
+    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID) ON DELETE CASCADE,
+    UNIQUE KEY unique_package_spot (tourPackage_ID, spots_ID)
+);
+
+CREATE INDEX idx_package_spots_package ON Package_Spots(tourPackage_ID);
+CREATE INDEX idx_package_spots_spot ON Package_Spots(spots_ID);
