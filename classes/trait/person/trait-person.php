@@ -1,15 +1,6 @@
-<?php 
+<?php
 
-require_once 'database.php';
-require_once "trait/trait-address.php";
-require_once "trait/trait-contact-info.php";
-require_once "trait/trait-name.php";
-require_once "trait/trait-phone.php";
-require_once "trait/trait-emergency.php";
-
-class PersonHandler extends Database {
-
-    use NameTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait;
+trait PersonTrait {
 
     // Add Person
     public function addPerson(
@@ -25,10 +16,9 @@ class PersonHandler extends Database {
         $db->beginTransaction();
 
         try {
-            // Get Name ID
+
             $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
 
-            // Get Contact Info ID (includes address, phone & emergency)
             $contactinfo_ID = $this->addgetContact_Info(
                 $houseno, $street, $barangay, $city, $province, $country,
                 $countrycode_ID, $phone_number,
@@ -42,7 +32,6 @@ class PersonHandler extends Database {
                 return false;
             }
 
-            // Insert Person
             $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID)
                     VALUES (:name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
 
@@ -69,6 +58,7 @@ class PersonHandler extends Database {
         }
     }
 
+
     // Delete Person
     public function deletePerson($person_ID){
         $db = $this->connect();
@@ -86,13 +76,11 @@ class PersonHandler extends Database {
             $name_ID = $data['name_ID'];
             $contactinfo_ID = $data['contactinfo_ID'];
 
-            // Delete person record
             $sql_delete = "DELETE FROM Person WHERE person_ID = :person_ID";
             $query_delete = $db->prepare($sql_delete);
             $query_delete->bindParam(":person_ID", $person_ID);
             $query_delete->execute();
 
-            // Check & remove unused name
             $sql_count_name = "SELECT COUNT(*) AS total FROM Person WHERE name_ID = :name_ID";
             $query_name = $db->prepare($sql_count_name);
             $query_name->bindParam(":name_ID", $name_ID);
@@ -101,7 +89,6 @@ class PersonHandler extends Database {
                 $this->deleteName($name_ID);
             }
 
-            // Check & remove unused contact info
             $sql_count_contact = "SELECT COUNT(*) AS total FROM Person WHERE contactinfo_ID = :contactinfo_ID";
             $query_contact = $db->prepare($sql_count_contact);
             $query_contact->bindParam(":contactinfo_ID", $contactinfo_ID);
@@ -120,9 +107,11 @@ class PersonHandler extends Database {
         }
     }
 
+
     // View Person
     public function viewPerson($person_ID){
         $db = $this->connect();
+
         $sql = "
             SELECT 
                 p.person_ID, p.person_Nationality, p.person_Gender, p.person_DateOfBirth,
@@ -150,11 +139,13 @@ class PersonHandler extends Database {
             LEFT JOIN Country co ON pr.country_ID = co.country_ID
             WHERE p.person_ID = :person_ID
         ";
+
         $query = $db->prepare($sql);
         $query->bindParam(":person_ID", $person_ID);
         $query->execute();
         return $query->fetch(PDO::FETCH_ASSOC);
     }
+
 
     // Search People
     public function searchPersons($searchTerm){
@@ -196,4 +187,3 @@ class PersonHandler extends Database {
     }
 
 }
-
