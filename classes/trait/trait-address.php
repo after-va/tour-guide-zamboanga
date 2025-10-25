@@ -42,4 +42,24 @@ trait AddressTrait {
 
         return $query->execute();
     }
+
+    public function deleteAddressIfUnused($address_ID){
+        $db = $this->connect();
+
+        $sql_check = "SELECT COUNT(*) AS total FROM contact_info WHERE address_ID = :id";
+        $query_check = $db->prepare($sql_check);
+        $query_check->bindParam(":id", $address_ID);
+        $query_check->execute();
+        $count = $query_check->fetch(PDO::FETCH_ASSOC)['total'];
+
+        if($count == 0){
+            $sql_delete = "DELETE FROM address_info WHERE address_ID = :id";
+            $query_delete = $db->prepare($sql_delete);
+            $query_delete->bindParam(":id", $address_ID);
+            $query_delete->execute();
+        }
+    }
+
+
+
 }

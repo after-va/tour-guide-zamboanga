@@ -23,9 +23,10 @@ trait ContactInfoTrait {
 
         try{
             // These functions come from other traits:
-            $address_ID = $this->addgetAddress($houseno, $street, $barangay, $city, $province, $country);
-            $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
-            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship);
+            $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
+            $phone_ID = $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number, $db);
+            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
+
             
            if (!$address_ID || !$phone_ID || !$emergency_ID) {
                 $db->rollBack();
