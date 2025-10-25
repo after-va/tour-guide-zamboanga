@@ -17,14 +17,22 @@ CREATE TABLE Phone_Number (
     UNIQUE KEY unique_phone_per_country (country_ID, phone_number)
 );
 
+-- Region 
+CREATE TABLE Region (
+    region_ID INT AUTO_INCREMENT PRIMARY KEY,
+    region_name VARCHAR(100) NOT NULL,
+    country_ID INT NOT NULL,
+    FOREIGN KEY (country_ID) REFERENCES Country(country_ID) ON DELETE CASCADE,
+    UNIQUE KEY unique_region_per_country (region_name, country_ID)
+);
 
 -- Province
 CREATE TABLE Province (
     province_ID INT AUTO_INCREMENT PRIMARY KEY,
     province_name VARCHAR(100) NOT NULL,
-    country_ID INT NOT NULL,
-    FOREIGN KEY (country_ID) REFERENCES Country(country_ID) ON DELETE CASCADE,
-    UNIQUE KEY unique_province_per_country (province_name, country_ID)
+    region_ID INT NOT NULL,
+    FOREIGN KEY (region_ID) REFERENCES Region(region_ID) ON DELETE CASCADE,
+    UNIQUE KEY unique_province_per_region (province_name, region_ID)
 );
 
 -- City

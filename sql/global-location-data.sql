@@ -17,15 +17,11 @@ ALTER TABLE Province ADD UNIQUE (province_name, country_ID);
 -- Ensures the same city name cannot exist twice within the same province/state.
 ALTER TABLE City ADD UNIQUE (city_name, province_ID);
 
--- 4. District Table
--- Ensures the same district name cannot exist twice within the same city.
-ALTER TABLE District ADD UNIQUE (district_name, city_ID);
-
 
 
 -- Insert Countries
 
-INSERT INTO Country (country_name, country_codename, countrycode_codenumber) VALUES
+INSERT IGNORE INTO Country (country_name, country_codename, country_codenumber) VALUES
 ('Afghanistan', 'AF', '+93'),
 ('Albania', 'AL', '+355'),
 ('Algeria', 'DZ', '+213'),
@@ -252,13 +248,13 @@ INSERT INTO Country (country_name, country_codename, countrycode_codenumber) VAL
 -- ============================================
 
 -- California
-INSERT INTO Province (province_name, country_ID) 
-SELECT 'California', country_ID FROM Country WHERE country_codenamename = 'US';
+INSERT IGNORE INTO Province (province_name, country_ID) 
+SELECT 'California', country_ID FROM Country WHERE country_codename = 'US';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Los Angeles', province_ID FROM Province WHERE province_name = 'California';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'Hollywood' UNION ALL
@@ -268,10 +264,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Los Angeles';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'San Francisco', province_ID FROM Province WHERE province_name = 'California';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Financial District' AS barangay_name UNION ALL
     SELECT 'Chinatown' UNION ALL
@@ -281,10 +277,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'San Francisco';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'San Diego', province_ID FROM Province WHERE province_name = 'California';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'La Jolla' UNION ALL
@@ -294,13 +290,13 @@ SELECT barangay_name, city_ID FROM (
 CROSS JOIN City WHERE city_name = 'San Diego';
 
 -- New York
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'New York', country_ID FROM Country WHERE country_codename = 'US';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'New York City', province_ID FROM Province WHERE province_name = 'New York';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Manhattan' AS barangay_name UNION ALL
     SELECT 'Brooklyn' UNION ALL
@@ -311,13 +307,13 @@ SELECT barangay_name, city_ID FROM (
 CROSS JOIN City WHERE city_name = 'New York City';
 
 -- Texas
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Texas', country_ID FROM Country WHERE country_codename = 'US';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Houston', province_ID FROM Province WHERE province_name = 'Texas';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'Midtown' UNION ALL
@@ -326,10 +322,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Houston';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Austin', province_ID FROM Province WHERE province_name = 'Texas';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'South Congress' UNION ALL
@@ -339,13 +335,13 @@ SELECT barangay_name, city_ID FROM (
 CROSS JOIN City WHERE city_name = 'Austin';
 
 -- Florida
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Florida', country_ID FROM Country WHERE country_codename = 'US';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Miami', province_ID FROM Province WHERE province_name = 'Florida';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'South Beach' UNION ALL
@@ -359,13 +355,13 @@ CROSS JOIN City WHERE city_name = 'Miami';
 -- ============================================
 
 -- England
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'England', country_ID FROM Country WHERE country_codename = 'GB';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'London', province_ID FROM Province WHERE province_name = 'England';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Westminster' AS barangay_name UNION ALL
     SELECT 'Camden' UNION ALL
@@ -375,10 +371,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'London';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Manchester', province_ID FROM Province WHERE province_name = 'England';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'City Centre' AS barangay_name UNION ALL
     SELECT 'Northern Quarter' UNION ALL
@@ -388,13 +384,13 @@ SELECT barangay_name, city_ID FROM (
 CROSS JOIN City WHERE city_name = 'Manchester';
 
 -- Scotland
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Scotland', country_ID FROM Country WHERE country_codename = 'GB';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Edinburgh', province_ID FROM Province WHERE province_name = 'Scotland';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Old Town' AS barangay_name UNION ALL
     SELECT 'New Town' UNION ALL
@@ -407,13 +403,13 @@ CROSS JOIN City WHERE city_name = 'Edinburgh';
 -- FRANCE - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Île-de-France', country_ID FROM Country WHERE country_codename = 'FR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Paris', province_ID FROM Province WHERE province_name = 'Île-de-France';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT '1st Arrondissement' AS barangay_name UNION ALL
     SELECT '8th Arrondissement' UNION ALL
@@ -423,13 +419,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Paris';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Provence-Alpes-Côte d''Azur', country_ID FROM Country WHERE country_codename = 'FR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Nice', province_ID FROM Province WHERE province_name = 'Provence-Alpes-Côte d''Azur';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Vieux Nice' AS barangay_name UNION ALL
     SELECT 'Promenade des Anglais' UNION ALL
@@ -442,13 +438,13 @@ CROSS JOIN City WHERE city_name = 'Nice';
 -- GERMANY - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Bavaria', country_ID FROM Country WHERE country_codename = 'DE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Munich', province_ID FROM Province WHERE province_name = 'Bavaria';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Altstadt' AS barangay_name UNION ALL
     SELECT 'Schwabing' UNION ALL
@@ -457,13 +453,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Munich';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Berlin', country_ID FROM Country WHERE country_codename = 'DE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Berlin', province_ID FROM Province WHERE province_name = 'Berlin';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Mitte' AS barangay_name UNION ALL
     SELECT 'Kreuzberg' UNION ALL
@@ -477,13 +473,13 @@ CROSS JOIN City WHERE city_name = 'Berlin';
 -- JAPAN - Prefectures, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Tokyo', country_ID FROM Country WHERE country_codename = 'JP';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Tokyo', province_ID FROM Province WHERE province_name = 'Tokyo';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Shibuya' AS barangay_name UNION ALL
     SELECT 'Shinjuku' UNION ALL
@@ -493,13 +489,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Tokyo';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Osaka', country_ID FROM Country WHERE country_codename = 'JP';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Osaka', province_ID FROM Province WHERE province_name = 'Osaka';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Kita' AS barangay_name UNION ALL
     SELECT 'Chuo' UNION ALL
@@ -508,13 +504,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Osaka';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Kyoto', country_ID FROM Country WHERE country_codename = 'JP';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Kyoto', province_ID FROM Province WHERE province_name = 'Kyoto';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Higashiyama' AS barangay_name UNION ALL
     SELECT 'Gion' UNION ALL
@@ -527,13 +523,13 @@ CROSS JOIN City WHERE city_name = 'Kyoto';
 -- AUSTRALIA - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'New South Wales', country_ID FROM Country WHERE country_codename = 'AU';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Sydney', province_ID FROM Province WHERE province_name = 'New South Wales';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'CBD' AS barangay_name UNION ALL
     SELECT 'Bondi' UNION ALL
@@ -543,13 +539,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Sydney';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Victoria', country_ID FROM Country WHERE country_codename = 'AU';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Melbourne', province_ID FROM Province WHERE province_name = 'Victoria';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'CBD' AS barangay_name UNION ALL
     SELECT 'Fitzroy' UNION ALL
@@ -563,13 +559,13 @@ CROSS JOIN City WHERE city_name = 'Melbourne';
 -- CANADA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Ontario', country_ID FROM Country WHERE country_codename = 'CA';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Toronto', province_ID FROM Province WHERE province_name = 'Ontario';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'Yorkville' UNION ALL
@@ -579,13 +575,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Toronto';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'British Columbia', country_ID FROM Country WHERE country_codename = 'CA';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Vancouver', province_ID FROM Province WHERE province_name = 'British Columbia';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'Gastown' UNION ALL
@@ -599,13 +595,13 @@ CROSS JOIN City WHERE city_name = 'Vancouver';
 -- ITALY - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Lazio', country_ID FROM Country WHERE country_codename = 'IT';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Rome', province_ID FROM Province WHERE province_name = 'Lazio';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro Storico' AS barangay_name UNION ALL
     SELECT 'Trastevere' UNION ALL
@@ -615,13 +611,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Rome';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Lombardy', country_ID FROM Country WHERE country_codename = 'IT';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Milan', province_ID FROM Province WHERE province_name = 'Lombardy';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro' AS barangay_name UNION ALL
     SELECT 'Brera' UNION ALL
@@ -630,13 +626,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Milan';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Veneto', country_ID FROM Country WHERE country_codename = 'IT';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Venice', province_ID FROM Province WHERE province_name = 'Veneto';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'San Marco' AS barangay_name UNION ALL
     SELECT 'Cannaregio' UNION ALL
@@ -649,13 +645,13 @@ CROSS JOIN City WHERE city_name = 'Venice';
 -- SPAIN - Autonomous Communities, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Community of Madrid', country_ID FROM Country WHERE country_codename = 'ES';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Madrid', province_ID FROM Province WHERE province_name = 'Community of Madrid';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro' AS barangay_name UNION ALL
     SELECT 'Salamanca' UNION ALL
@@ -665,13 +661,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Madrid';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Catalonia', country_ID FROM Country WHERE country_codename = 'ES';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Barcelona', province_ID FROM Province WHERE province_name = 'Catalonia';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Gothic Quarter' AS barangay_name UNION ALL
     SELECT 'Eixample' UNION ALL
@@ -685,13 +681,13 @@ CROSS JOIN City WHERE city_name = 'Barcelona';
 -- CHINA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Beijing', country_ID FROM Country WHERE country_codename = 'CN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Beijing', province_ID FROM Province WHERE province_name = 'Beijing';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Dongcheng' AS barangay_name UNION ALL
     SELECT 'Xicheng' UNION ALL
@@ -701,13 +697,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Beijing';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Shanghai', country_ID FROM Country WHERE country_codename = 'CN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Shanghai', province_ID FROM Province WHERE province_name = 'Shanghai';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Pudong' AS barangay_name UNION ALL
     SELECT 'Huangpu' UNION ALL
@@ -721,13 +717,13 @@ CROSS JOIN City WHERE city_name = 'Shanghai';
 -- SOUTH KOREA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Seoul', country_ID FROM Country WHERE country_codename = 'KR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Seoul', province_ID FROM Province WHERE province_name = 'Seoul';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Gangnam' AS barangay_name UNION ALL
     SELECT 'Jongno' UNION ALL
@@ -737,13 +733,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Seoul';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Busan', country_ID FROM Country WHERE country_codename = 'KR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Busan', province_ID FROM Province WHERE province_name = 'Busan';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Haeundae' AS barangay_name UNION ALL
     SELECT 'Jung' UNION ALL
@@ -756,13 +752,13 @@ CROSS JOIN City WHERE city_name = 'Busan';
 -- THAILAND - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Bangkok', country_ID FROM Country WHERE country_codename = 'TH';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Bangkok', province_ID FROM Province WHERE province_name = 'Bangkok';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Sukhumvit' AS barangay_name UNION ALL
     SELECT 'Silom' UNION ALL
@@ -772,13 +768,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Bangkok';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Phuket', country_ID FROM Country WHERE country_codename = 'TH';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Phuket City', province_ID FROM Province WHERE province_name = 'Phuket';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Patong' AS barangay_name UNION ALL
     SELECT 'Kata' UNION ALL
@@ -791,13 +787,13 @@ CROSS JOIN City WHERE city_name = 'Phuket City';
 -- SINGAPORE
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Singapore', country_ID FROM Country WHERE country_codename = 'SG';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Singapore', province_ID FROM Province WHERE province_name = 'Singapore';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Marina Bay' AS barangay_name UNION ALL
     SELECT 'Orchard' UNION ALL
@@ -811,13 +807,13 @@ CROSS JOIN City WHERE city_name = 'Singapore';
 -- INDIA - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Maharashtra', country_ID FROM Country WHERE country_codename = 'IN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Mumbai', province_ID FROM Province WHERE province_name = 'Maharashtra';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'South Mumbai' AS barangay_name UNION ALL
     SELECT 'Bandra' UNION ALL
@@ -827,13 +823,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Mumbai';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Delhi', country_ID FROM Country WHERE country_codename = 'IN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'New Delhi', province_ID FROM Province WHERE province_name = 'Delhi';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Connaught Place' AS barangay_name UNION ALL
     SELECT 'Karol Bagh' UNION ALL
@@ -847,13 +843,13 @@ CROSS JOIN City WHERE city_name = 'New Delhi';
 -- UNITED ARAB EMIRATES - Emirates, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Dubai', country_ID FROM Country WHERE country_codename = 'AE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Dubai', province_ID FROM Province WHERE province_name = 'Dubai';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown Dubai' AS barangay_name UNION ALL
     SELECT 'Dubai Marina' UNION ALL
@@ -863,13 +859,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Dubai';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Abu Dhabi', country_ID FROM Country WHERE country_codename = 'AE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Abu Dhabi', province_ID FROM Province WHERE province_name = 'Abu Dhabi';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Al Markaziyah' AS barangay_name UNION ALL
     SELECT 'Al Zahiyah' UNION ALL
@@ -882,13 +878,13 @@ CROSS JOIN City WHERE city_name = 'Abu Dhabi';
 -- BRAZIL - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'São Paulo', country_ID FROM Country WHERE country_codename = 'BR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'São Paulo', province_ID FROM Province WHERE province_name = 'São Paulo';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro' AS barangay_name UNION ALL
     SELECT 'Paulista' UNION ALL
@@ -898,13 +894,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'São Paulo';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Rio de Janeiro', country_ID FROM Country WHERE country_codename = 'BR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Rio de Janeiro', province_ID FROM Province WHERE province_name = 'Rio de Janeiro';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Copacabana' AS barangay_name UNION ALL
     SELECT 'Ipanema' UNION ALL
@@ -918,13 +914,13 @@ CROSS JOIN City WHERE city_name = 'Rio de Janeiro';
 -- MEXICO - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Mexico City', country_ID FROM Country WHERE country_codename = 'MX';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Mexico City', province_ID FROM Province WHERE province_name = 'Mexico City';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro Histórico' AS barangay_name UNION ALL
     SELECT 'Polanco' UNION ALL
@@ -934,13 +930,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Mexico City';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Quintana Roo', country_ID FROM Country WHERE country_codename = 'MX';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Cancún', province_ID FROM Province WHERE province_name = 'Quintana Roo';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Hotel Zone' AS barangay_name UNION ALL
     SELECT 'Downtown' UNION ALL
@@ -953,13 +949,13 @@ CROSS JOIN City WHERE city_name = 'Cancún';
 -- ARGENTINA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Buenos Aires', country_ID FROM Country WHERE country_codename = 'AR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Buenos Aires', province_ID FROM Province WHERE province_name = 'Buenos Aires';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Palermo' AS barangay_name UNION ALL
     SELECT 'Recoleta' UNION ALL
@@ -973,13 +969,13 @@ CROSS JOIN City WHERE city_name = 'Buenos Aires';
 -- PHILIPPINES - Regions, Cities, Barangays
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Metro Manila', country_ID FROM Country WHERE country_codename = 'PH';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Manila', province_ID FROM Province WHERE province_name = 'Metro Manila';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Ermita' AS barangay_name UNION ALL
     SELECT 'Malate' UNION ALL
@@ -989,10 +985,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Manila';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Quezon City', province_ID FROM Province WHERE province_name = 'Metro Manila';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Diliman' AS barangay_name UNION ALL
     SELECT 'Cubao' UNION ALL
@@ -1002,10 +998,10 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Quezon City';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Makati', province_ID FROM Province WHERE province_name = 'Metro Manila';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Poblacion' AS barangay_name UNION ALL
     SELECT 'Salcedo Village' UNION ALL
@@ -1015,13 +1011,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Makati';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Zamboanga Peninsula', country_ID FROM Country WHERE country_codename = 'PH';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Zamboanga City', province_ID FROM Province WHERE province_name = 'Zamboanga Peninsula';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Pasonanca' AS barangay_name UNION ALL
     SELECT 'Tetuan' UNION ALL
@@ -1037,13 +1033,13 @@ CROSS JOIN City WHERE city_name = 'Zamboanga City';
 -- NETHERLANDS - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'North Holland', country_ID FROM Country WHERE country_codename = 'NL';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Amsterdam', province_ID FROM Province WHERE province_name = 'North Holland';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centrum' AS barangay_name UNION ALL
     SELECT 'Jordaan' UNION ALL
@@ -1057,13 +1053,13 @@ CROSS JOIN City WHERE city_name = 'Amsterdam';
 -- SWITZERLAND - Cantons, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Zurich', country_ID FROM Country WHERE country_codename = 'CH';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Zurich', province_ID FROM Province WHERE province_name = 'Zurich';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Altstadt' AS barangay_name UNION ALL
     SELECT 'Seefeld' UNION ALL
@@ -1076,13 +1072,13 @@ CROSS JOIN City WHERE city_name = 'Zurich';
 -- TURKEY - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Istanbul', country_ID FROM Country WHERE country_codename = 'TR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Istanbul', province_ID FROM Province WHERE province_name = 'Istanbul';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Sultanahmet' AS barangay_name UNION ALL
     SELECT 'Beyoğlu' UNION ALL
@@ -1096,13 +1092,13 @@ CROSS JOIN City WHERE city_name = 'Istanbul';
 -- EGYPT - Governorates, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Cairo', country_ID FROM Country WHERE country_codename = 'EG';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Cairo', province_ID FROM Province WHERE province_name = 'Cairo';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Downtown' AS barangay_name UNION ALL
     SELECT 'Zamalek' UNION ALL
@@ -1116,13 +1112,13 @@ CROSS JOIN City WHERE city_name = 'Cairo';
 -- SOUTH AFRICA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Western Cape', country_ID FROM Country WHERE country_codename = 'ZA';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Cape Town', province_ID FROM Province WHERE province_name = 'Western Cape';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'City Bowl' AS barangay_name UNION ALL
     SELECT 'Waterfront' UNION ALL
@@ -1136,13 +1132,13 @@ CROSS JOIN City WHERE city_name = 'Cape Town';
 -- NEW ZEALAND - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Auckland', country_ID FROM Country WHERE country_codename = 'NZ';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Auckland', province_ID FROM Province WHERE province_name = 'Auckland';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'CBD' AS barangay_name UNION ALL
     SELECT 'Ponsonby' UNION ALL
@@ -1157,32 +1153,32 @@ CROSS JOIN City WHERE city_name = 'Auckland';
 -- ============================================
 
 -- Sample addresses for various cities
-INSERT INTO Address_Info (address_houseno, address_street, barangay_ID)
+INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT '123', 'Main Street', barangay_ID FROM Barangay WHERE barangay_name = 'Downtown' LIMIT 1;
 
-INSERT INTO Address_Info (address_houseno, address_street, barangay_ID)
+INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT '456', 'Broadway', barangay_ID FROM Barangay WHERE barangay_name = 'Manhattan' LIMIT 1;
 
-INSERT INTO Address_Info (address_houseno, address_street, barangay_ID)
+INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT '789', 'Oxford Street', barangay_ID FROM Barangay WHERE barangay_name = 'Westminster' LIMIT 1;
 
-INSERT INTO Address_Info (address_houseno, address_street, barangay_ID)
+INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT '321', 'Champs-Élysées', barangay_ID FROM Barangay WHERE barangay_name = '8th Arrondissement' LIMIT 1;
 
-INSERT INTO Address_Info (address_houseno, address_street, barangay_ID)
+INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT '654', 'Shibuya Crossing', barangay_ID FROM Barangay WHERE barangay_name = 'Shibuya' LIMIT 1;
 
 -- ============================================
 -- INDONESIA - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Jakarta', country_ID FROM Country WHERE country_codename = 'ID';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Jakarta', province_ID FROM Province WHERE province_name = 'Jakarta';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Central Jakarta' AS barangay_name UNION ALL
     SELECT 'South Jakarta' UNION ALL
@@ -1192,13 +1188,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Jakarta';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Bali', country_ID FROM Country WHERE country_codename = 'ID';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Denpasar', province_ID FROM Province WHERE province_name = 'Bali';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Sanur' AS barangay_name UNION ALL
     SELECT 'Denpasar Barat' UNION ALL
@@ -1211,13 +1207,13 @@ CROSS JOIN City WHERE city_name = 'Denpasar';
 -- MALAYSIA - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Kuala Lumpur', country_ID FROM Country WHERE country_codename = 'MY';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Kuala Lumpur', province_ID FROM Province WHERE province_name = 'Kuala Lumpur';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Bukit Bintang' AS barangay_name UNION ALL
     SELECT 'KLCC' UNION ALL
@@ -1231,13 +1227,13 @@ CROSS JOIN City WHERE city_name = 'Kuala Lumpur';
 -- VIETNAM - Provinces, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Ho Chi Minh City', country_ID FROM Country WHERE country_codename = 'VN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Ho Chi Minh City', province_ID FROM Province WHERE province_name = 'Ho Chi Minh City';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'District 1' AS barangay_name UNION ALL
     SELECT 'District 3' UNION ALL
@@ -1247,13 +1243,13 @@ SELECT barangay_name, city_ID FROM (
 ) AS districts
 CROSS JOIN City WHERE city_name = 'Ho Chi Minh City';
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Hanoi', country_ID FROM Country WHERE country_codename = 'VN';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Hanoi', province_ID FROM Province WHERE province_name = 'Hanoi';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Hoan Kiem' AS barangay_name UNION ALL
     SELECT 'Ba Dinh' UNION ALL
@@ -1266,13 +1262,13 @@ CROSS JOIN City WHERE city_name = 'Hanoi';
 -- PORTUGAL - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Lisbon', country_ID FROM Country WHERE country_codename = 'PT';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Lisbon', province_ID FROM Province WHERE province_name = 'Lisbon';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Baixa' AS barangay_name UNION ALL
     SELECT 'Alfama' UNION ALL
@@ -1286,13 +1282,13 @@ CROSS JOIN City WHERE city_name = 'Lisbon';
 -- GREECE - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Attica', country_ID FROM Country WHERE country_codename = 'GR';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Athens', province_ID FROM Province WHERE province_name = 'Attica';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Plaka' AS barangay_name UNION ALL
     SELECT 'Monastiraki' UNION ALL
@@ -1306,13 +1302,13 @@ CROSS JOIN City WHERE city_name = 'Athens';
 -- IRELAND - Counties, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Dublin', country_ID FROM Country WHERE country_codename = 'IE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Dublin', province_ID FROM Province WHERE province_name = 'Dublin';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Temple Bar' AS barangay_name UNION ALL
     SELECT 'Ballsbridge' UNION ALL
@@ -1326,13 +1322,13 @@ CROSS JOIN City WHERE city_name = 'Dublin';
 -- POLAND - Voivodeships, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Masovian', country_ID FROM Country WHERE country_codename = 'PL';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Warsaw', province_ID FROM Province WHERE province_name = 'Masovian';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Śródmieście' AS barangay_name UNION ALL
     SELECT 'Mokotów' UNION ALL
@@ -1345,13 +1341,13 @@ CROSS JOIN City WHERE city_name = 'Warsaw';
 -- AUSTRIA - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Vienna', country_ID FROM Country WHERE country_codename = 'AT';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Vienna', province_ID FROM Province WHERE province_name = 'Vienna';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Innere Stadt' AS barangay_name UNION ALL
     SELECT 'Leopoldstadt' UNION ALL
@@ -1365,13 +1361,13 @@ CROSS JOIN City WHERE city_name = 'Vienna';
 -- BELGIUM - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Brussels', country_ID FROM Country WHERE country_codename = 'BE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Brussels', province_ID FROM Province WHERE province_name = 'Brussels';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'City Centre' AS barangay_name UNION ALL
     SELECT 'European Quarter' UNION ALL
@@ -1385,13 +1381,13 @@ CROSS JOIN City WHERE city_name = 'Brussels';
 -- SWEDEN - Counties, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Stockholm', country_ID FROM Country WHERE country_codename = 'SE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Stockholm', province_ID FROM Province WHERE province_name = 'Stockholm';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Gamla Stan' AS barangay_name UNION ALL
     SELECT 'Södermalm' UNION ALL
@@ -1405,13 +1401,13 @@ CROSS JOIN City WHERE city_name = 'Stockholm';
 -- NORWAY - Counties, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Oslo', country_ID FROM Country WHERE country_codename = 'NO';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Oslo', province_ID FROM Province WHERE province_name = 'Oslo';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Sentrum' AS barangay_name UNION ALL
     SELECT 'Grünerløkka' UNION ALL
@@ -1425,13 +1421,13 @@ CROSS JOIN City WHERE city_name = 'Oslo';
 -- DENMARK - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Capital Region', country_ID FROM Country WHERE country_codename = 'DK';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Copenhagen', province_ID FROM Province WHERE province_name = 'Capital Region';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Indre By' AS barangay_name UNION ALL
     SELECT 'Vesterbro' UNION ALL
@@ -1445,13 +1441,13 @@ CROSS JOIN City WHERE city_name = 'Copenhagen';
 -- FINLAND - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Uusimaa', country_ID FROM Country WHERE country_codename = 'FI';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Helsinki', province_ID FROM Province WHERE province_name = 'Uusimaa';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Keskusta' AS barangay_name UNION ALL
     SELECT 'Kallio' UNION ALL
@@ -1465,13 +1461,13 @@ CROSS JOIN City WHERE city_name = 'Helsinki';
 -- CHILE - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Santiago Metropolitan', country_ID FROM Country WHERE country_codename = 'CL';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Santiago', province_ID FROM Province WHERE province_name = 'Santiago Metropolitan';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Centro' AS barangay_name UNION ALL
     SELECT 'Providencia' UNION ALL
@@ -1485,13 +1481,13 @@ CROSS JOIN City WHERE city_name = 'Santiago';
 -- COLOMBIA - Departments, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Bogotá', country_ID FROM Country WHERE country_codename = 'CO';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Bogotá', province_ID FROM Province WHERE province_name = 'Bogotá';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'La Candelaria' AS barangay_name UNION ALL
     SELECT 'Chapinero' UNION ALL
@@ -1505,13 +1501,13 @@ CROSS JOIN City WHERE city_name = 'Bogotá';
 -- PERU - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Lima', country_ID FROM Country WHERE country_codename = 'PE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Lima', province_ID FROM Province WHERE province_name = 'Lima';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Miraflores' AS barangay_name UNION ALL
     SELECT 'San Isidro' UNION ALL
@@ -1525,13 +1521,13 @@ CROSS JOIN City WHERE city_name = 'Lima';
 -- TAIWAN - Counties, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Taipei', country_ID FROM Country WHERE country_codename = 'TW';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Taipei', province_ID FROM Province WHERE province_name = 'Taipei';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Zhongzheng' AS barangay_name UNION ALL
     SELECT 'Xinyi' UNION ALL
@@ -1545,13 +1541,13 @@ CROSS JOIN City WHERE city_name = 'Taipei';
 -- HONG KONG - Regions, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Hong Kong Island', country_ID FROM Country WHERE country_codename = 'HK';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Hong Kong', province_ID FROM Province WHERE province_name = 'Hong Kong Island';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Central' AS barangay_name UNION ALL
     SELECT 'Wan Chai' UNION ALL
@@ -1565,13 +1561,13 @@ CROSS JOIN City WHERE city_name = 'Hong Kong';
 -- ISRAEL - Districts, Cities, Neighborhoods
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Tel Aviv', country_ID FROM Country WHERE country_codename = 'IL';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Tel Aviv', province_ID FROM Province WHERE province_name = 'Tel Aviv';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Old Jaffa' AS barangay_name UNION ALL
     SELECT 'Neve Tzedek' UNION ALL
@@ -1585,13 +1581,13 @@ CROSS JOIN City WHERE city_name = 'Tel Aviv';
 -- SAUDI ARABIA - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Riyadh', country_ID FROM Country WHERE country_codename = 'SA';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Riyadh', province_ID FROM Province WHERE province_name = 'Riyadh';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Al Olaya' AS barangay_name UNION ALL
     SELECT 'Al Malaz' UNION ALL
@@ -1605,13 +1601,13 @@ CROSS JOIN City WHERE city_name = 'Riyadh';
 -- MOROCCO - Regions, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Casablanca-Settat', country_ID FROM Country WHERE country_codename = 'MA';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Casablanca', province_ID FROM Province WHERE province_name = 'Casablanca-Settat';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Old Medina' AS barangay_name UNION ALL
     SELECT 'Maarif' UNION ALL
@@ -1625,13 +1621,13 @@ CROSS JOIN City WHERE city_name = 'Casablanca';
 -- KENYA - Counties, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Nairobi', country_ID FROM Country WHERE country_codename = 'KE';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Nairobi', province_ID FROM Province WHERE province_name = 'Nairobi';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Central Business District' AS barangay_name UNION ALL
     SELECT 'Westlands' UNION ALL
@@ -1645,13 +1641,13 @@ CROSS JOIN City WHERE city_name = 'Nairobi';
 -- NIGERIA - States, Cities, Districts
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) 
+INSERT IGNORE INTO Province (province_name, country_ID) 
 SELECT 'Lagos', country_ID FROM Country WHERE country_codename = 'NG';
 
-INSERT INTO City (city_name, province_ID)
+INSERT IGNORE INTO City (city_name, province_ID)
 SELECT 'Lagos', province_ID FROM Province WHERE province_name = 'Lagos';
 
-INSERT INTO Barangay (barangay_name, city_ID)
+INSERT IGNORE INTO Barangay (barangay_name, city_ID)
 SELECT barangay_name, city_ID FROM (
     SELECT 'Victoria Island' AS barangay_name UNION ALL
     SELECT 'Ikoyi' UNION ALL
@@ -1666,7 +1662,7 @@ CROSS JOIN City WHERE city_name = 'Lagos';
 -- ============================================
 
 -- Afghanistan (country_ID = 1)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Badakhshan', 1), ('Badghis', 1), ('Baghlan', 1), ('Balkh', 1),
 ('Bamyan', 1), ('Daykundi', 1), ('Farah', 1), ('Faryab', 1),
 ('Ghazni', 1), ('Ghor', 1), ('Helmand', 1), ('Herat', 1),
@@ -1678,30 +1674,30 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Wardak', 1), ('Zabul', 1);
 
 -- Armenia (country_ID = 11)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Aragatsotn', 11), ('Ararat', 11), ('Armavir', 11), ('Gegharkunik', 11),
 ('Kotayk', 11), ('Lori', 11), ('Shirak', 11), ('Syunik', 11),
 ('Tavush', 11), ('Vayots Dzor', 11), ('Yerevan', 11);
 
 -- Azerbaijan (country_ID = 15)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Absheron', 15), ('Baku', 15), ('Ganja', 15), ('Lankaran', 15),
 ('Nakhchivan', 15), ('Qabala', 15), ('Quba', 15), ('Shaki', 15),
 ('Sumqayit', 15);
 
 -- Bahrain (country_ID = 17)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Capital Governorate', 17), ('Muharraq Governorate', 17),
 ('Northern Governorate', 17), ('Southern Governorate', 17);
 
 -- Bangladesh (country_ID = 18)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Barisal', 18), ('Chittagong', 18), ('Dhaka', 18),
 ('Khulna', 18), ('Mymensingh', 18), ('Rajshahi', 18),
 ('Rangpur', 18), ('Sylhet', 18);
 
 -- Bhutan (country_ID = 25)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Bumthang', 25), ('Chhukha', 25), ('Dagana', 25), ('Gasa', 25),
 ('Haa', 25), ('Lhuentse', 25), ('Mongar', 25), ('Paro', 25),
 ('Pemagatshel', 25), ('Punakha', 25), ('Samdrup Jongkhar', 25),
@@ -1710,11 +1706,11 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Zhemgang', 25);
 
 -- Brunei (country_ID = 30)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Belait', 30), ('Brunei-Muara', 30), ('Temburong', 30), ('Tutong', 30);
 
 -- Cambodia (country_ID = 36)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Banteay Meanchey', 36), ('Battambang', 36), ('Kampong Cham', 36),
 ('Kampong Chhnang', 36), ('Kampong Speu', 36), ('Kampong Thom', 36),
 ('Kampot', 36), ('Kandal', 36), ('Kep', 36), ('Koh Kong', 36),
@@ -1725,7 +1721,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Svay Rieng', 36), ('Takeo', 36), ('Tbong Khmum', 36);
 
 -- China (country_ID = 43)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Anhui', 43), ('Beijing', 43), ('Chongqing', 43), ('Fujian', 43),
 ('Gansu', 43), ('Guangdong', 43), ('Guangxi', 43), ('Guizhou', 43),
 ('Hainan', 43), ('Hebei', 43), ('Heilongjiang', 43), ('Henan', 43),
@@ -1736,7 +1732,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Xinjiang', 43), ('Yunnan', 43), ('Zhejiang', 43);
 
 -- India (country_ID = 99)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Andhra Pradesh', 99), ('Arunachal Pradesh', 99), ('Assam', 99),
 ('Bihar', 99), ('Chhattisgarh', 99), ('Goa', 99), ('Gujarat', 99),
 ('Haryana', 99), ('Himachal Pradesh', 99), ('Jharkhand', 99),
@@ -1750,7 +1746,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Delhi', 99), ('Puducherry', 99);
 
 -- Indonesia (country_ID = 100)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Aceh', 100), ('Bali', 100), ('Banten', 100), ('Bengkulu', 100),
 ('Central Java', 100), ('Central Kalimantan', 100),
 ('Central Sulawesi', 100), ('East Java', 100), ('East Kalimantan', 100),
@@ -1766,7 +1762,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('West Sulawesi', 100), ('West Sumatra', 100), ('Yogyakarta', 100);
 
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Afghanistan (country_ID = 1)
 ('Badakhshan', 1),
 ('Badghis', 1),
@@ -1866,7 +1862,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Wangdue Phodrang', 25),
 ('Zhemgang', 25);
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Brunei (country_ID = 31)
 ('Brunei-Muara', 31),
 ('Belait', 31),
@@ -2039,7 +2035,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Yazd', 103),
 ('Zanjan', 103);
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Iraq (country_ID = 104)
 ('Al Anbar', 104),
 ('Al Muthanna', 104),
@@ -2216,30 +2212,45 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Karnali', 174),
 ('Sudurpashchim', 174),
 
--- Philippines (country_ID = 157)
-('Ilocos Region', 157),
-('Cagayan Valley', 157),
-('Central Luzon', 157),
-('Calabarzon', 157),
-('Mimaropa', 157),
-('Bicol Region', 157),
-('Western Visayas', 157),
-('Central Visayas', 157),
-('Eastern Visayas', 157),
-('Zamboanga Peninsula', 157),
-('Northern Mindanao', 157),
-('Davao Region', 157),
-('SOCCSKSARGEN', 157),
-('Caraga', 157),
-('Bangsamoro', 157),
-('Cordillera Administrative Region', 157),
-('National Capital Region', 157);
+-- Philippines (country_ID = 161)
+('Ilocos Region', 161),
+('Cagayan Valley', 161),
+('Central Luzon', 161),
+('Calabarzon', 161),
+('Mimaropa', 161),
+('Bicol Region', 161),
+('Western Visayas', 161),
+('Central Visayas', 161),
+('Eastern Visayas', 161),
+('Zamboanga Peninsula', 161),
+('Northern Mindanao', 161),
+('Davao Region', 161),
+('SOCCSKSARGEN', 161),
+('Caraga', 161),
+('Bangsamoro', 161),
+('Cordillera Administrative Region', 161),
+('National Capital Region', 161);
+('Central Luzon', 161),
+('Calabarzon', 161),
+('Mimaropa', 161),
+('Bicol Region', 161),
+('Western Visayas', 161),
+('Central Visayas', 161),
+('Eastern Visayas', 161),
+('Zamboanga Peninsula', 161),
+('Northern Mindanao', 161),
+('Davao Region', 161),
+('SOCCSKSARGEN', 161),
+('Caraga', 161),
+('Bangsamoro', 161),
+('Cordillera Administrative Region', 161),
+('National Capital Region', 161);
 
 -- ============================================
 -- EUROPE
 -- ============================================
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Albania (country_ID = 2)
 ('Berat', 2),
 ('Dibër', 2),
@@ -2391,7 +2402,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Viljandi', 53),
 ('Võru', 53);
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Finland (country_ID = 55)
 ('Åland Islands', 55),
 ('Central Finland', 55),
@@ -2633,7 +2644,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Vila Real', 98),
 ('Viseu', 98);
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- Romania (country_ID = 99)
 ('Alba', 99),
 ('Arad', 99),
@@ -2871,7 +2882,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 -- America
 -- =======================================
 
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 -- United States (country_ID = 107)
 ('Alabama', 107),
 ('Alaska', 107),
@@ -2926,7 +2937,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('District of Columbia', 107);
 
 -- Canada (country_ID = 108)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Alberta', 108),
 ('British Columbia', 108),
 ('Manitoba', 108),
@@ -2942,7 +2953,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Yukon', 108);
 
 -- Mexico (country_ID = 109)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Aguascalientes', 109),
 ('Baja California', 109),
 ('Baja California Sur', 109),
@@ -2977,7 +2988,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 
 -- Central America & Caribbean
 -- Guatemala (country_ID = 110)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Alta Verapaz', 110),
 ('Baja Verapaz', 110),
 ('Chimaltenango', 110),
@@ -3002,7 +3013,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Zacapa', 110);
 
 -- Belize (country_ID = 111)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Belize', 111),
 ('Cayo', 111),
 ('Corozal', 111),
@@ -3011,7 +3022,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Toledo', 111);
 
 -- Honduras (country_ID = 112)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Atlántida', 112),
 ('Choluteca', 112),
 ('Colón', 112),
@@ -3032,7 +3043,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Yoro', 112);
 
 -- El Salvador (country_ID = 113)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Ahuachapán', 113),
 ('Cabañas', 113),
 ('Chalatenango', 113),
@@ -3049,7 +3060,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Usulután', 113);
 
 -- Nicaragua (country_ID = 114)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Boaco', 114),
 ('Carazo', 114),
 ('Chinandega', 114),
@@ -3069,7 +3080,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('South Caribbean Coast Autonomous Region', 114);
 
 -- Costa Rica (country_ID = 115)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Alajuela', 115),
 ('Cartago', 115),
 ('Guanacaste', 115),
@@ -3079,7 +3090,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('San José', 115);
 
 -- Argentina (country_ID = 116)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Buenos Aires', 116),
 ('Catamarca', 116),
 ('Chaco', 116),
@@ -3105,7 +3116,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Tucumán', 116);
 
 -- Brazil (country_ID = 117)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Acre', 117),
 ('Alagoas', 117),
 ('Amapá', 117),
@@ -3135,7 +3146,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Tocantins', 117);
 
 -- Chile (country_ID = 118)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Arica y Parinacota', 118),
 ('Tarapacá', 118),
 ('Antofagasta', 118),
@@ -3154,7 +3165,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Magallanes', 118);
 
 -- Colombia (country_ID = 119)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Amazonas', 119),
 ('Antioquia', 119),
 ('Arauca', 119),
@@ -3189,7 +3200,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Vichada', 119);
 
 -- Peru (country_ID = 120)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Amazonas', 120),
 ('Áncash', 120),
 ('Apurímac', 120),
@@ -3217,7 +3228,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Ucayali', 120);
 
 -- Venezuela (country_ID = 121)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Amazonas', 121),
 ('Anzoátegui', 121),
 ('Apure', 121),
@@ -3247,7 +3258,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 -- =======================================
 
 -- Nigeria (country_ID = 122)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Abia', 122),
 ('Adamawa', 122),
 ('Akwa Ibom', 122),
@@ -3287,7 +3298,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Federal Capital Territory', 122);
 
 -- South Africa (country_ID = 123)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Eastern Cape', 123),
 ('Free State', 123),
 ('Gauteng', 123),
@@ -3299,7 +3310,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Western Cape', 123);
 
 -- Egypt (country_ID = 124)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Cairo', 124),
 ('Alexandria', 124),
 ('Giza', 124),
@@ -3331,7 +3342,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Damietta', 124);
 
 -- Kenya (country_ID = 125)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Baringo', 125),
 ('Bomet', 125),
 ('Bungoma', 125),
@@ -3380,7 +3391,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('West Pokot', 125);
 
 -- Morocco (country_ID = 126)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Agadir-Ida Ou Tanane', 126),
 ('Al Hoceima', 126),
 ('Aousserd', 126),
@@ -3419,7 +3430,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Tiznit', 126);
 
 -- South Sudan (country_ID = 127)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Central Equatoria', 127),
 ('Eastern Equatoria', 127),
 ('Jonglei', 127),
@@ -3432,7 +3443,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Western Equatoria', 127);
 
 -- Ethiopia (country_ID = 128)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Addis Ababa', 128),
 ('Afar', 128),
 ('Amhara', 128),
@@ -3447,7 +3458,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Tigray', 128);
 
 -- Algeria (country_ID = 129)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Adrar', 129),
 ('Chlef', 129),
 ('Laghouat', 129),
@@ -3498,7 +3509,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Relizane', 129);
 
 -- Ghana (country_ID = 130)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Ahafo', 130),
 ('Ashanti', 130),
 ('Bono', 130),
@@ -3519,7 +3530,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 -- Morocco already covered earlier
 
 -- Tunisia (country_ID = 131)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Ariana', 131),
 ('Béja', 131),
 ('Ben Arous', 131),
@@ -3546,7 +3557,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Zaghouan', 131);
 
 -- Angola (country_ID = 132)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Bengo', 132),
 ('Benguela', 132),
 ('Bié', 132),
@@ -3567,7 +3578,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Zaire', 132);
 
 -- Senegal (country_ID = 133)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Dakar', 133),
 ('Diourbel', 133),
 ('Fatick', 133),
@@ -3583,7 +3594,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Ziguinchor', 133);
 
 -- Ivory Coast / Côte d'Ivoire (country_ID = 134)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Abidjan', 134),
 ('Bas-Sassandra', 134),
 ('Comoé', 134),
@@ -3600,7 +3611,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Zanzan', 134);
 
 -- Democratic Republic of Congo (country_ID = 135)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Bandundu', 135),
 ('Bas-Uélé', 135),
 ('Équateur', 135),
@@ -3632,7 +3643,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 -- ===
 
 -- Australia (country_ID = 136)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Australian Capital Territory', 136),
 ('New South Wales', 136),
 ('Northern Territory', 136),
@@ -3643,7 +3654,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Western Australia', 136);
 
 -- New Zealand (country_ID = 137)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Auckland', 137),
 ('Bay of Plenty', 137),
 ('Canterbury', 137),
@@ -3662,7 +3673,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('West Coast', 137);
 
 -- Papua New Guinea (country_ID = 138)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Central', 138),
 ('Chimbu', 138),
 ('Eastern Highlands', 138),
@@ -3687,14 +3698,14 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Bougainville', 138);
 
 -- Fiji (country_ID = 139)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Central', 139),
 ('Eastern', 139),
 ('Northern', 139),
 ('Western', 139);
 
 -- Solomon Islands (country_ID = 140)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Central', 140),
 ('Choiseul', 140),
 ('Guadalcanal', 140),
@@ -3707,7 +3718,7 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Western', 140);
 
 -- Vanuatu (country_ID = 141)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Malampa', 141),
 ('Penama', 141),
 ('Sanma', 141),
@@ -3716,21 +3727,21 @@ INSERT INTO Province (province_name, country_ID) VALUES
 ('Torba', 141);
 
 -- Samoa (country_ID = 142)
-INSERT INTO Province (province_name, country_ID) VALUES
-('A'ana', 142),
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
+('Aana', 142),
 ('Aiga-i-le-Tai', 142),
 ('Atua', 142),
-('Fa\'asaleleaga', 142),
-('Gaga\'emauga', 142),
+('Faasaleleaga', 142),
+('Gagaemauga', 142),
 ('Gagaifomauga', 142),
 ('Palauli', 142),
-('Satupa\'itea', 142),
+('Satupaitea', 142),
 ('Tuamasaga', 142),
 ('Vaa-o-Fonoti', 142),
 ('Vaisigano', 142);
 
 -- Tonga (country_ID = 143)
-INSERT INTO Province (province_name, country_ID) VALUES
+INSERT IGNORE INTO Province (province_name, country_ID) VALUES
 ('Eua', 143),
 ('Ha’apai', 143),
 ('Niuas', 143),
@@ -3741,22 +3752,41 @@ INSERT INTO Province (province_name, country_ID) VALUES
 -- Cities
 -- =======================================
 
--- Philippines (country_ID = 102)
--- Using sample major cities per province
-INSERT INTO City (city_name, province_ID) VALUES
-('Manila', 1),
-('Quezon City', 1),
-('Caloocan', 1),
-('Makati', 1),
-('Davao City', 2),
-('Cebu City', 3),
-('Zamboanga City', 4),
-('Iloilo City', 5),
-('Baguio', 6),
-('Cagayan de Oro', 7);
+-- Philippines (country_ID = 161)
+-- Using sample major cities per provinceINSERT IGNORE INTO City (city_name, province_ID)
+
+SELECT 'Manila', province_ID FROM Province WHERE province_name = 'National Capital Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Quezon City', province_ID FROM Province WHERE province_name = 'National Capital Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Caloocan', province_ID FROM Province WHERE province_name = 'National Capital Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Makati', province_ID FROM Province WHERE province_name = 'National Capital Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Davao City', province_ID FROM Province WHERE province_name = 'Davao Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Cebu City', province_ID FROM Province WHERE province_name = 'Central Visayas';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Zamboanga City', province_ID FROM Province WHERE province_name = 'Zamboanga Peninsula';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Iloilo City', province_ID FROM Province WHERE province_name = 'Western Visayas';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Baguio', province_ID FROM Province WHERE province_name = 'Cordillera Administrative Region';
+
+INSERT IGNORE INTO City (city_name, province_ID)
+SELECT 'Cagayan de Oro', province_ID FROM Province WHERE province_name = 'Northern Mindanao';
+
 
 -- Japan (country_ID = 103)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Tokyo', 101),
 ('Osaka', 102),
 ('Kyoto', 103),
@@ -3769,7 +3799,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Sendai', 110);
 
 -- China (country_ID = 104)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Beijing', 111),
 ('Shanghai', 112),
 ('Guangzhou', 113),
@@ -3782,7 +3812,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Nanjing', 120);
 
 -- India (country_ID = 105)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('New Delhi', 121),
 ('Mumbai', 122),
 ('Bangalore', 123),
@@ -3795,7 +3825,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Lucknow', 130);
 
 -- South Korea (country_ID = 106)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Seoul', 131),
 ('Busan', 132),
 ('Incheon', 133),
@@ -3808,7 +3838,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Goyang', 140);
 
 -- Indonesia (country_ID = 107)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Jakarta', 141),
 ('Surabaya', 142),
 ('Bandung', 143),
@@ -3821,7 +3851,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Depok', 150);
 
 -- Thailand (country_ID = 108)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Bangkok', 151),
 ('Chiang Mai', 152),
 ('Phuket', 153),
@@ -3834,7 +3864,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Pattaya', 160);
 
 -- Vietnam (country_ID = 109)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Hanoi', 161),
 ('Ho Chi Minh City', 162),
 ('Da Nang', 163),
@@ -3847,7 +3877,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Hai Duong', 170);
 
 -- Malaysia (country_ID = 110)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Kuala Lumpur', 171),
 ('George Town', 172),
 ('Johor Bahru', 173),
@@ -3860,12 +3890,12 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Alor Setar', 180);
 
 -- Singapore (country_ID = 111)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Singapore', 181);
 
 -- Europe
 -- United Kingdom (country_ID = 112)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('London', 182),
 ('Manchester', 183),
 ('Birmingham', 184),
@@ -3878,7 +3908,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Cardiff', 191);
 
 -- Germany (country_ID = 113)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Berlin', 192),
 ('Hamburg', 193),
 ('Munich', 194),
@@ -3891,7 +3921,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Leipzig', 201);
 
 -- France (country_ID = 114)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Paris', 202),
 ('Marseille', 203),
 ('Lyon', 204),
@@ -3904,7 +3934,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Lille', 211);
 
 -- Italy (country_ID = 115)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Rome', 212),
 ('Milan', 213),
 ('Naples', 214),
@@ -3917,7 +3947,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Verona', 221);
 
 -- Spain (country_ID = 116)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Madrid', 222),
 ('Barcelona', 223),
 ('Valencia', 224),
@@ -3930,7 +3960,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Alicante', 231);
 
 -- Netherlands (country_ID = 117)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Amsterdam', 232),
 ('Rotterdam', 233),
 ('The Hague', 234),
@@ -3943,7 +3973,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Enschede', 241);
 
 -- Sweden (country_ID = 118)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Stockholm', 242),
 ('Gothenburg', 243),
 ('Malmö', 244),
@@ -3956,7 +3986,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Norrköping', 251);
 
 -- Norway (country_ID = 119)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Oslo', 252),
 ('Bergen', 253),
 ('Stavanger', 254),
@@ -3969,7 +3999,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Ålesund', 261);
 
 -- Denmark (country_ID = 120)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Copenhagen', 262),
 ('Aarhus', 263),
 ('Odense', 264),
@@ -3982,7 +4012,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Roskilde', 271);
 
 -- Poland (country_ID = 121)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Warsaw', 272),
 ('Kraków', 273),
 ('Łódź', 274),
@@ -3995,7 +4025,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Katowice', 281);
 
 -- Czech Republic (country_ID = 122)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Prague', 282),
 ('Brno', 283),
 ('Ostrava', 284),
@@ -4008,7 +4038,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Zlín', 291);
 
 -- Austria (country_ID = 123)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Vienna', 292),
 ('Graz', 293),
 ('Linz', 294),
@@ -4021,7 +4051,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Dornbirn', 301);
 
 -- Switzerland (country_ID = 124)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Zurich', 302),
 ('Geneva', 303),
 ('Basel', 304),
@@ -4037,7 +4067,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 -- Africa
 
 -- Nigeria (country_ID = 125)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Lagos', 312),
 ('Abuja', 313),
 ('Kano', 314),
@@ -4050,7 +4080,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Ilorin', 321);
 
 -- South Africa (country_ID = 126)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Johannesburg', 322),
 ('Cape Town', 323),
 ('Durban', 324),
@@ -4063,7 +4093,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Pietermaritzburg', 331);
 
 -- Kenya (country_ID = 127)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Nairobi', 332),
 ('Mombasa', 333),
 ('Kisumu', 334),
@@ -4076,7 +4106,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Machakos', 341);
 
 -- Egypt (country_ID = 128)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Cairo', 342),
 ('Alexandria', 343),
 ('Giza', 344),
@@ -4089,7 +4119,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Asyut', 351);
 
 -- Ghana (country_ID = 130)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Accra', 352),
 ('Kumasi', 353),
 ('Tamale', 354),
@@ -4102,7 +4132,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Bolgatanga', 361);
 
 -- Algeria (country_ID = 129)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Algiers', 362),
 ('Oran', 363),
 ('Constantine', 364),
@@ -4115,7 +4145,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Bejaia', 371);
 
 -- Morocco (country_ID = 131)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Rabat', 372),
 ('Casablanca', 373),
 ('Marrakech', 374),
@@ -4128,7 +4158,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Tetouan', 381);
 
 -- Tunisia (country_ID = 132)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Tunis', 382),
 ('Sfax', 383),
 ('Sousse', 384),
@@ -4141,7 +4171,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Sidi Bouzid', 391);
 
 -- Angola (country_ID = 133)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Luanda', 392),
 ('Huambo', 393),
 ('Benguela', 394),
@@ -4154,7 +4184,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Soyo', 401);
 
 -- Senegal (country_ID = 134)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Dakar', 402),
 ('Thiès', 403),
 ('Saint-Louis', 404),
@@ -4167,7 +4197,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Kolda', 411);
 
 -- Ivory Coast / Cote d'Ivoire (country_ID = 135)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Abidjan', 412),
 ('Yamoussoukro', 413),
 ('Bouaké', 414),
@@ -4181,7 +4211,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 
 -- America
 -- United States (country_ID = 136)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('New York', 422),
 ('Los Angeles', 423),
 ('Chicago', 424),
@@ -4194,7 +4224,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('San Jose', 431);
 
 -- Canada (country_ID = 137)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Toronto', 432),
 ('Montreal', 433),
 ('Vancouver', 434),
@@ -4207,7 +4237,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Kitchener', 441);
 
 -- Mexico (country_ID = 138)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Mexico City', 442),
 ('Guadalajara', 443),
 ('Monterrey', 444),
@@ -4220,7 +4250,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('San Luis Potosí', 451);
 
 -- Brazil (country_ID = 139)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('São Paulo', 452),
 ('Rio de Janeiro', 453),
 ('Brasília', 454),
@@ -4233,7 +4263,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Porto Alegre', 461);
 
 -- Argentina (country_ID = 140)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Buenos Aires', 462),
 ('Córdoba', 463),
 ('Rosario', 464),
@@ -4246,7 +4276,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('San Juan', 471);
 
 -- Colombia (country_ID = 141)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Bogotá', 472),
 ('Medellín', 473),
 ('Cali', 474),
@@ -4259,7 +4289,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Ibagué', 481);
 
 -- Chile (country_ID = 142)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Santiago', 482),
 ('Valparaíso', 483),
 ('Concepción', 484),
@@ -4272,7 +4302,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Arica', 491);
 
 -- Peru (country_ID = 143)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Lima', 492),
 ('Arequipa', 493),
 ('Trujillo', 494),
@@ -4285,7 +4315,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Tacna', 501);
 
 -- Venezuela (country_ID = 144)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Caracas', 502),
 ('Maracaibo', 503),
 ('Valencia', 504),
@@ -4298,7 +4328,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('San Cristóbal', 511);
 
 -- Ecuador (country_ID = 145)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Quito', 512),
 ('Guayaquil', 513),
 ('Cuenca', 514),
@@ -4311,7 +4341,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Riobamba', 521);
 
 -- Bolivia (country_ID = 146)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('La Paz', 522),
 ('Santa Cruz de la Sierra', 523),
 ('Cochabamba', 524),
@@ -4324,7 +4354,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Montero', 531);
 
 -- Paraguay (country_ID = 147)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Asunción', 532),
 ('Ciudad del Este', 533),
 ('Encarnación', 534),
@@ -4337,7 +4367,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Caaguazú', 541);
 
 -- Uruguay (country_ID = 148)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Montevideo', 542),
 ('Salto', 543),
 ('Paysandú', 544),
@@ -4351,7 +4381,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 
 -- Central America & Caribbean (sample major cities)
 -- Panama (country_ID = 149)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Panama City', 552),
 ('Colón', 553),
 ('David', 554),
@@ -4359,7 +4389,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('La Chorrera', 556);
 
 -- Costa Rica (country_ID = 150)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('San José', 557),
 ('Alajuela', 558),
 ('Cartago', 559),
@@ -4367,7 +4397,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Liberia', 561);
 
 -- Jamaica (country_ID = 151)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Kingston', 562),
 ('Montego Bay', 563),
 ('Spanish Town', 564),
@@ -4375,7 +4405,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Mandeville', 566);
 
 -- Haiti (country_ID = 152)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Port-au-Prince', 567),
 ('Cap-Haïtien', 568),
 ('Gonaïves', 569),
@@ -4385,7 +4415,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 -- Oceania
 
 -- Australia (country_ID = 153)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Sydney', 562),
 ('Melbourne', 563),
 ('Brisbane', 564),
@@ -4398,7 +4428,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Logan City', 571);
 
 -- New Zealand (country_ID = 154)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Auckland', 572),
 ('Wellington', 573),
 ('Christchurch', 574),
@@ -4411,7 +4441,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Rotorua', 581);
 
 -- Fiji (country_ID = 155)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Suva', 582),
 ('Nadi', 583),
 ('Lautoka', 584),
@@ -4424,7 +4454,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Rakiraki', 591);
 
 -- Papua New Guinea (country_ID = 156)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Port Moresby', 592),
 ('Lae', 593),
 ('Mount Hagen', 594),
@@ -4437,7 +4467,7 @@ INSERT INTO City (city_name, province_ID) VALUES
 ('Buka', 601);
 
 -- Samoa (country_ID = 157)
-INSERT INTO City (city_name, province_ID) VALUES
+INSERT IGNORE INTO City (city_name, province_ID) VALUES
 ('Apia', 602),
 ('Vaitele', 603),
 ('Faleula', 604),
