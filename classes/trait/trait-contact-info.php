@@ -63,4 +63,35 @@ trait ContactInfoTrait {
         return $query->execute();
     }
 
+    public function deleteContactInfoSafe($contactinfo_ID){
+        $db = $this->connect();
+
+        // Step 1: Get linked phone, address, emergency IDs
+        $sql = "SELECT address_ID, phone_ID, emergency_ID FROM contact_info WHERE contactinfo_ID = :id";
+        $query = $db->prepare($sql);
+        $query->bindParam(":id", $contactinfo_ID);
+        $query->execute();
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+
+        if(!$data){ return false; }
+
+        $address_ID = $data['address_ID'];
+        $phone_ID = $data['phone_ID'];
+        $emergency_ID = $data['emergency_ID'];
+
+        // Step 2: Delete Contact_Info Row
+        $sql_delete = "DELETE FROM contact_info WHERE contactinfo_ID = :id";
+        $query_delete = $db->prepare($sql_delete);
+        $query_delete->bindParam(":id", $contactinfo_ID);
+        $query_delete->execute();
+
+        // Step 3: Individually remove unused pieces
+        $this->deleteAddressIfUnused($address_ID);
+        $this->deletePhoneIfUnused($phone_ID);
+        $this->deleteEmergencyIfUnused($emergency_ID);
+
+        return true;
+    }
+
+
 }
