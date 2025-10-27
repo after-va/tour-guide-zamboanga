@@ -24,22 +24,39 @@
 
 Import the SQL files in this exact order:
 
-1. **Main Schema**: Import `sql/tourguidesystem.sql`
-   - This creates all tables, views, and indexes
+1. **Main Schema**: `sql/tourguidesystem.sql`
+   - Creates all tables, views, and indexes
 
-2. **Initial Data**: Import `sql/tourguidesystem-data.sql`
-   - This adds default roles, payment methods, and tourist spots
+2. **Initial Data**: `sql/tourguidesystem-data.sql`
+   - Adds default roles, payment methods, and tourist spots
 
-3. **Admin User** (Optional): Import `sql/setup-admin.sql`
+3. **Location Data** (Optional): `sql/ph-location.sql`
+   - Philippine regions, provinces, cities, barangays
+
+4. **Cleanup** (Optional): `sql/00-CLEANUP-before-import.sql`
+   - Cleans up duplicate location data
+
+5. **Barangay Data** (Optional): Run in order:
+   - `sql/barangays-PART1-cities-11-50.sql`
+   - `sql/barangays-PART2-cities-51-110.sql`
+   - `sql/barangays-PART3-cities-111-130.sql`
+   - `sql/barangays-PART4-cities-131-162.sql`
+
+6. **Ensure Roles Exist**: `sql/ensure-roles.sql`
+   - Ensures Admin, Guide, and Tourist roles exist
+
+7. **Create Admin User**: `sql/setup-admin.sql`
    - Creates default admin account
    - Username: `admin`
    - Password: `admin123`
    - **IMPORTANT**: Change this password after first login!
 
--- tourguidesystem.sql
--- tourguidesystem-data.sql
--- ph-location.sql
--- setup-admin.sql
+8. **Fix Admin Login**: `sql/fix-admin-complete.sql`
+   - Ensures admin has correct Account_Role entry
+   - Fixes any login issues
+
+9. **Add Role Approval**: `sql/add-role-approval.sql`
+   - Adds is_approved column for guide approval workflow
 
 
 ### 4. Configure Database Connection

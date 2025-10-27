@@ -8,10 +8,10 @@ trait NameInfoTrait{
             SELECT name_id 
             FROM name_info
             WHERE name_first = :firstname
-            AND (name_second = :secondname OR (name_second IS NULL AND :secondname IS NULL))
-            AND (name_middle = :middlename OR (name_middle IS NULL AND :middlename IS NULL))
+            AND (name_second <=> :secondname)
+            AND (name_middle <=> :middlename)
             AND name_last = :lastname
-            AND (name_suffix = :suffix OR (name_suffix IS NULL AND :suffix IS NULL))
+            AND (name_suffix <=> :suffix)
         ";
 
         $q_check = $db->prepare($sql_check);

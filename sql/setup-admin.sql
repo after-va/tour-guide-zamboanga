@@ -34,7 +34,7 @@ INSERT IGNORE INTO Address_Info (address_houseno, address_street, barangay_ID)
 SELECT 'N/A', 'N/A', barangay_ID FROM Barangay WHERE barangay_name = 'Zone 1' LIMIT 1;
 
 -- Insert default contact info
-INSERT INTO Contact_Info (address_ID, phone_ID, contactinfo_email, emergency_ID) 
+INSERT IGNORE INTO Contact_Info (address_ID, phone_ID, contactinfo_email, emergency_ID) 
 SELECT 
     (SELECT address_ID FROM Address_Info WHERE address_houseno = 'N/A' AND address_street = 'N/A' LIMIT 1),
     (SELECT phone_ID FROM Phone_Number WHERE phone_number = '0000000000' LIMIT 1),
@@ -42,11 +42,11 @@ SELECT
     (SELECT emergency_ID FROM Emergency_Info WHERE emergency_Name = 'N/A' LIMIT 1);
 
 -- Insert admin name
-INSERT INTO Name_Info (name_first, name_second, name_middle, name_last, name_suffix) 
+INSERT IGNORE INTO Name_Info (name_first, name_second, name_middle, name_last, name_suffix) 
 VALUES ('System', NULL, NULL, 'Administrator', NULL);
 
 -- Insert admin person
-INSERT INTO Person (name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID) 
+INSERT IGNORE INTO Person (name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID) 
 SELECT 
     (SELECT name_ID FROM Name_Info WHERE name_first = 'System' AND name_last = 'Administrator' LIMIT 1),
     'Filipino',
@@ -55,7 +55,7 @@ SELECT
     (SELECT contactinfo_ID FROM Contact_Info WHERE contactinfo_email = 'admin@tourismozamboanga.com' LIMIT 1);
 
 -- Insert admin login (password: admin123)
-INSERT INTO User_Login (person_ID, username, password_hash) 
+INSERT IGNORE INTO User_Login (person_ID, username, password_hash) 
 SELECT 
     person_ID,
     'admin',
@@ -65,8 +65,8 @@ WHERE name_ID = (SELECT name_ID FROM Name_Info WHERE name_first = 'System' AND n
 LIMIT 1;
 
 -- Link admin to role (Admin role_ID is 1)
-INSERT INTO Account_Role (login_ID, role_ID) 
-SELECT login_ID, 1 FROM User_Login WHERE username = 'admin' LIMIT 1;
+INSERT IGNORE INTO Account_Role (login_ID, role_ID, is_approved) 
+SELECT login_ID, 1, 1 FROM User_Login WHERE username = 'admin' LIMIT 1;
 
 -- Confirm creation
 SELECT 'Admin user created successfully!' as message,

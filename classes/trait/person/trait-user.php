@@ -19,7 +19,7 @@ trait UserTrait {
         $country_ID, $phone_number,
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
-        $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, 
+        $person_nationality, $person_gender, $person_dateofbirth, 
         $username, $password,
         $db
     ) {
@@ -31,7 +31,7 @@ trait UserTrait {
             $country_ID, $phone_number,
             $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
             $contactinfo_email,
-            $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $db);
+            $person_nationality, $person_gender, $person_dateofbirth, $db);
 
             if (!$person_ID) {
                 return false;

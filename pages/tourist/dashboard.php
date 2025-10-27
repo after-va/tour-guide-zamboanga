@@ -7,13 +7,38 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 
 require_once "../../classes/booking-manager.php";
 require_once "../../classes/tour-manager.php";
+require_once "../../classes/guide.php";
 
 $bookingManager = new BookingManager();
 $tourManager = new TourManager();
+$guideObj = new Guide();
 
 $user = $_SESSION['user'];
 $bookings = $bookingManager->getBookingsByCustomer($user['person_ID']);
 $popularPackages = $tourManager->getPopularPackages(6);
+
+// Check if user already has a guide role request
+$db = new Database();
+$connection = $db->connect();
+$sql_check = "SELECT account_role_ID FROM Account_Role WHERE login_ID = :login_ID AND role_ID = 2";
+$query_check = $connection->prepare($sql_check);
+$query_check->bindParam(":login_ID", $_SESSION['login_ID'], PDO::PARAM_INT);
+$query_check->execute();
+$has_guide_role = $query_check->rowCount() > 0;
+
+// Handle guide role request via AJAX
+$message = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'request_guide') {
+    if ($guideObj->requestGuideRole($_SESSION['login_ID'], $connection)) {
+        $message = "success";
+        $has_guide_role = true;
+    } else {
+        $message = "error";
+    }
+    header('Content-Type: application/json');
+    echo json_encode(['status' => $message]);
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,6 +46,74 @@ $popularPackages = $tourManager->getPopularPackages(6);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tourist Dashboard - Tourismo Zamboanga</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .modal-content h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .modal-content p {
+            color: #666;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        .modal-buttons button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-yes {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-yes:hover {
+            background: #229954;
+        }
+        .btn-no {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-no:hover {
+            background: #7f8c8d;
+        }
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
@@ -152,5 +245,89 @@ $popularPackages = $tourManager->getPopularPackages(6);
             </div>
         </div>
     </div>
+
+    <!-- Guide Request Modal -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <h2>🎯 Become a Tour Guide?</h2>
+            <p>Do you want to become a tour guide and start earning?</p>
+            <p style="font-size: 14px; color: #999;">Your request will be reviewed by our admin team.</p>
+            <div class="modal-buttons">
+                <button class="btn-yes" onclick="requestGuideRole()">Yes, I'm Interested</button>
+                <button class="btn-no" onclick="closeGuideModal()">Not Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h2>✓ Request Submitted!</h2>
+            <p>Your guide role request has been submitted successfully.</p>
+            <p style="font-size: 14px; color: #999;">Admin needs to accept your approval. You'll be notified once approved.</p>
+            <div class="modal-buttons">
+                <button class="btn-yes" onclick="closeSuccessModal()" style="width: 100%;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show guide modal on page load if user doesn't have guide role
+        window.addEventListener('load', function() {
+            <?php if (!$has_guide_role): ?>
+                // Check if user has already dismissed this today
+                const dismissed = localStorage.getItem('guideModalDismissed');
+                if (!dismissed) {
+                    document.getElementById('guideModal').style.display = 'block';
+                }
+            <?php endif; ?>
+        });
+
+        function closeGuideModal() {
+            document.getElementById('guideModal').style.display = 'none';
+            // Dismiss for today
+            localStorage.setItem('guideModalDismissed', 'true');
+        }
+
+        function requestGuideRole() {
+            const formData = new FormData();
+            formData.append('action', 'request_guide');
+
+            fetch('dashboard.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('guideModal').style.display = 'none';
+                    document.getElementById('successModal').style.display = 'block';
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to submit request'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+            localStorage.setItem('guideModalDismissed', 'true');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const guideModal = document.getElementById('guideModal');
+            const successModal = document.getElementById('successModal');
+            if (event.target === guideModal) {
+                closeGuideModal();
+            }
+            if (event.target === successModal) {
+                closeSuccessModal();
+            }
+        }
+    </script>
 </body>
 </html>

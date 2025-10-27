@@ -19,7 +19,7 @@ class Tourist extends Database {
         $country_ID, $phone_number,
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
-        $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, 
+        $person_nationality, $person_gender, $person_dateofbirth, 
         $username, $password) {
     
         $db = $this->connect();
@@ -51,7 +51,6 @@ class Tourist extends Database {
                 $contactinfo_email,
                 $person_nationality, 
                 $person_gender, 
-                $person_civilstatus, 
                 $person_dateofbirth, 
                 $username, 
                 $password,
@@ -68,7 +67,7 @@ class Tourist extends Database {
                 return false;
             }
 
-            $role_ID = 1; // Tourist role_ID is 1
+            $role_ID = 3; // Tourist role_ID is 3
             $created_at = date('Y-m-d H:i:s');
 
             $sql = "INSERT INTO Account_Role (login_ID, role_ID, created_at) VALUES (:login_ID, :role_ID, :created_at)";

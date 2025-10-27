@@ -66,6 +66,7 @@ $recentBookings = $query->fetchAll(PDO::FETCH_ASSOC);
                 <a href="manage-spots.php" style="color: white; margin-right: 15px;">Spots</a>
                 <a href="manage-bookings.php" style="color: white; margin-right: 15px;">Bookings</a>
                 <a href="manage-users.php" style="color: white; margin-right: 15px;">Users</a>
+                <a href="../../admin/approve-guides.php" style="color: white; margin-right: 15px;">Approve Guides</a>
                 <a href="../../logout.php" style="color: white;">Logout</a>
             </nav>
         </header>

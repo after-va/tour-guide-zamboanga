@@ -44,7 +44,7 @@ trait PersonTrait {
         $country_ID, $phone_number,
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
-        $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $db
+        $person_nationality, $person_gender, $person_dateofbirth, $db
     ){
 
 
@@ -65,14 +65,13 @@ trait PersonTrait {
                 return false;
             }
 
-            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_CivilStatus, person_DateOfBirth, contactinfo_ID)
-                    VALUES (:name_ID, :person_nationality, :person_gender, :person_civilstatus, :person_dateofbirth, :contactinfo_ID)";
+            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID)
+                    VALUES (:name_ID, :person_nationality, :person_gender, :person_dateofbirth, :contactinfo_ID)";
 
             $query = $db->prepare($sql);
             $query->bindParam(":name_ID", $name_ID);
             $query->bindParam(":person_nationality", $person_nationality);
             $query->bindParam(":person_gender", $person_gender);
-            $query->bindParam(":person_civilstatus", $person_civilstatus);
             $query->bindParam(":person_dateofbirth", $person_dateofbirth);
             $query->bindParam(":contactinfo_ID", $contactinfo_ID);
 

@@ -30,7 +30,7 @@ function testRegistration($touristObj) {
         'province_ID' => '1',
         'city_ID' => '1',
         'barangay_ID' => '1',
-        'phone_country_ID' => '161',
+        'country_ID' => '161',
         'phone_number' => '09123456789',
         'emergency_name' => 'Emergency Contact',
         'emergency_country_ID' => '161',
@@ -39,7 +39,6 @@ function testRegistration($touristObj) {
         'contactinfo_email' => 'test' . time() . '@example.com', // Unique email
         'person_nationality' => 'Filipino',
         'person_gender' => 'Male',
-        'person_civilstatus' => 'Single',
         'person_dateofbirth' => '1990-01-01',
         'username' => 'testuser' . time(), // Unique username
         'password' => 'Test@1234'
@@ -60,7 +59,7 @@ function testRegistration($touristObj) {
             $testData['address_houseno'],
             $testData['address_street'],
             $testData['barangay_ID'],
-            $testData['phone_country_ID'],
+            $testData['country_ID'],
             $testData['phone_number'],
             $testData['emergency_name'],
             $testData['emergency_country_ID'],
@@ -69,7 +68,6 @@ function testRegistration($touristObj) {
             $testData['contactinfo_email'],
             $testData['person_nationality'],
             $testData['person_gender'],
-            $testData['person_civilstatus'],
             $testData['person_dateofbirth'],
             $testData['username'],
             $testData['password']
@@ -116,7 +114,7 @@ try {
                                     // $country_ID, $phone_number,
                                     // $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
                                     // $contactinfo_email,
-                                    // $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth,
+                                    // $person_nationality, $person_gender, $person_dateofbirth,
                                     // $username, $password)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Check if database is available
@@ -135,9 +133,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $required = [
         "name_first", "name_last", 
         "address_houseno", "address_street", "address_country_ID", 
-        "phone_country_ID", "emergency_name", "emergency_country_ID",
+        "country_ID", "emergency_name", "emergency_country_ID",
         "emergency_phonenumber", "emergency_relationship", "contactinfo_email",
-        "person_nationality", "person_gender", "person_civilstatus", "person_dateofbirth",
+        "person_nationality", "person_gender", "person_dateofbirth",
         "username", "password"
     ]; // Removed phone_number from required fields
 
@@ -232,7 +230,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $tourist["address_houseno"], 
                 $tourist["address_street"], 
                 $barangay_ID,
-                $tourist["phone_country_ID"], 
+                $tourist["country_ID"], 
                 $tourist["phone_number"] ?? null,
                 $tourist["emergency_name"], 
                 $tourist["emergency_country_ID"], 
@@ -241,7 +239,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $tourist["contactinfo_email"],
                 $tourist["person_nationality"], 
                 $tourist["person_gender"], 
-                $tourist["person_civilstatus"], 
                 $tourist["person_dateofbirth"], 
                 $tourist["username"], 
                 $tourist["password"]
@@ -636,32 +633,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </select>
         <p class="error"><?= $errors["person_gender"] ?? "" ?></p>
 
-        <label for="person_civilstatus">Civil Status</label>
-        <select name="person_civilstatus" id="person_civilstatus">
-            <option value="">--Select--</option>
-            <option value="Single" <?= ($tourist["person_civilstatus"] ?? "") === "Single" ? "selected" : "" ?>>Single</option>
-            <option value="Married" <?= ($tourist["person_civilstatus"] ?? "") === "Married" ? "selected" : "" ?>>Married</option>
-            <option value="Divorced" <?= ($tourist["person_civilstatus"] ?? "") === "Divorced" ? "selected" : "" ?>>Divorced</option>
-            <option value="Widowed" <?= ($tourist["person_civilstatus"] ?? "") === "Widowed" ? "selected" : "" ?>>Widowed</option>
-        </select>
-        <p class="error"><?= $errors["person_civilstatus"] ?? "" ?></p>
-
         <label for="person_dateofbirth">Date of Birth</label>
         <input type="date" name="person_dateofbirth" id="person_dateofbirth" value="<?= $tourist["person_dateofbirth"] ?? "" ?>">
         <p class="error"><?= $errors["person_dateofbirth"] ?? "" ?></p>
 
         <h3>Phone Number</h3>
-            <label for="phone_country_ID"> Country Code </label>
-            <select name="phone_country_ID" id="phone_country_ID">
+            <label for="country_ID"> Country Code </label>
+            <select name="country_ID" id="country_ID">
                 <option value="">--SELECT COUNTRY CODE--</option>
 
                 <?php foreach ($touristObj->fetchCountryCode() as $country_code){ 
                     $temp = $country_code["country_ID"];
                 ?>
-                <option value="<?= $temp ?>" <?= ($temp == ($tourist["phone_country_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["country_name"] ?> <?= $country_code["country_codenumber"]?> </option> 
+                <option value="<?= $temp ?>" <?= ($temp == ($tourist["country_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["country_name"] ?> <?= $country_code["country_codenumber"]?> </option> 
             <?php } ?>
             </select>
-            <p class="errors"> <?= $errors["phone_country_ID"] ?? "" ?> </p>
+            <p class="errors"> <?= $errors["country_ID"] ?? "" ?> </p>
         
         <label for="phone_number">Phone Number</label>
             <input type="text" name="phone_number" id="phone_number" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $tourist["phone_number"] ?? "" ?>">

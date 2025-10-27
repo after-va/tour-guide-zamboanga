@@ -22,22 +22,38 @@ class Auth extends Database {
             
             $user = $query->fetch(PDO::FETCH_ASSOC);
             
-            if ($user && password_verify($password, $user['password_hash'])) {
-                // Update last login
-                $this->updateLastLogin($user['login_ID']);
-                
-                return [
-                    'login_ID' => $user['login_ID'],
-                    'person_ID' => $user['person_ID'],
-                    'username' => $user['username'],
-                    'full_name' => $user['full_name'],
-                    'account_role_ID' => $user['account_role_ID'],
-                    'role_ID' => $user['role_ID'],
-                    'role_name' => $user['role_name']
-                ];
+            // Debug logging
+            error_log("Login attempt for username: " . $username);
+            
+            if (!$user) {
+                error_log("User not found: " . $username);
+                return false;
             }
             
-            return false;
+            if (!password_verify($password, $user['password_hash'])) {
+                error_log("Password verification failed for: " . $username);
+                return false;
+            }
+            
+            if (!$user['role_name']) {
+                error_log("User has no role assigned: " . $username . " (login_ID: " . $user['login_ID'] . ")");
+                return false;
+            }
+            
+            // Update last login
+            $this->updateLastLogin($user['login_ID']);
+            
+            error_log("Login successful for: " . $username . " with role: " . $user['role_name']);
+            
+            return [
+                'login_ID' => $user['login_ID'],
+                'person_ID' => $user['person_ID'],
+                'username' => $user['username'],
+                'full_name' => $user['full_name'],
+                'account_role_ID' => $user['account_role_ID'],
+                'role_ID' => $user['role_ID'],
+                'role_name' => $user['role_name']
+            ];
         } catch (PDOException $e) {
             error_log("Login Error: " . $e->getMessage());
             return false;

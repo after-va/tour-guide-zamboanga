@@ -34,6 +34,7 @@ $offerings = $guideManager->getGuidePackageOfferings($user['person_ID']);
                 <a href="my-schedules.php" style="color: white; margin-right: 15px;">My Schedules</a>
                 <a href="my-offerings.php" style="color: white; margin-right: 15px;">My Offerings</a>
                 <a href="availability.php" style="color: white; margin-right: 15px;">Availability</a>
+                <a href="../../account/switch-role.php" style="color: white; margin-right: 15px;">Switch Role</a>
                 <a href="../../logout.php" style="color: white;">Logout</a>
             </nav>
         </header>
