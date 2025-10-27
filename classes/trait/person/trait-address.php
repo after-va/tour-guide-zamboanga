@@ -45,6 +45,106 @@ trait AddressTrait {
         }
     }
 
+    public function fetchRegion($country_ID){
+        $sql = "SELECT * FROM region WHERE country_ID = :country_ID";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function fetchProvince($region_ID){
+        $sql = "SELECT * FROM province WHERE region_ID = :region_ID";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function fetchCityMunicipality($province_ID){
+        $sql = "SELECT * FROM city_municipality WHERE province_ID = :province_ID";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function fetchBarangay($citymunicipality_ID){
+        $sql = "SELECT * FROM barangay WHERE citymunicipality_ID = :citymunicipality_ID";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function addgetRegion($region_name, $country_ID){
+        $sql_select = "SELECT region_ID 
+                       FROM region 
+                       WHERE region_name = :region_name 
+                       AND country_ID = :country_ID";
+        $query_select = $this->connect()->prepare($sql_select);
+        $query_select->bindParam(":region_name", $region_name);
+        $query_select->bindParam(":country_ID", $country_ID);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function addgetProvince($province_name, $region_ID){
+        $sql_select = "SELECT province_ID 
+                       FROM province 
+                       WHERE province_name = :province_name 
+                       AND region_ID = :region_ID";
+        $query_select = $this->connect()->prepare($sql_select);
+        $query_select->bindParam(":province_name", $province_name);
+        $query_select->bindParam(":region_ID", $region_ID);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function addgetCityMunicipality($citymunicipality_name, $province_ID){
+        $sql_select = "SELECT citymunicipality_ID 
+                       FROM city_municipality 
+                       WHERE citymunicipality_name = :citymunicipality_name 
+                       AND province_ID = :province_ID";
+        $query_select = $this->connect()->prepare($sql_select);
+        $query_select->bindParam(":citymunicipality_name", $citymunicipality_name);
+        $query_select->bindParam(":province_ID", $province_ID);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    public function addgetBarangay($barangay_name, $citymunicipality_ID){
+        $sql_select = "SELECT barangay_ID 
+                       FROM barangay 
+                       WHERE barangay_name = :barangay_name 
+                       AND citymunicipality_ID = :citymunicipality_ID";
+        $query_select = $this->connect()->prepare($sql_select);
+        $query_select->bindParam(":barangay_name", $barangay_name);
+        $query_select->bindParam(":citymunicipality_ID", $citymunicipality_ID);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
     
 
     public function deleteAddress($address_ID){

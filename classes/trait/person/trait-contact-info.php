@@ -16,20 +16,20 @@ trait ContactInfoTrait {
     }
 
     public function addContact_Info( $houseno, $street, $barangay, $city,  
-        $countrycode_ID, $phone_number, 
-        $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, 
+        $country_ID, $phone_number, 
+        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
         $contactinfo_email, $db)
         {
 
         try{
             // These functions come from other traits:
             $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
-            $phone_ID = $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number, $db);
-            $emergency_ID = $this->addgetEmergencyID($emergency_countrycode_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
+            $phone_ID = $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+            $emergency_ID = $this->addgetEmergencyID($country_ID, $phone_number, $ename, $erelationship, $db);
 
             
            if (!$address_ID || !$phone_ID || !$emergency_ID) {
-                $db->rollBack();
+                
                 return false;
             }
 
@@ -42,15 +42,14 @@ trait ContactInfoTrait {
             $query->bindParam(":contactinfo_email", $contactinfo_email);
 
             if ($query->execute()){
-                $db->commit();
-                return true; 
+                return $db->lastInsertId();
             } else {
-                $db->rollBack();
+                
                 return false;
             }
 
         } catch (PDOException $e) {
-            $db->rollBack();
+            
             return false;
         }
     }

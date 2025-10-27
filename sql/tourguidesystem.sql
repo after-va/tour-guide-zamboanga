@@ -110,7 +110,7 @@ CREATE TABLE Rating_Category (
 -- Role Info
 CREATE TABLE Role_Info (
     role_ID INT AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(225)
+    role_name ENUM('Tourist', 'Guide', 'Admin') NOT NULL UNIQUE
 );
 
 -- Person
@@ -216,10 +216,6 @@ CREATE TABLE IF NOT EXISTS User_Login (
     person_ID INT NOT NULL,
     username VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    last_login DATETIME,
-    is_active TINYINT(1) DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (person_ID) REFERENCES Person(person_ID) ON DELETE CASCADE
 );
 
@@ -229,9 +225,7 @@ CREATE TABLE IF NOT EXISTS Account_Role (
     login_ID INT NOT NULL,
     role_ID INT NOT NULL,
     role_rating_score DECIMAL(3,2) DEFAULT NULL,
-    is_active TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (login_ID) REFERENCES User_Login(login_ID) ON DELETE CASCADE,
     FOREIGN KEY (role_ID) REFERENCES Role_Info(role_ID) ON DELETE CASCADE,
     UNIQUE KEY unique_login_role (login_ID, role_ID)
@@ -241,13 +235,29 @@ CREATE TABLE IF NOT EXISTS Account_Role (
 CREATE TABLE Rating (
     rating_ID INT AUTO_INCREMENT PRIMARY KEY,
     rater_account_role_ID INT NOT NULL,
-    rated_account_role_ID INT NOT NULL,
+
+    rated_type ENUM('Tourist', 'Guide', 'TouristSpot', 'TouristPackage') NOT NULL,
+    -- one of these three will hold the rated target
+    rated_account_role_ID INT DEFAULT NULL,
+    rated_spot_ID INT DEFAULT NULL,
+    rated_package_ID INT DEFAULT NULL,
+
     rating_value DECIMAL(2,1) NOT NULL,
     rating_description VARCHAR(255),
     rating_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+
     FOREIGN KEY (rater_account_role_ID) REFERENCES Account_Role(account_role_ID),
-    FOREIGN KEY (rated_account_role_ID) REFERENCES Account_Role(account_role_ID)
+    FOREIGN KEY (rated_account_role_ID) REFERENCES Account_Role(account_role_ID),
+    FOREIGN KEY (rated_spot_ID) REFERENCES Tour_Spots(spots_ID),
+    FOREIGN KEY (rated_package_ID) REFERENCES Tour_Package(tourPackage_ID),
+
+    CHECK (
+        (rated_account_role_ID IS NOT NULL)
+        + (rated_spot_ID IS NOT NULL)
+        + (rated_package_ID IS NOT NULL) = 1
+    )
 );
+
 
 -- Password Reset Tokens
 CREATE TABLE IF NOT EXISTS Password_Reset (
@@ -269,7 +279,8 @@ CREATE TABLE IF NOT EXISTS Activity_Log (
     ip_address VARCHAR(45),
     user_agent VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_ID) REFERENCES Person(person_ID) ON DELETE SET NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_ID) REFERENCES Account_Role(account_role_ID) ON DELETE SET NULL
 );
 
 -- Guide Certifications
@@ -446,29 +457,7 @@ CREATE INDEX idx_barangay_city ON Barangay(city_ID);
 CREATE INDEX idx_address_barangay ON Address_Info(barangay_ID);
 
 -- Create views for common queries
-CREATE OR REPLACE VIEW v_user_details AS
-SELECT 
-    p.person_ID,
-    ul.login_ID,
-    ar.role_ID,
-    r.role_name,
-    ar.role_rating_score as rating,
-    CONCAT(n.name_first, ' ', n.name_last) as full_name,
-    n.name_first,
-    n.name_last,
-    ci.contactinfo_email as email,
-    ph.phone_number,
-    ul.username,
-    ul.last_login,
-    ul.is_active,
-    ar.is_active as role_is_active
-FROM Person p
-LEFT JOIN Name_Info n ON p.name_ID = n.name_ID
-LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
-LEFT JOIN Phone_Number ph ON ci.phone_ID = ph.phone_ID
-LEFT JOIN User_Login ul ON p.person_ID = ul.person_ID
-LEFT JOIN Account_Role ar ON ul.login_ID = ar.login_ID
-LEFT JOIN Role_Info r ON ar.role_ID = r.role_ID;
+
 
 CREATE OR REPLACE VIEW v_booking_details AS
 SELECT 

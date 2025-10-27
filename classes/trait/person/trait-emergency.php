@@ -2,16 +2,16 @@
 
 trait EmergencyTrait {
 
-    public function addgetEmergencyID($countrycode_ID, $phone_number, $ename, $erelationship){
+    public function addgetEmergencyID($country_ID, $phone_number, $ename, $erelationship, $db){
 
         try {
 
             $sql = "SELECT emergency_ID FROM Emergency_Info ei
                     INNER JOIN Phone_Number pn ON ei.phone_ID = pn.phone_ID
-                    WHERE pn.countrycode_ID = :countrycode_ID AND pn.phone_number = :phone_number
+                    WHERE pn.country_ID = :country_ID AND pn.phone_number = :phone_number
                     AND ei.emergency_Name = :ename AND ei.emergency_Relationship = :erelationship";
             $query_select = $db->prepare($sql_select); 
-            $query_select->bindParam(":countrycode_ID", $countrycode_ID);
+            $query_select->bindParam(":country_ID", $country_ID);
             $query_select->bindParam(":phone_number", $phone_number);
             $query_select->bindParam(":ename", $ename);
             $query_select->bindParam(":erelationship", $erelationship);
@@ -20,11 +20,11 @@ trait EmergencyTrait {
             if($result = $query_select->fetch()){
                 return $result["emergency_ID"];
             }
-            
-            $phone_ID = $this->addgetPhoneNumber($countrycode_ID, $phone_number);
+
+            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number);
 
             if(!$phone_ID){
-                $db->rollBack(); 
+                 
                 return false;
             }
             

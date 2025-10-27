@@ -38,32 +38,30 @@ trait PersonTrait {
 
 
     // Add Person
-    public function addPerson(
+    public function addgetPerson(
         $name_first, $name_second, $name_middle, $name_last, $name_suffix,
-        $houseno, $street, $barangay, $city, $province, $country,
-        $countrycode_ID, $phone_number,
-        $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship,
+        $houseno, $street, $barangay,
+        $country_ID, $phone_number,
+        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
-        $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth
+        $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $db
     ){
 
-        $db = $this->connect();
-        $db->beginTransaction();
 
         try {
 
             $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
 
             $contactinfo_ID = $this->addgetContact_Info(
-                $houseno, $street, $barangay, $city, $province, $country,
-                $countrycode_ID, $phone_number,
-                $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship,
+                $houseno, $street, $barangay,
+                $country_ID, $phone_number,
+                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
                 $contactinfo_email,
                 $db
             );
 
             if (!$name_ID || !$contactinfo_ID) {
-                $db->rollBack();
+                
                 return false;
             }
 
@@ -79,15 +77,15 @@ trait PersonTrait {
             $query->bindParam(":contactinfo_ID", $contactinfo_ID);
 
             if ($query->execute()) {
-                $db->commit();
-                return true;
+                return $db->lastInsertId();
+               
             }
 
-            $db->rollBack();
+            
             return false;
 
         } catch (PDOException $e) {
-            $db->rollBack();
+            
             error_log("Add Person Error: " . $e->getMessage());
             return false;
         }
@@ -132,11 +130,11 @@ trait PersonTrait {
                 $this->deleteContactInfoSafe($contactinfo_ID);
             }
 
-            $db->commit();
-            return true;
+            return $db->lastInsertId();
+            
 
         } catch (PDOException $e){
-            $db->rollBack();
+            
             error_log("Delete Person Error: " . $e->getMessage());
             return false;
         }

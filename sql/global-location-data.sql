@@ -2,11 +2,6 @@
 -- GLOBAL LOCATION DATA
 -- Countries, Provinces/States, Cities, and Districts
 -- ============================================
-ALTER TABLE Country ADD UNIQUE (country_name);
-ALTER TABLE Country ADD UNIQUE (country_codename);
-ALTER TABLE Province ADD UNIQUE (province_name, country_ID);
-ALTER TABLE City ADD UNIQUE (city_name, province_ID);
-
 
 
 -- Insert Countries

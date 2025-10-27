@@ -2,42 +2,51 @@
 
 trait NameInfoTrait{
 
-    public function addgetName($firstname, $middlename, $lastname, $suffix, $db){
-        // Check if name already exists
-        $sql_select = "SELECT name_ID 
-                       FROM name_info 
-                       WHERE first_Name = :firstname 
-                       AND middle_Name = :middlename 
-                       AND last_Name = :lastname 
-                       AND name_Suffix = :suffix";
+    // $name_first, $name_second, $name_middle, $name_last, $name_suffix,
+    public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db) {
+        $sql_check = "
+            SELECT name_ID 
+            FROM Name_Info
+            WHERE first_Name = :firstname
+            AND (second_Name = :secondname OR (second_Name IS NULL AND :secondname IS NULL))
+            AND (middle_Name = :middlename OR (middle_Name IS NULL AND :middlename IS NULL))
+            AND last_Name = :lastname
+            AND (name_Suffix = :suffix OR (name_Suffix IS NULL AND :suffix IS NULL))
+        ";
 
-        $query_select = $db->prepare($sql_select);
-        $query_select->bindParam(":firstname", $firstname);
-        $query_select->bindParam(":middlename", $middlename);
-        $query_select->bindParam(":lastname", $lastname);
-        $query_select->bindParam(":suffix", $suffix);
-        $query_select->execute();
-        $result = $query_select->fetch();
+        $q_check = $db->prepare($sql_check);
+        $q_check->bindParam(":firstname", $name_first);
+        $q_check->bindParam(":secondname", $name_second);
+        $q_check->bindParam(":middlename", $name_middle);
+        $q_check->bindParam(":lastname", $name_last);
+        $q_check->bindParam(":suffix", $name_suffix);
+        $q_check->execute();
 
-        if($result){
-            return $result["name_ID"];
+        $existing = $q_check->fetch(PDO::FETCH_ASSOC);
+        if ($existing) {
+            return $existing["name_ID"];
         }
 
-        // Insert if not found
-        $sql_insert = "INSERT INTO name_info (first_Name, middle_Name, last_Name, name_Suffix) 
-                       VALUES (:firstname, :middlename, :lastname, :suffix)";
-        $query_insert = $db->prepare($sql_insert);
-        $query_insert->bindParam(":firstname", $firstname);
-        $query_insert->bindParam(":middlename", $middlename);
-        $query_insert->bindParam(":lastname", $lastname);
-        $query_insert->bindParam(":suffix", $suffix);
+        // Insert new name record
+        $sql_insert = "
+            INSERT INTO Name_Info (first_Name, second_Name, middle_Name, last_Name, name_Suffix)
+            VALUES (:firstname, :secondname, :middlename, :lastname, :suffix)
+        ";
 
-        if ($query_insert->execute()) {
+        $q_insert = $db->prepare($sql_insert);
+        $q_insert->bindParam(":firstname", $name_first);
+        $q_insert->bindParam(":secondname", $name_second);
+        $q_insert->bindParam(":middlename", $name_middle);
+        $q_insert->bindParam(":lastname", $name_last);
+        $q_insert->bindParam(":suffix", $name_suffix);
+
+        if ($q_insert->execute()) {
             return $db->lastInsertId();
         } else {
             return false;
         }
     }
+
 
     public function renameNameSmart($person_ID, $firstname, $middlename, $lastname, $suffix){
         $db = $this->connect();

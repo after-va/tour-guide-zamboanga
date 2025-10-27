@@ -1,13 +1,13 @@
 <?php
 
-trait PhoneNumberTrait {
+trait PhoneTrait {
 
     // Check if phone number already exists
-    public function checkPhoneExists($countrycode_ID, $phone_number) {
+    public function checkPhoneExists($country_ID, $phone_number) {
         $sql = "SELECT COUNT(*) AS total FROM Phone_Number 
-                WHERE countrycode_ID = :countrycode_ID AND phone_number = :phone_number";
+                WHERE country_ID = :country_ID AND phone_number = :phone_number";
         $query = $this->connect()->prepare($sql);
-        $query->bindParam(":countrycode_ID", $countrycode_ID);
+        $query->bindParam(":country_ID", $country_ID);
         $query->bindParam(":phone_number", $phone_number);
         
         if ($query->execute()) {
@@ -18,11 +18,11 @@ trait PhoneNumberTrait {
     }
     
 
-    public function addgetPhoneNumber($countrycode_ID, $phone_number, $db){
+    public function addgetPhoneNumber($country_ID, $phone_number, $db){
         
-        $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID";
+        $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND country_ID = :country_ID";
         $query_select = $db->prepare($sql_select); 
-        $query_select->bindParam(":countrycode_ID", $countrycode_ID);
+        $query_select->bindParam(":country_ID", $country_ID);
         $query_select->bindParam(":phone_number", $phone_number);
         $query_select->execute();
         $result = $query_select->fetch();
@@ -31,9 +31,9 @@ trait PhoneNumberTrait {
             return $result["phone_ID"];
         }
         
-        $sql_insert = "INSERT INTO phone_number(countrycode_ID, phone_number) VALUES (:countrycode_ID, :phone_number)";
+        $sql_insert = "INSERT INTO phone_number(country_ID, phone_number) VALUES (:country_ID, :phone_number)";
         $query_insert = $db->prepare($sql_insert); 
-        $query_insert->bindParam(":countrycode_ID", $countrycode_ID);
+        $query_insert->bindParam(":country_ID", $country_ID);
         $query_insert->bindParam(":phone_number", $phone_number);
 
         if ($query_insert->execute()) {
