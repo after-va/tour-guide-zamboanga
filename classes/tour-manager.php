@@ -104,6 +104,79 @@ class TourManager extends Database {
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
+                
+    public function deleteTourPackage($packageId) {
+        try {
+            $db = $this->connect();
+            $db->beginTransaction();
+            
+            // Check if package has active bookings
+            $checkBookings = $db->prepare("SELECT COUNT(*) FROM Booking WHERE tourPackage_ID = :id AND booking_status != 'cancelled'");
+            $checkBookings->bindParam(':id', $packageId);
+            $checkBookings->execute();
+            
+            if ($checkBookings->fetchColumn() > 0) {
+                $db->rollBack();
+                return false; // Cannot delete package with active bookings
+            }
+            
+            // Delete package spots associations
+            $deletePackageSpots = $db->prepare("DELETE FROM Package_Spots WHERE tourPackage_ID = :id");
+            $deletePackageSpots->bindParam(':id', $packageId);
+            $deletePackageSpots->execute();
+            
+            // Delete package schedules
+            $deleteSchedules = $db->prepare("DELETE FROM Schedule WHERE tourPackage_ID = :id");
+            $deleteSchedules->bindParam(':id', $packageId);
+            $deleteSchedules->execute();
+            
+            // Delete package ratings
+            $deleteRatings = $db->prepare("DELETE FROM Rating WHERE rated_package_ID = :id");
+            $deleteRatings->bindParam(':id', $packageId);
+            $deleteRatings->execute();
+            
+            // Delete the package
+            $deletePackage = $db->prepare("DELETE FROM Tour_Package WHERE tourPackage_ID = :id");
+            $deletePackage->bindParam(':id', $packageId);
+            $deletePackage->execute();
+            
+            $db->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($db) $db->rollBack();
+            error_log("Delete Tour Package Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function deleteTourSpot($spotId) {
+        try {
+            $db = $this->connect();
+            $db->beginTransaction();
+            
+            // Check if spot is used in any package
+            $checkPackages = $db->prepare("SELECT COUNT(*) FROM Package_Spots WHERE spots_ID = :id");
+            $checkPackages->bindParam(':id', $spotId);
+            $checkPackages->execute();
+            
+            if ($checkPackages->fetchColumn() > 0) {
+                $db->rollBack();
+                return false; // Cannot delete spot used in packages
+            }
+            
+            // Delete the spot
+            $deleteSpot = $db->prepare("DELETE FROM Tour_Spots WHERE spots_ID = :id");
+            $deleteSpot->bindParam(':id', $spotId);
+            $deleteSpot->execute();
+            
+            $db->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($db) $db->rollBack();
+            error_log("Delete Tour Spot Error: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function getSpotWithDetails($spots_ID) {
         $spot = $this->getTourSpotById($spots_ID);

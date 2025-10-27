@@ -1,16 +1,22 @@
 <?php
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin') {
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Guide') {
     header('Location: ../../index.php');
     exit;
 }
 
 require_once "../../classes/tour-manager.php";
+require_once "../../classes/guide-manager.php";
 
 $tourManager = new TourManager();
+$guideManager = new GuideManager();
 $user = $_SESSION['user'];
 
-$packages = $tourManager->getAllTourPackages();
+// Get guide ID from the session
+$guideId = $user['user_id'];
+
+// Get packages assigned to this guide
+$packages = $guideManager->getGuidePackages($guideId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,38 +28,33 @@ $packages = $tourManager->getAllTourPackages();
 <body>
     <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
         <header style="background: #1976d2; color: white; padding: 20px; margin: -20px -20px 20px -20px;">
-            <h1>Manage Tour Packages</h1>
+            <h1>My Tour Packages</h1>
             <nav>
                 <a href="dashboard.php" style="color: white; margin-right: 15px;">Dashboard</a>
-                <a href="manage-packages.php" style="color: white; margin-right: 15px;">Packages</a>
-                <a href="manage-spots.php" style="color: white; margin-right: 15px;">Spots</a>
-                <a href="manage-bookings.php" style="color: white; margin-right: 15px;">Bookings</a>
+                <a href="manage-packages.php" style="color: white; margin-right: 15px;">My Packages</a>
+                <a href="manage-bookings.php" style="color: white; margin-right: 15px;">My Bookings</a>
                 <a href="../../logout.php" style="color: white;">Logout</a>
             </nav>
         </header>
 
-        <div style="margin-bottom: 20px;">
-            <a href="add-package.php" 
-               style="display: inline-block; padding: 12px 24px; background: #4caf50; color: white; text-decoration: none;">
-                ➕ Add New Package
-            </a>
-        </div>
-        
-        <?php if (isset($_SESSION['success_message'])): ?>
-            <div style="background: #e8f5e9; color: #2e7d32; padding: 15px; margin-bottom: 20px; border: 1px solid #4caf50;">
-                <?= htmlspecialchars($_SESSION['success_message']) ?>
+        <?php if (isset($_SESSION['success'])): ?>
+            <div style="background: #d4edda; color: #155724; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                <?= $_SESSION['success'] ?>
+                <?php unset($_SESSION['success']); ?>
             </div>
-            <?php unset($_SESSION['success_message']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div style="background: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                <?= $_SESSION['error'] ?>
+                <?php unset($_SESSION['error']); ?>
+            </div>
         <?php endif; ?>
 
         <?php if (empty($packages)): ?>
             <div style="text-align: center; padding: 60px; background: #f5f5f5;">
-                <h2>No Tour Packages</h2>
-                <p>Start by adding your first tour package.</p>
-                <a href="add-package.php" 
-                   style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #4caf50; color: white; text-decoration: none;">
-                    Add Package
-                </a>
+                <h2>No Tour Packages Assigned</h2>
+                <p>You don't have any tour packages assigned to you yet.</p>
             </div>
         <?php else: ?>
             <div style="background: white; border: 1px solid #ddd;">
@@ -89,14 +90,9 @@ $packages = $tourManager->getAllTourPackages();
                                        style="color: #1976d2; text-decoration: none; margin-right: 10px;">
                                         View
                                     </a>
-                                    <a href="edit-package.php?id=<?= $package['tourPackage_ID'] ?>" 
-                                       style="color: #ff9800; text-decoration: none; margin-right: 10px;">
-                                        Edit
-                                    </a>
-                                    <a href="delete-package.php?id=<?= $package['tourPackage_ID'] ?>" 
-                                       onclick="return confirm('Are you sure you want to delete this package?')"
-                                       style="color: #f44336; text-decoration: none;">
-                                        Delete
+                                    <a href="package-schedule.php?id=<?= $package['tourPackage_ID'] ?>" 
+                                       style="color: #ff9800; text-decoration: none;">
+                                        Manage Schedule
                                     </a>
                                 </td>
                             </tr>

@@ -44,6 +44,21 @@ try {
 // Get all tour spots
 $spots = $tourManager->getAllTourSpots();
 
+// Get spots associated with this package
+$package_spots = [];
+try {
+    $sql = "SELECT spots_ID FROM Package_Spots WHERE tourPackage_ID = :package_id";
+    $query = $conn->prepare($sql);
+    $query->bindParam(':package_id', $package_id, PDO::PARAM_INT);
+    $query->execute();
+    $results = $query->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($results as $result) {
+        $package_spots[] = $result['spots_ID'];
+    }
+} catch (PDOException $e) {
+    $error = "Error fetching package spots: " . $e->getMessage();
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tourPackage_Name = trim($_POST['tourPackage_Name'] ?? '');
@@ -72,13 +87,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $query->bindParam(':id', $package_id, PDO::PARAM_INT);
             
             if ($query->execute()) {
-                $success = 'Tour package updated successfully!';
-                // Refresh package data
-                $sql = "SELECT * FROM Tour_Package WHERE tourPackage_ID = :id";
-                $query = $conn->prepare($sql);
-                $query->bindParam(':id', $package_id, PDO::PARAM_INT);
-                $query->execute();
-                $package = $query->fetch(PDO::FETCH_ASSOC);
+                // Update package spots
+                try {
+                    // First, delete all existing package spots
+                    $delete_sql = "DELETE FROM Package_Spots WHERE tourPackage_ID = :package_id";
+                    $delete_query = $conn->prepare($delete_sql);
+                    $delete_query->bindParam(':package_id', $package_id, PDO::PARAM_INT);
+                    $delete_query->execute();
+                    
+                    // Then, insert the selected spots
+                    if (!empty($selected_spots)) {
+                        $insert_sql = "INSERT INTO Package_Spots (tourPackage_ID, spots_ID) VALUES (:package_id, :spot_id)";
+                        $insert_query = $conn->prepare($insert_sql);
+                        
+                        foreach ($selected_spots as $spot_id) {
+                            $insert_query->bindParam(':package_id', $package_id, PDO::PARAM_INT);
+                            $insert_query->bindParam(':spot_id', $spot_id, PDO::PARAM_INT);
+                            $insert_query->execute();
+                        }
+                    }
+                    
+                    // Update package_spots array for display
+                    $package_spots = $selected_spots;
+                    
+                    // Set success message in session and redirect
+                     $_SESSION['success_message'] = 'Tour package updated successfully!';
+                     header('Location: manage-packages.php');
+                     exit;
+                } catch (PDOException $e) {
+                    $error = "Error updating package spots: " . $e->getMessage();
+                }
             } else {
                 $error = 'Failed to update tour package. Please try again.';
             }
@@ -160,7 +198,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php foreach ($spots as $spot): ?>
                             <div style="margin-bottom: 8px;">
                                 <label style="display: block; padding: 8px; background: white; cursor: pointer;">
-                                    <input type="checkbox" name="spots[]" value="<?= $spot['spots_ID'] ?>">
+                                    <input type="checkbox" name="spots[]" value="<?= $spot['spots_ID'] ?>" 
+                                           <?= in_array($spot['spots_ID'], $package_spots) ? 'checked' : '' ?>>
                                     <strong><?= htmlspecialchars($spot['spots_Name']) ?></strong>
                                     <br>
                                     <small style="color: #757575;"><?= htmlspecialchars($spot['spots_Description']) ?></small>

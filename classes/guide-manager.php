@@ -96,6 +96,82 @@ class GuideManager extends Database {
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
+    
+    public function getGuidePackages($guide_ID) {
+        $sql = "SELECT DISTINCT tp.*
+                FROM Tour_Package tp
+                INNER JOIN Schedule s ON tp.tourPackage_ID = s.tourPackage_ID
+                WHERE s.guide_ID = :guide_ID
+                ORDER BY tp.tourPackage_Name";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getSchedulesByPackageAndGuide($package_ID, $guide_ID) {
+        $sql = "SELECT s.*, 
+                (SELECT COUNT(*) FROM Booking b WHERE b.schedule_ID = s.schedule_ID AND b.booking_status != 'cancelled') as booked_count
+                FROM Schedule s
+                WHERE s.tourPackage_ID = :package_ID AND s.guide_ID = :guide_ID
+                ORDER BY s.schedule_date, s.start_time";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(':package_ID', $package_ID);
+        $query->bindParam(':guide_ID', $guide_ID);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function createOrUpdateSchedule($package_ID, $guide_ID, $schedule_date, $start_time, $end_time, $max_tourists, $notes = null) {
+        try {
+            $sql = "INSERT INTO Schedule (tourPackage_ID, guide_ID, schedule_date, start_time, end_time, max_tourists, schedule_notes)
+                    VALUES (:package_ID, :guide_ID, :schedule_date, :start_time, :end_time, :max_tourists, :notes)";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(':package_ID', $package_ID);
+            $query->bindParam(':guide_ID', $guide_ID);
+            $query->bindParam(':schedule_date', $schedule_date);
+            $query->bindParam(':start_time', $start_time);
+            $query->bindParam(':end_time', $end_time);
+            $query->bindParam(':max_tourists', $max_tourists);
+            $query->bindParam(':notes', $notes);
+            return $query->execute();
+        } catch (PDOException $e) {
+            error_log("Create/Update Schedule Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function deleteSchedule($schedule_ID, $guide_ID) {
+        try {
+            // Check if schedule has bookings
+            $checkBookings = $this->connect()->prepare("SELECT COUNT(*) FROM Booking WHERE schedule_ID = :id");
+            $checkBookings->bindParam(':id', $schedule_ID);
+            $checkBookings->execute();
+            
+            if ($checkBookings->fetchColumn() > 0) {
+                return false; // Cannot delete schedule with bookings
+            }
+            
+            // Check if guide owns this schedule
+            $checkOwnership = $this->connect()->prepare("SELECT COUNT(*) FROM Schedule WHERE schedule_ID = :id AND guide_ID = :guide_ID");
+            $checkOwnership->bindParam(':id', $schedule_ID);
+            $checkOwnership->bindParam(':guide_ID', $guide_ID);
+            $checkOwnership->execute();
+            
+            if ($checkOwnership->fetchColumn() == 0) {
+                return false; // Guide does not own this schedule
+            }
+            
+            // Delete the schedule
+            $deleteSchedule = $this->connect()->prepare("DELETE FROM Schedule WHERE schedule_ID = :id AND guide_ID = :guide_ID");
+            $deleteSchedule->bindParam(':id', $schedule_ID);
+            $deleteSchedule->bindParam(':guide_ID', $guide_ID);
+            return $deleteSchedule->execute();
+        } catch (PDOException $e) {
+            error_log("Delete Schedule Error: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function createGuideOffering($guide_ID, $tourPackage_ID, $offering_price, $price_per_person = null, 
                                        $min_pax = 1, $max_pax = null, $is_customizable = 1) {
