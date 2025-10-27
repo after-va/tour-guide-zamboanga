@@ -1,5 +1,11 @@
 <?php
 
+require_once __DIR__ . '/../../database.php';
+require_once __DIR__ . '/trait-name-core.php';
+require_once __DIR__ . '/trait-phone-core.php';
+require_once __DIR__ . '/trait-address-core.php';
+require_once __DIR__ . '/trait-emergency-core.php';
+require_once __DIR__ . '/trait-contact-core.php';
 trait PersonTrait {
 
     // Check if person with same name and birthdate exists
