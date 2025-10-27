@@ -53,7 +53,7 @@ $packages = $tourManager->getAllTourPackages();
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f5f5f5;">
-                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">ID</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">No.</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Package Name</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Description</th>
                             <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Duration</th>
@@ -62,9 +62,9 @@ $packages = $tourManager->getAllTourPackages();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($packages as $package): ?>
+                        <?php $no = 1; foreach ($packages as $package): ?>
                             <tr>
-                                <td style="padding: 12px; border: 1px solid #ddd;"><?= $package['tourPackage_ID'] ?></td>
+                                <td style="padding: 12px; border: 1px solid #ddd;"><?= $no++ ?></td>
                                 <td style="padding: 12px; border: 1px solid #ddd;">
                                     <strong><?= htmlspecialchars($package['tourPackage_Name']) ?></strong>
                                 </td>

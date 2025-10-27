@@ -66,3 +66,11 @@ INSERT IGNORE INTO Payment_Method (method_name, method_type, is_active, processi
 ('PayMaya', 'ewallet', 1, 0.00),
 ('Bank Transfer', 'bank', 1, 0.00),
 ('Cash', 'cash', 1, 0.00);
+
+-- Insert sample Tour Packages
+INSERT IGNORE INTO Tour_Package(tourPackage_Name, tourPackage_Description, tourPackage_Capacity, tourPackage_Duration, spots_ID) VALUES
+('Zamboanga City Heritage Tour', 'Explore the historical and cultural highlights of Zamboanga City including Fort Pilar, Zamboanga City Hall, and Yakan Weaving Village.', '20 pax', '4 hours', 2),
+('Island Adventure Package', 'Visit the famous beaches and islands around Zamboanga including Great Santa Cruz Island and Once Islas for swimming, snorkeling, and island hopping.', '15 pax', '8 hours', 1),
+('Nature and Waterfalls Escape', 'A nature-focused tour visiting Pasonanca Park and Merloquet Falls, perfect for nature lovers and hikers.', '10 pax', '6 hours', 6),
+('Religious and Cultural Tour', 'Discover the spiritual landmarks of Zamboanga, including Taluksangay Mosque and the Metropolitan Cathedral of the Immaculate Conception.', '25 pax', '3 hours', 9),
+('Sunset & Leisure Stroll', 'Enjoy a relaxed walk along Paseo del Mar while trying local delicacies and catching the sunset, great for families and couples.', '30 pax', '2 hours', 3);
