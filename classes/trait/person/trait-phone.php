@@ -2,6 +2,22 @@
 
 trait PhoneNumberTrait {
 
+    // Check if phone number already exists
+    public function checkPhoneExists($countrycode_ID, $phone_number) {
+        $sql = "SELECT COUNT(*) AS total FROM Phone_Number 
+                WHERE countrycode_ID = :countrycode_ID AND phone_number = :phone_number";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":countrycode_ID", $countrycode_ID);
+        $query->bindParam(":phone_number", $phone_number);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+    
+
     public function addgetPhoneNumber($countrycode_ID, $phone_number, $db){
         
         $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND countrycode_ID = :countrycode_ID";
