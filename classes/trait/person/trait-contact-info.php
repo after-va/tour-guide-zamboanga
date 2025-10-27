@@ -2,6 +2,19 @@
 
 trait ContactInfoTrait {
 
+    // Check Email If Exists
+    public function checkEmailExists($email) {
+        $sql = "SELECT COUNT(*) AS total FROM Contact_Info WHERE contactinfo_email = :email";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":email", $email);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+
     public function addContact_Info(
         $houseno, 
         $street, 
