@@ -65,7 +65,7 @@ trait AddressTrait {
         }
     }
 
-    public function fetchCityMunicipality($province_ID){
+    public function fetchcity($province_ID){
         $sql = "SELECT * FROM city_municipality WHERE province_ID = :province_ID";
         $query = $this->connect()->prepare($sql);
         if ($query->execute()) {
@@ -75,8 +75,8 @@ trait AddressTrait {
         }
     }
 
-    public function fetchBarangay($citymunicipality_ID){
-        $sql = "SELECT * FROM barangay WHERE citymunicipality_ID = :citymunicipality_ID";
+    public function fetchBarangay($city_ID){
+        $sql = "SELECT * FROM barangay WHERE city_ID = :city_ID";
         $query = $this->connect()->prepare($sql);
         if ($query->execute()) {
             return $query->fetchAll();
@@ -85,63 +85,112 @@ trait AddressTrait {
         }
     }
 
-    public function addgetRegion($region_name, $country_ID){
+    public function addgetRegion($region_name, $country_ID, $db){
         $sql_select = "SELECT region_ID 
                        FROM region 
                        WHERE region_name = :region_name 
                        AND country_ID = :country_ID";
-        $query_select = $this->connect()->prepare($sql_select);
+        $query_select = $db->prepare($sql_select);
         $query_select->bindParam(":region_name", $region_name);
         $query_select->bindParam(":country_ID", $country_ID);
-        if ($query->execute()) {
-            return $query->fetchAll();
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["region_ID"];
+        }
+
+        $sql_insert = "INSERT INTO region (region_name, country_ID) 
+                       VALUES (:region_name, :country_ID)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":region_name", $region_name);
+        $query_insert->bindParam(":country_ID", $country_ID);
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
         } else {
-            return null;
+            return false;
         }
     }
 
-    public function addgetProvince($province_name, $region_ID){
+    public function addgetProvince($province_name, $region_ID, $db){
         $sql_select = "SELECT province_ID 
                        FROM province 
                        WHERE province_name = :province_name 
                        AND region_ID = :region_ID";
-        $query_select = $this->connect()->prepare($sql_select);
+        $query_select = $db->prepare($sql_select);
         $query_select->bindParam(":province_name", $province_name);
         $query_select->bindParam(":region_ID", $region_ID);
-        if ($query->execute()) {
-            return $query->fetchAll();
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["province_ID"];
+        }
+
+        $sql_insert = "INSERT INTO province (province_name, region_ID) 
+                       VALUES (:province_name, :region_ID)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":province_name", $province_name);
+        $query_insert->bindParam(":region_ID", $region_ID);
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
         } else {
-            return null;
+            return false;
         }
     }
 
-    public function addgetCityMunicipality($citymunicipality_name, $province_ID){
-        $sql_select = "SELECT citymunicipality_ID 
+    public function addgetCity($city_name,$province_ID, $db){
+        $sql_select = "SELECT city_ID 
                        FROM city_municipality 
-                       WHERE citymunicipality_name = :citymunicipality_name 
+                       WHERE city_name = :city_name 
                        AND province_ID = :province_ID";
-        $query_select = $this->connect()->prepare($sql_select);
-        $query_select->bindParam(":citymunicipality_name", $citymunicipality_name);
+        $query_select = $db->prepare($sql_select);
+        $query_select->bindParam(":city_name", $city_name);
         $query_select->bindParam(":province_ID", $province_ID);
-        if ($query->execute()) {
-            return $query->fetchAll();
-        } else {
-            return null;
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["city_ID"];
         }
+
+        $sql_insert = "INSERT INTO city_municipality (city_name, province_ID) 
+                       VALUES (:city_name, :province_ID)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":city_name", $city_name);
+        $query_insert->bindParam(":province_ID", $province_ID);
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
+        } else {
+            return false;
+        }
+
     }
 
-    public function addgetBarangay($barangay_name, $citymunicipality_ID){
+    public function addgetBarangay($barangay_name, $city_ID, $db){
         $sql_select = "SELECT barangay_ID 
                        FROM barangay 
                        WHERE barangay_name = :barangay_name 
-                       AND citymunicipality_ID = :citymunicipality_ID";
-        $query_select = $this->connect()->prepare($sql_select);
+                       AND city_ID = :city_ID";
+        $query_select = $db->prepare($sql_select);
         $query_select->bindParam(":barangay_name", $barangay_name);
-        $query_select->bindParam(":citymunicipality_ID", $citymunicipality_ID);
-        if ($query->execute()) {
-            return $query->fetchAll();
+        $query_select->bindParam(":city_ID", $city_ID);
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["barangay_ID"];
+        }
+
+        $sql_insert = "INSERT INTO barangay (barangay_name, city_ID) 
+                       VALUES (:barangay_name, :city_ID)";
+        $query_insert = $db->prepare($sql_insert);
+        $query_insert->bindParam(":barangay_name", $barangay_name);
+        $query_insert->bindParam(":city_ID", $city_ID);
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
         } else {
-            return null;
+            return false;
         }
     }
 

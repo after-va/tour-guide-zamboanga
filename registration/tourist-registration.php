@@ -26,8 +26,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // === Validation ===
     $required = [
         "name_first", "name_last", 
-        "address_houseno", "address_street", "address_barangay",
-        "address_city", "address_province", "address_region", "address_country", 
+        "address_houseno", "address_street", "barangay_ID",
+        "city_ID", "province_ID", "region_ID", "country_ID", 
         "country_ID", "phone_number", "emergency_name", "emergency_country_ID",
         "emergency_phonenumber", "emergency_relationship", "contactinfo_email",
         "person_nationality", "person_gender", "person_civilstatus", "person_dateofbirth",
@@ -39,6 +39,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $errors[$field] = ucfirst(str_replace("_", " ", $field)) . " is required.";
         }
     }
+
+    if ($tourist["country_ID"] == 161) {
+    $required = [
+        "region_ID", "province_ID", "city_ID", "barangay_ID"
+    ];
+    } else {
+        $required = [
+            "region_name", "province_name", "city_name", "barangay_name"
+        ];
+    }
+
+    foreach ($required as $field) {
+        if (empty($tourist[$field])) {
+            $errors[$field] = ucfirst(str_replace("_", " ", $field)) . " is required.";
+        }
+    }
+
 
     // Validate phone numbers
     if (!empty($tourist["phone_number"]) && strlen($tourist["phone_number"]) < 10) {
@@ -55,25 +72,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Proceed if no errors
     if (empty($errors)) {
-        $country_ID = $tourist["country_ID"];
+        $country_ID = $tourist["address_country"];
 
         if ($country_ID == 161) {
-            // Use existing dropdown IDs
-            $region_ID = $_POST["region_ID"];
-            $province_ID = $_POST["province_ID"];
-            $city_ID = $_POST["city_ID"];
-            $barangay_ID = $_POST["barangay_ID"];
+            $region_ID = $tourist["region_ID"];
+            $province_ID = $tourist["province_ID"];
+            $city_ID = $tourist["city_ID"];
+            $barangay_ID = $tourist["barangay_ID"];
         } else {
-            // Insert new Region if not exists
             $region_ID = $touristObj->addgetRegion($_POST["region_name"], $country_ID);
             $province_ID = $touristObj->addgetProvince($_POST["province_name"], $region_ID);
-            $city_ID = $touristObj->addgetCity($_POST["city_name"], $province_ID);
+            $city_ID = $touristObj->addgetcity($_POST["city_name"], $province_ID);
             $barangay_ID = $touristObj->addgetBarangay($_POST["barangay_name"], $city_ID);
         }
 
 
         $results = $touristObj->addTourist($tourist["name_first"], $tourist["name_second"] ?? null, $tourist["name_middle"] ?? null, $tourist["name_last"], $tourist["name_suffix"] ?? null,
-        $tourist["address_houseno"], $tourist["address_street"], $tourist["address_barangay"],
+        $tourist["address_houseno"], $tourist["address_street"], $tourist["barangay_ID"],
         $tourist["country_ID"], $tourist["phone_number"],
         $tourist["emergency_name"], $tourist["emergency_country_ID"], $tourist["emergency_phonenumber"], $tourist["emergency_relationship"],
         $tourist["contactinfo_email"],
@@ -213,80 +228,121 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <h3>Address</h3>
 
-        <div id="other-fields" style="display:none;">
-            <input type="text" name="region_name" placeholder="Region">
-            <input type="text" name="province_name" placeholder="Province">
-            <input type="text" name="city_name" placeholder="City">
-            <input type="text" name="barangay_name" placeholder="Barangay">
-        </div>
+        <label for="address_country_ID"> Country </label>
+            <select name="address_country_ID" id="address_country_ID" onchange="toggleAddressFields()">
+                <option value="">--SELECT COUNTRY--</option>
+                <?php foreach ($touristObj->fetchCountry() as $country){ ?>
+                    <option value="<?= $country["country_ID"] ?>">
+                        <?= $country["country_name"] ?>
+                    </option>
+                <?php } ?>
+            </select>
 
-
+        <!-- PHILIPPINE FIELDS DROPDOWN -->
         <div id="ph-fields" style="display:none;">
-            <label for="address_barangay"> Barangay </label>
-            <select name ="address_barangay" id="address_barangay">
-                <option value="">--SELECT BARANGAY--</option>
-                <?php foreach ($touristObj->fetchBarangay() as $barangay){ ?>
-                    <option value="<?= $barangay["barangay_ID"] ?>"><?= $barangay["barangay_name"] ?></option>
-                <?php } ?>
-            </select>
-            <p class="error"><?= $errors["address_barangay"] ?? "" ?></p>
 
-            <label for="address_city"> City/Municipality</label>
-            <select name ="address_city" id="address_city" onchange="loadBarangays()">
-                <option value="">--SELECT CITY/MUNICIPALITY--</option>
-                <?php foreach ($touristObj->fetchCityMunicipality() as $citymunicipality){ ?>
-                    <option value="<?= $citymunicipality["citymunicipality_ID"] ?>"><?= $citymunicipality["citymunicipality_name"] ?></option>
-                <?php } ?>
-            </select>
-            <p class="error"><?= $errors["address_city"] ?? "" ?></p>
+            <label>Region</label>
+            <select id="region_ID" name="region_ID"></select>
 
+            <label>Province</label>
+            <select id="province_ID" name="province_ID"></select>
 
-            <label for="address_province"> Province </label>
-            <select name ="address_province" id="address_province" onchange="loadCities()">
-                <option value="">--SELECT PROVINCE--</option>
-                <?php foreach ($touristObj->fetchProvince() as $province){ ?>
-                    <option value="<?= $province["province_ID"] ?>"><?= $province["province_name"] ?></option>
-                <?php } ?>
-            </select>
-            <p class="error"><?= $errors["address_province"] ?? "" ?></p>
+            <label>City</label>
+            <select id="city_ID" name="city_ID"></select>
 
-            <label for="address_region"> Region </label>
-            <select name ="address_region" id="address_region" onchange="loadProvinces()">
-                <option value="">--SELECT REGION--</option>
-                <?php foreach ($touristObj->fetchRegion() as $region){ ?>
-                    <option value="<?= $region["region_ID"] ?>"><?= $region["region_name"] ?></option>
-                <?php } ?>
-            </select>
-            <p class="error"><?= $errors["address_region"] ?? "" ?></p>
+            <label>Barangay</label>
+            <select id="barangay_ID" name="barangay_ID"></select>
+
         </div>
 
-        <label for="address_country"> Country </label>
-        <select name="address_country" id="address_country" onchange="toggleAddressFields()">
-            <option value="">--SELECT COUNTRY--</option>
-            <?php foreach ($touristObj->fetchCountry() as $country){ ?>
-                <option value="<?= $country["country_ID"] ?>"><?= $country["country_name"] ?></option>
-            <?php } ?>
-        </select>
-        <p class="error"><?= $errors["address_country"] ?? "" ?></p>
+        <!-- OTHER COUNTRY TEXT INPUTS -->
+        <div id="other-fields" style="display:none;">
 
-        <button type="submit">Register</button>
-    </form>
+            <label>Region</label>
+            <input type="text" name="region_name">
 
-    <script>
-        function toggleAddressFields() {
-            let country = document.getElementById("address_country").value;
-            let phFields = document.getElementById("ph-fields");
-            let otherFields = document.getElementById("other-fields");
+            <label>Province</label>
+            <input type="text" name="province_name">
 
-            if (country == "161") { // Philippines
-                phFields.style.display = "block";
-                otherFields.style.display = "none";
-            } else {
-                phFields.style.display = "none";
-                otherFields.style.display = "block";
+            <label>City</label>
+            <input type="text" name="city_name">
+
+            <label>Barangay</label>
+            <input type="text" name="barangay_name">
+
+        </div>
+
+
+
+
+        <script>
+            function toggleAddressFields() {
+                let country = document.getElementById("address_country_ID").value;
+                let phFields = document.getElementById("ph-fields");
+                let otherFields = document.getElementById("other-fields");
+
+                if (country == "161") { // Philippines
+                    phFields.style.display = "block";
+                    otherFields.style.display = "none";
+                    loadRegions(country);
+                } else {
+                    phFields.style.display = "none";
+                    otherFields.style.display = "block";
+                }
             }
-        }
-    </script>
+
+            function loadRegions(countryID) {
+                $.ajax({
+                    url: "get_regions.php",
+                    type: "POST",
+                    data: { country_ID: countryID },
+                    success: function(data){
+                        $("#region_ID").html(data);
+                        $("#province_ID").html("<option value=''>--SELECT PROVINCE--</option>");
+                        $("#city_ID").html("<option value=''>--SELECT CITY--</option>");
+                        $("#barangay_ID").html("<option value=''>--SELECT BARANGAY--</option>");
+                    }
+                });
+            }
+
+            $("#region_ID").change(function(){
+                $.ajax({
+                    url: "get_provinces.php",
+                    type: "POST",
+                    data: { region_ID: $(this).val() },
+                    success: function(data){
+                        $("#province_ID").html(data);
+                    }
+                });
+            });
+
+            $("#province_ID").change(function(){
+                $.ajax({
+                    url: "get_cities.php",
+                    type: "POST",
+                    data: { province_ID: $(this).val() },
+                    success: function(data){
+                        $("#city_ID").html(data);
+                    }
+                });
+            });
+
+            $("#city_ID").change(function(){
+                $.ajax({
+                    url: "get_barangays.php",
+                    type: "POST",
+                    data: { city_ID: $(this).val() },
+                    success: function(data){
+                        $("#barangay_ID").html(data);
+                    }
+                });
+            });
+
+            document.addEventListener("DOMContentLoaded", toggleAddressFields);
+        </script>
+
+
+
 </body>
 
 </html>
