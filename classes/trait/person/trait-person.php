@@ -2,6 +2,36 @@
 
 trait PersonTrait {
 
+    // Check if person with same name and birthdate exists
+    public function checkPersonExists($name_first, $name_second, $name_middle, $name_last, $name_suffix, 
+                                     $person_dateofbirth, $person_gender) {
+        $sql = "SELECT COUNT(*) AS total FROM Person p 
+                INNER JOIN Name_Info n ON p.name_ID = n.name_ID 
+                WHERE n.name_first = :name_first 
+                AND (n.name_second = :name_second OR (n.name_second IS NULL AND :name_second IS NULL)) 
+                AND (n.name_middle = :name_middle OR (n.name_middle IS NULL AND :name_middle IS NULL)) 
+                AND n.name_last = :name_last 
+                AND (n.name_suffix = :name_suffix OR (n.name_suffix IS NULL AND :name_suffix IS NULL)) 
+                AND p.person_DateOfBirth = :person_dateofbirth
+                AND p.person_Gender = :person_gender";
+        
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":name_first", $name_first);
+        $query->bindParam(":name_second", $name_second);
+        $query->bindParam(":name_middle", $name_middle);
+        $query->bindParam(":name_last", $name_last);
+        $query->bindParam(":name_suffix", $name_suffix);
+        $query->bindParam(":person_dateofbirth", $person_dateofbirth);
+        $query->bindParam(":person_gender", $person_gender);
+        
+        if ($query->execute()) {
+            $record = $query->fetch();
+            return $record["total"] > 0;
+        }
+        return false;
+    }
+
+
     // Add Person
     public function addPerson(
         $name_first, $name_second, $name_middle, $name_last, $name_suffix,
