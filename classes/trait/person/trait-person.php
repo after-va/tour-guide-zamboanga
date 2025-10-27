@@ -85,7 +85,9 @@ trait PersonTrait {
             return false;
 
         } catch (PDOException $e) {
-            
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Person creation error: " . $e->getMessage());
+            }
             error_log("Add Person Error: " . $e->getMessage());
             return false;
         }

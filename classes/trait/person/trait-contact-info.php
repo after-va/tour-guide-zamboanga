@@ -15,7 +15,7 @@ trait ContactInfoTrait {
         return false;
     }
 
-    public function addContact_Info( $houseno, $street, $barangay, $city,  
+    public function addgetContact_Info( $houseno, $street, $barangay,  
         $country_ID, $phone_number, 
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
         $contactinfo_email, $db)
@@ -24,8 +24,8 @@ trait ContactInfoTrait {
         try{
             // These functions come from other traits:
             $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
-            $phone_ID = $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
-            $emergency_ID = $this->addgetEmergencyID($country_ID, $phone_number, $ename, $erelationship, $db);
+            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+            $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
 
             
            if (!$address_ID || !$phone_ID || !$emergency_ID) {
@@ -49,7 +49,10 @@ trait ContactInfoTrait {
             }
 
         } catch (PDOException $e) {
-            
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Contact info error: " . $e->getMessage());
+            }
+            error_log("Contact info error: " . $e->getMessage());
             return false;
         }
     }

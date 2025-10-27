@@ -36,6 +36,12 @@ Import the SQL files in this exact order:
    - Password: `admin123`
    - **IMPORTANT**: Change this password after first login!
 
+-- tourguidesystem.sql
+-- tourguidesystem-data.sql
+-- ph-location.sql
+-- setup-admin.sql
+
+
 ### 4. Configure Database Connection
 
 1. Open `classes/database.php`

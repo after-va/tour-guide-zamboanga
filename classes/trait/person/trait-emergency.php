@@ -10,7 +10,7 @@ trait EmergencyTrait {
                     INNER JOIN Phone_Number pn ON ei.phone_ID = pn.phone_ID
                     WHERE pn.country_ID = :country_ID AND pn.phone_number = :phone_number
                     AND ei.emergency_Name = :ename AND ei.emergency_Relationship = :erelationship";
-            $query_select = $db->prepare($sql_select); 
+            $query_select = $db->prepare($sql); 
             $query_select->bindParam(":country_ID", $country_ID);
             $query_select->bindParam(":phone_number", $phone_number);
             $query_select->bindParam(":ename", $ename);
@@ -21,7 +21,7 @@ trait EmergencyTrait {
                 return $result["emergency_ID"];
             }
 
-            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number);
+            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
 
             if(!$phone_ID){
                  

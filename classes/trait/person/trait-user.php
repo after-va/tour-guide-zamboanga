@@ -30,7 +30,8 @@ trait UserTrait {
             $houseno, $street, $barangay,
             $country_ID, $phone_number,
             $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-            $contactinfo_email, $db);
+            $contactinfo_email,
+            $person_nationality, $person_gender, $person_civilstatus, $person_dateofbirth, $db);
 
             if (!$person_ID) {
                 return false;
@@ -50,6 +51,10 @@ trait UserTrait {
                 return false;
             }
         } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("User creation error: " . $e->getMessage());
+            }
+            error_log("User creation error: " . $e->getMessage());
             return false;
         }
     }

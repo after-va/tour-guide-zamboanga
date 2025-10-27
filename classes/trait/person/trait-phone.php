@@ -19,26 +19,41 @@ trait PhoneTrait {
     
 
     public function addgetPhoneNumber($country_ID, $phone_number, $db){
-        
-        $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND country_ID = :country_ID";
-        $query_select = $db->prepare($sql_select); 
-        $query_select->bindParam(":country_ID", $country_ID);
-        $query_select->bindParam(":phone_number", $phone_number);
-        $query_select->execute();
-        $result = $query_select->fetch();
-
-        if($result){
-            return $result["phone_ID"];
+        // If phone number is empty, create a placeholder
+        if (empty($phone_number)) {
+            $phone_number = "PLACEHOLDER-" . uniqid();
         }
         
-        $sql_insert = "INSERT INTO phone_number(country_ID, phone_number) VALUES (:country_ID, :phone_number)";
-        $query_insert = $db->prepare($sql_insert); 
-        $query_insert->bindParam(":country_ID", $country_ID);
-        $query_insert->bindParam(":phone_number", $phone_number);
-
-        if ($query_insert->execute()) {
-            return $db->lastInsertId();
-        } else {
+        try {
+            $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND country_ID = :country_ID";
+            $query_select = $db->prepare($sql_select); 
+            $query_select->bindParam(":country_ID", $country_ID);
+            $query_select->bindParam(":phone_number", $phone_number);
+            $query_select->execute();
+            $result = $query_select->fetch();
+    
+            if($result){
+                return $result["phone_ID"];
+            }
+            
+            $sql_insert = "INSERT INTO phone_number(country_ID, phone_number) VALUES (:country_ID, :phone_number)";
+            $query_insert = $db->prepare($sql_insert); 
+            $query_insert->bindParam(":country_ID", $country_ID);
+            $query_insert->bindParam(":phone_number", $phone_number);
+    
+            if ($query_insert->execute()) {
+                return $db->lastInsertId();
+            } else {
+                if (method_exists($this, 'setLastError')) {
+                    $this->setLastError("Failed to insert phone number");
+                }
+                return false;
+            }
+        } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Phone number error: " . $e->getMessage());
+            }
+            error_log("Phone number error: " . $e->getMessage());
             return false;
         }
     }

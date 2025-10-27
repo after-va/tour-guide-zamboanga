@@ -36,7 +36,7 @@ trait AddressTrait {
     }
 
     public function fetchCountry(){
-        $sql = "SELECT * FROM country";
+        $sql = "SELECT * FROM Country";
         $query = $this->connect()->prepare($sql);
         if ($query->execute()) {
             return $query->fetchAll();
@@ -47,10 +47,10 @@ trait AddressTrait {
 
     public function fetchRegion($country_ID = null){
         if ($country_ID === null) {
-            $sql = "SELECT * FROM region";
+            $sql = "SELECT * FROM Region";
             $query = $this->connect()->prepare($sql);
         } else {
-            $sql = "SELECT * FROM region WHERE country_ID = :country_ID";
+            $sql = "SELECT * FROM Region WHERE country_ID = :country_ID";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":country_ID", $country_ID);
         }
@@ -63,10 +63,10 @@ trait AddressTrait {
 
     public function fetchProvince($region_ID = null){
         if ($region_ID === null || $region_ID === "") {
-            $sql = "SELECT * FROM province";
+            $sql = "SELECT * FROM Province";
             $query = $this->connect()->prepare($sql);
         } else {
-            $sql = "SELECT * FROM province WHERE region_ID = :region_ID";
+            $sql = "SELECT * FROM Province WHERE region_ID = :region_ID";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":region_ID", $region_ID);
         }
@@ -79,10 +79,10 @@ trait AddressTrait {
 
     public function fetchCity($province_ID = null){
         if ($province_ID === null || $province_ID === "") {
-            $sql = "SELECT * FROM city_municipality";
+            $sql = "SELECT * FROM City";
             $query = $this->connect()->prepare($sql);
         } else {
-            $sql = "SELECT * FROM city_municipality WHERE province_ID = :province_ID";
+            $sql = "SELECT * FROM City WHERE province_ID = :province_ID";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":province_ID", $province_ID);
         }
@@ -95,10 +95,10 @@ trait AddressTrait {
 
     public function fetchBarangay($city_ID = null){
         if ($city_ID === null || $city_ID === "") {
-            $sql = "SELECT * FROM barangay";
+            $sql = "SELECT * FROM Barangay";
             $query = $this->connect()->prepare($sql);
         } else {
-            $sql = "SELECT * FROM barangay WHERE city_ID = :city_ID";
+            $sql = "SELECT * FROM Barangay WHERE city_ID = :city_ID";
             $query = $this->connect()->prepare($sql);
             $query->bindParam(":city_ID", $city_ID);
         }
@@ -111,7 +111,7 @@ trait AddressTrait {
 
     public function addgetRegion($region_name, $country_ID, $db){
         $sql_select = "SELECT region_ID 
-                       FROM region 
+                       FROM Region 
                        WHERE region_name = :region_name 
                        AND country_ID = :country_ID";
         $query_select = $db->prepare($sql_select);
@@ -138,7 +138,7 @@ trait AddressTrait {
 
     public function addgetProvince($province_name, $region_ID, $db){
         $sql_select = "SELECT province_ID 
-                       FROM province 
+                       FROM Province 
                        WHERE province_name = :province_name 
                        AND region_ID = :region_ID";
         $query_select = $db->prepare($sql_select);
@@ -165,7 +165,7 @@ trait AddressTrait {
 
     public function addgetCity($city_name,$province_ID, $db){
         $sql_select = "SELECT city_ID 
-                       FROM city_municipality 
+                       FROM City 
                        WHERE city_name = :city_name 
                        AND province_ID = :province_ID";
         $query_select = $db->prepare($sql_select);
@@ -193,7 +193,7 @@ trait AddressTrait {
 
     public function addgetBarangay($barangay_name, $city_ID, $db){
         $sql_select = "SELECT barangay_ID 
-                       FROM barangay 
+                       FROM Barangay 
                        WHERE barangay_name = :barangay_name 
                        AND city_ID = :city_ID";
         $query_select = $db->prepare($sql_select);
