@@ -45,9 +45,15 @@ trait AddressTrait {
         }
     }
 
-    public function fetchRegion($country_ID){
-        $sql = "SELECT * FROM region WHERE country_ID = :country_ID";
-        $query = $this->connect()->prepare($sql);
+    public function fetchRegion($country_ID = null){
+        if ($country_ID === null) {
+            $sql = "SELECT * FROM region";
+            $query = $this->connect()->prepare($sql);
+        } else {
+            $sql = "SELECT * FROM region WHERE country_ID = :country_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":country_ID", $country_ID);
+        }
         if ($query->execute()) {
             return $query->fetchAll();
         } else {
@@ -55,9 +61,15 @@ trait AddressTrait {
         }
     }
 
-    public function fetchProvince($region_ID){
-        $sql = "SELECT * FROM province WHERE region_ID = :region_ID";
-        $query = $this->connect()->prepare($sql);
+    public function fetchProvince($region_ID = null){
+        if ($region_ID === null || $region_ID === "") {
+            $sql = "SELECT * FROM province";
+            $query = $this->connect()->prepare($sql);
+        } else {
+            $sql = "SELECT * FROM province WHERE region_ID = :region_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":region_ID", $region_ID);
+        }
         if ($query->execute()) {
             return $query->fetchAll();
         } else {
@@ -65,9 +77,15 @@ trait AddressTrait {
         }
     }
 
-    public function fetchcity($province_ID){
-        $sql = "SELECT * FROM city_municipality WHERE province_ID = :province_ID";
-        $query = $this->connect()->prepare($sql);
+    public function fetchCity($province_ID = null){
+        if ($province_ID === null || $province_ID === "") {
+            $sql = "SELECT * FROM city_municipality";
+            $query = $this->connect()->prepare($sql);
+        } else {
+            $sql = "SELECT * FROM city_municipality WHERE province_ID = :province_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":province_ID", $province_ID);
+        }
         if ($query->execute()) {
             return $query->fetchAll();
         } else {
@@ -75,9 +93,15 @@ trait AddressTrait {
         }
     }
 
-    public function fetchBarangay($city_ID){
-        $sql = "SELECT * FROM barangay WHERE city_ID = :city_ID";
-        $query = $this->connect()->prepare($sql);
+    public function fetchBarangay($city_ID = null){
+        if ($city_ID === null || $city_ID === "") {
+            $sql = "SELECT * FROM barangay";
+            $query = $this->connect()->prepare($sql);
+        } else {
+            $sql = "SELECT * FROM barangay WHERE city_ID = :city_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":city_ID", $city_ID);
+        }
         if ($query->execute()) {
             return $query->fetchAll();
         } else {
