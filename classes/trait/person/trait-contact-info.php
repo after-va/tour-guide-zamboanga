@@ -15,24 +15,11 @@ trait ContactInfoTrait {
         return false;
     }
 
-    public function addContact_Info(
-        $houseno, 
-        $street, 
-        $barangay, 
-        $city, 
-        $province, 
-        $country, 
-        $countrycode_ID,
-        $phone_number, 
-        $emergency_name, 
-        $emergency_countrycode_ID, 
-        $emergency_phonenumber, 
-        $emergency_relationship, 
-        $contactinfo_email
-    ){
-
-        $db = $this->connect();
-        $db->beginTransaction();
+    public function addContact_Info( $houseno, $street, $barangay, $city,  
+        $countrycode_ID, $phone_number, 
+        $emergency_name, $emergency_countrycode_ID, $emergency_phonenumber, $emergency_relationship, 
+        $contactinfo_email, $db)
+        {
 
         try{
             // These functions come from other traits:

@@ -1,10 +1,11 @@
 <?php
-require_once __DIR__ . '/database.php';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/trait/person/trait-person-core.php';
+require_once "database.php";
+require_once "auth.php";
+require_once "trait/person/trait-person.php";
+
 
 class Tourist extends Database {
-    use PersonCoreTrait;
+    use PersonTrait;
 
     public function registerTourist(
         $name_first, $name_second, $name_middle, $name_last, $name_suffix,
