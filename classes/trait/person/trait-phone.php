@@ -28,7 +28,7 @@ trait PhoneNumberTrait {
     }
 
     public function fetchCountryCode(){
-        $sql = "SELECT * FROM country_code";
+        $sql = "SELECT * FROM country";
         $query = $this->connect()->prepare($sql);
         if ($query->execute()) {
             return $query->fetchAll();

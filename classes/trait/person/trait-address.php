@@ -35,6 +35,18 @@ trait AddressTrait {
         }
     }
 
+    public function fetchCountry(){
+        $sql = "SELECT * FROM country";
+        $query = $this->connect()->prepare($sql);
+        if ($query->execute()) {
+            return $query->fetchAll();
+        } else {
+            return null;
+        }
+    }
+
+    
+
     public function deleteAddress($address_ID){
         $sql = "DELETE FROM address_info WHERE address_ID = :id";
         $query = $this->connect()->prepare($sql);

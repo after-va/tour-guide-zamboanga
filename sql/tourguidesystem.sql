@@ -273,21 +273,21 @@ CREATE TABLE IF NOT EXISTS Activity_Log (
 );
 
 -- Guide Certifications
-CREATE TABLE IF NOT EXISTS Guide_Certification (
-    certification_ID INT AUTO_INCREMENT PRIMARY KEY,
-    guide_ID INT NOT NULL,
-    certification_type VARCHAR(100),
-    certification_number VARCHAR(100),
-    issue_date DATE,
-    expiry_date DATE,
-    document_path VARCHAR(255),
-    status ENUM('pending', 'verified', 'expired', 'rejected') DEFAULT 'pending',
-    verified_by INT,
-    verified_at DATETIME,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) ON DELETE CASCADE,
-    FOREIGN KEY (verified_by) REFERENCES Person(person_ID) ON DELETE SET NULL
-);
+-- CREATE TABLE IF NOT EXISTS Guide_Certification (
+--     certification_ID INT AUTO_INCREMENT PRIMARY KEY,
+--     guide_ID INT NOT NULL,
+--     certification_type VARCHAR(100),
+--     certification_number VARCHAR(100),
+--     issue_date DATE,
+--     expiry_date DATE,
+--     document_path VARCHAR(255),
+--     status ENUM('pending', 'verified', 'expired', 'rejected') DEFAULT 'pending',
+--     verified_by INT,
+--     verified_at DATETIME,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) ON DELETE CASCADE,
+--     FOREIGN KEY (verified_by) REFERENCES Person(person_ID) ON DELETE SET NULL
+-- );
 
 -- Guide Availability
 CREATE TABLE IF NOT EXISTS Guide_Availability (
@@ -440,7 +440,7 @@ CREATE INDEX idx_activity_log_user ON Activity_Log(user_ID);
 CREATE INDEX idx_notifications_user ON Notifications(user_ID, is_read);
 CREATE INDEX idx_account_role_login ON Account_Role(login_ID);
 CREATE INDEX idx_account_role_role ON Account_Role(role_ID);
-CREATE INDEX idx_province_country ON Province(country_ID);
+CREATE INDEX idx_province_country ON Province(region_ID);
 CREATE INDEX idx_city_province ON City(province_ID);
 CREATE INDEX idx_barangay_city ON Barangay(city_ID);
 CREATE INDEX idx_address_barangay ON Address_Info(barangay_ID);
@@ -502,23 +502,39 @@ SELECT
     a.address_ID,
     a.address_houseno,
     a.address_street,
+    
     b.barangay_ID,
     b.barangay_name,
+    
     c.city_ID,
     c.city_name,
+    
     pr.province_ID,
     pr.province_name,
+    
+    r.region_ID,
+    r.region_name,
+    
     co.country_ID,
     co.country_name,
+    co.country_codename,
     co.country_codenumber,
-    CONCAT(a.address_houseno, ' ', a.address_street, ', ', 
-           b.barangay_name, ', ', c.city_name, ', ', 
-           pr.province_name, ', ', co.country_name) as full_address
+    
+    CONCAT(
+        a.address_houseno, ' ', a.address_street, ', ',
+        b.barangay_name, ', ',
+        c.city_name, ', ',
+        pr.province_name, ', ',
+        r.region_name, ', ',
+        co.country_name
+    ) AS full_address
 FROM Address_Info a
 INNER JOIN Barangay b ON a.barangay_ID = b.barangay_ID
 INNER JOIN City c ON b.city_ID = c.city_ID
 INNER JOIN Province pr ON c.province_ID = pr.province_ID
-INNER JOIN Country co ON pr.country_ID = co.country_ID;
+INNER JOIN Region r ON pr.region_ID = r.region_ID
+INNER JOIN Country co ON r.country_ID = co.country_ID;
+
 
 CREATE TABLE IF NOT EXISTS Package_Spots (
     package_spot_ID INT AUTO_INCREMENT PRIMARY KEY,
