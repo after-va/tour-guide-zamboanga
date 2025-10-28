@@ -2,9 +2,26 @@
 require_once "database.php";
 require_once "trait/trait-schedule.php";
 require_once "trait/trait-rating.php";
+require_once "trait/trait-pricing.php";
 
 class GuideManager extends Database {
-    use ScheduleTrait, RatingTrait;
+    use ScheduleTrait, RatingTrait, PricingTrait;
+
+    public function getGuideOfferings($guide_ID) {
+        $sql = "SELECT tp.*, tpo.*, 
+                tpo.offering_price as guide_price,
+                tpo.price_per_person as guide_price_per_person,
+                tpo.min_pax as guide_min_pax
+                FROM Tour_Package tp
+                LEFT JOIN Tour_Package_Offering tpo ON tp.tourPackage_ID = tpo.tourPackage_ID 
+                AND tpo.guide_ID = :guide_ID
+                ORDER BY tp.tourPackage_ID";
+        
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     public function getGuideProfile($person_ID) {
         $sql = "SELECT p.*, n.*, ci.*, ar.role_rating_score,
@@ -98,15 +115,60 @@ class GuideManager extends Database {
     }
     
     public function getGuidePackages($guide_ID) {
-        $sql = "SELECT DISTINCT tp.*
+        $sql = "SELECT DISTINCT tp.*, 
+                CASE WHEN gpa.adoption_ID IS NOT NULL THEN 1 ELSE 0 END as is_adopted
                 FROM Tour_Package tp
-                INNER JOIN Schedule s ON tp.tourPackage_ID = s.tourPackage_ID
-                WHERE s.guide_ID = :guide_ID
+                LEFT JOIN Guide_Package_Adoption gpa ON tp.tourPackage_ID = gpa.tourPackage_ID AND gpa.guide_ID = :guide_ID AND gpa.is_active = 1
+                LEFT JOIN Schedule s ON tp.tourPackage_ID = s.tourPackage_ID AND s.guide_ID = :guide_ID
+                WHERE (s.guide_ID = :guide_ID OR gpa.guide_ID = :guide_ID)
                 ORDER BY tp.tourPackage_Name";
         $query = $this->connect()->prepare($sql);
         $query->bindParam(':guide_ID', $guide_ID);
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getRecommendedPackagesForGuide($guide_ID) {
+        $sql = "SELECT tp.*, pr.recommendation_date
+                FROM Tour_Package tp
+                INNER JOIN Package_Recommendations pr ON tp.tourPackage_ID = pr.tourPackage_ID
+                LEFT JOIN Guide_Package_Adoption gpa ON tp.tourPackage_ID = gpa.tourPackage_ID AND gpa.guide_ID = :guide_ID
+                WHERE pr.is_recommended = 1 AND (gpa.guide_ID IS NULL OR gpa.is_active = 0)
+                ORDER BY pr.recommendation_date DESC";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(':guide_ID', $guide_ID);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function adoptPackage($guide_ID, $tourPackage_ID) {
+        try {
+            $sql = "INSERT INTO Guide_Package_Adoption (guide_ID, tourPackage_ID, is_active) 
+                    VALUES (:guide_ID, :tourPackage_ID, 1)
+                    ON DUPLICATE KEY UPDATE is_active = 1";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(':guide_ID', $guide_ID);
+            $query->bindParam(':tourPackage_ID', $tourPackage_ID);
+            return $query->execute();
+        } catch (PDOException $e) {
+            error_log("Adopt Package Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function removePackage($guide_ID, $tourPackage_ID) {
+        try {
+            $sql = "UPDATE Guide_Package_Adoption 
+                    SET is_active = 0 
+                    WHERE guide_ID = :guide_ID AND tourPackage_ID = :tourPackage_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(':guide_ID', $guide_ID);
+            $query->bindParam(':tourPackage_ID', $tourPackage_ID);
+            return $query->execute();
+        } catch (PDOException $e) {
+            error_log("Remove Package Error: " . $e->getMessage());
+            return false;
+        }
     }
     
     public function getSchedulesByPackageAndGuide($package_ID, $guide_ID) {

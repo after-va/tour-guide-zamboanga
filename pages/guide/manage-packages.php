@@ -15,8 +15,33 @@ $user = $_SESSION['user'];
 // Get guide ID from the session
 $guideId = $user['user_id'];
 
+// Handle package adoption/removal actions
+if (isset($_GET['action']) && isset($_GET['id'])) {
+    $packageId = (int)$_GET['id'];
+    
+    if ($_GET['action'] === 'adopt') {
+        if ($guideManager->adoptPackage($guideId, $packageId)) {
+            $_SESSION['success'] = "Package has been added to your offerings.";
+        } else {
+            $_SESSION['error'] = "Failed to add package to your offerings.";
+        }
+    } elseif ($_GET['action'] === 'remove') {
+        if ($guideManager->removePackage($guideId, $packageId)) {
+            $_SESSION['success'] = "Package has been removed from your offerings.";
+        } else {
+            $_SESSION['error'] = "Failed to remove package from your offerings.";
+        }
+    }
+    
+    header('Location: manage-packages.php');
+    exit;
+}
+
 // Get packages assigned to this guide
 $packages = $guideManager->getGuidePackages($guideId);
+
+// Get recommended packages that this guide hasn't adopted yet
+$recommendedPackages = $guideManager->getRecommendedPackagesForGuide($guideId);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,6 +76,7 @@ $packages = $guideManager->getGuidePackages($guideId);
             </div>
         <?php endif; ?>
 
+        <h2>My Tour Packages</h2>
         <?php if (empty($packages)): ?>
             <div style="text-align: center; padding: 60px; background: #f5f5f5;">
                 <h2>No Tour Packages Assigned</h2>
@@ -91,8 +117,67 @@ $packages = $guideManager->getGuidePackages($guideId);
                                         View
                                     </a>
                                     <a href="package-schedule.php?id=<?= $package['tourPackage_ID'] ?>" 
-                                       style="color: #ff9800; text-decoration: none;">
+                                       style="color: #ff9800; text-decoration: none; margin-right: 10px;">
                                         Manage Schedule
+                                    </a>
+                                    <?php if (isset($package['is_adopted']) && $package['is_adopted']): ?>
+                                    <a href="manage-packages.php?action=remove&id=<?= $package['tourPackage_ID'] ?>" 
+                                       onclick="return confirm('Are you sure you want to remove this package from your list?')"
+                                       style="color: #f44336; text-decoration: none;">
+                                        Remove
+                                    </a>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+        
+        <!-- Recommended Packages Section -->
+        <h2 style="margin-top: 40px;">Recommended Packages</h2>
+        <?php if (empty($recommendedPackages)): ?>
+            <div style="text-align: center; padding: 30px; background: #f5f5f5;">
+                <p>No recommended packages available at this time.</p>
+            </div>
+        <?php else: ?>
+            <div style="background: white; border: 1px solid #ddd;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f5f5f5;">
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">No.</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Package Name</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Description</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Duration</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Capacity</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $no = 1; foreach ($recommendedPackages as $package): ?>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #ddd;"><?= $no++ ?></td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <strong><?= htmlspecialchars($package['tourPackage_Name']) ?></strong>
+                                </td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <?= htmlspecialchars(substr($package['tourPackage_Description'], 0, 100)) ?>...
+                                </td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <?= htmlspecialchars($package['tourPackage_Duration']) ?>
+                                </td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <?= htmlspecialchars($package['tourPackage_Capacity']) ?>
+                                </td>
+                                <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <a href="../public/package-details.php?id=<?= $package['tourPackage_ID'] ?>" 
+                                       style="color: #1976d2; text-decoration: none; margin-right: 10px;">
+                                        View
+                                    </a>
+                                    <a href="manage-packages.php?action=adopt&id=<?= $package['tourPackage_ID'] ?>" 
+                                       style="color: #4caf50; text-decoration: none;">
+                                        Add to My Packages
                                     </a>
                                 </td>
                             </tr>

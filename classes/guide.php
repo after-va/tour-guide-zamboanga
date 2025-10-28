@@ -19,7 +19,8 @@ class Guide extends Database {
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
         $person_nationality, $person_gender, $person_dateofbirth, 
-        $username, $password) {
+        $username, $password,
+        $license_number, $license_type = null, $issue_date = null, $expiry_date = null, $issuing_authority = null) {
     
         $db = $this->connect();
         if (!$db) {
@@ -80,9 +81,35 @@ class Guide extends Database {
             $result = $query->execute();
             
             if ($result) {
-                $db->commit();
-                error_log("Guide registration successful for user: " . $username);
-                return true; 
+                // Get the person_ID from the login_ID
+                $sql = "SELECT person_ID FROM User_Login WHERE login_ID = :login_ID";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam(':login_ID', $login_ID);
+                $stmt->execute();
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($result && isset($result['person_ID'])) {
+                    $person_ID = $result['person_ID'];
+                    
+                    // Add the guide license (use the same DB connection to avoid locking issues)
+                    if ($this->addGuideLicense($person_ID, $license_number, $license_type, $issue_date, $expiry_date, $issuing_authority, $db)) {
+                        $db->commit();
+                        error_log("Guide registration successful for user: " . $username);
+                        return true;
+                    } else {
+                        $error = $this->getLastError() ?: "Failed to add guide license";
+                        error_log("Failed to add guide license: " . $error);
+                        $db->rollBack();
+                        $this->setLastError($error);
+                        return false;
+                    }
+                } else {
+                    $error = "Failed to get person_ID for login_ID: " . $login_ID;
+                    error_log($error);
+                    $db->rollBack();
+                    $this->setLastError($error);
+                    return false;
+                }
             } else {
                 $errorInfo = $query->errorInfo();
                 $error = "Database error: " . ($errorInfo[2] ?? 'Unknown error');
@@ -343,6 +370,290 @@ class Guide extends Database {
         if ($query_insert->execute()) {
             return $db->lastInsertId();
         } else {
+            return false;
+        }
+    }
+
+    /**
+     * Add a guide license. Accepts an optional PDO connection to participate in an existing transaction.
+     * If $db is provided, it will be used (no new transaction started here). If null, a new connection is used.
+     */
+    private function addGuideLicense($guide_ID, $license_number, $license_type = null, $issue_date = null, $expiry_date = null, $issuing_authority = null, $db = null) {
+        $closeConnection = false;
+        if ($db === null) {
+            $db = $this->connect();
+            $closeConnection = true;
+        }
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO Guide_License (
+                guide_ID, license_number, license_type, issue_date, 
+                expiry_date, issuing_authority, status, verification_status
+            ) VALUES (
+                :guide_ID, :license_number, :license_type, :issue_date,
+                :expiry_date, :issuing_authority, 'pending', 'pending'
+            )";
+
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':guide_ID', $guide_ID);
+            $stmt->bindParam(':license_number', $license_number);
+            $stmt->bindParam(':license_type', $license_type);
+            $stmt->bindParam(':issue_date', $issue_date);
+            $stmt->bindParam(':expiry_date', $expiry_date);
+            $stmt->bindParam(':issuing_authority', $issuing_authority);
+
+            $res = $stmt->execute();
+            if ($closeConnection) {
+                $db = null;
+            }
+            return $res;
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to add guide license: " . $e->getMessage());
+            error_log("Failed to add guide license: " . $e->getMessage());
+            if ($closeConnection) {
+                $db = null;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Public wrapper to add a license for an existing guide
+     */
+    public function addLicense($guide_ID, $license_number, $license_type = null, $issue_date = null, $expiry_date = null, $issuing_authority = null) {
+        return $this->addGuideLicense($guide_ID, $license_number, $license_type, $issue_date, $expiry_date, $issuing_authority);
+    }
+
+    /**
+     * Generate a random, unique license number.
+     * Format: PREFIX-XXXX-XXXX where X are uppercase hex chars.
+     * Returns license string on success, false on failure.
+     */
+    public function generateLicenseNumber($prefix = 'TG', $parts = [4,4], $maxAttempts = 10) {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $neededChars = array_sum($parts);
+            try {
+                $rand = strtoupper(bin2hex(random_bytes(ceil($neededChars/2))));
+            } catch (Exception $e) {
+                // Fallback to uniqid
+                $rand = strtoupper(substr(sha1(uniqid('', true)), 0, $neededChars));
+            }
+            $rand = substr($rand, 0, $neededChars);
+            $chunks = [];
+            $pos = 0;
+            foreach ($parts as $len) {
+                $chunks[] = substr($rand, $pos, $len);
+                $pos += $len;
+            }
+            $license = $prefix . '-' . implode('-', $chunks);
+
+            // Check uniqueness
+            $sql = "SELECT license_ID FROM Guide_License WHERE license_number = :license_number LIMIT 1";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':license_number', $license);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return $license;
+            }
+            // else try again
+        }
+
+        $this->setLastError('Unable to generate unique license number after attempts');
+        return false;
+    }
+
+    public function getGuideLicense($guide_ID) {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $sql = "SELECT * FROM Guide_License WHERE guide_ID = :guide_ID";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':guide_ID', $guide_ID);
+            $stmt->execute();
+            
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to get guide license: " . $e->getMessage());
+            error_log("Failed to get guide license: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all licenses or filter by guide_ID
+     * @param int|null $guide_ID
+     * @return array|false
+     */
+    public function getAllLicenses($guide_ID = null) {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            if ($guide_ID) {
+                $sql = "SELECT * FROM Guide_License WHERE guide_ID = :guide_ID ORDER BY created_at DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+                $stmt->execute();
+            } else {
+                $sql = "SELECT * FROM Guide_License ORDER BY created_at DESC";
+                $stmt = $db->prepare($sql);
+                $stmt->execute();
+            }
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to get licenses: " . $e->getMessage());
+            error_log("Failed to get licenses: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * List pending licenses (verification_status = 'pending')
+     * @return array|false
+     */
+    public function listPendingLicenses() {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $sql = "SELECT gl.*, ni.name_first, ni.name_last, ci.contactinfo_email
+                    FROM Guide_License gl
+                    LEFT JOIN Person p ON gl.guide_ID = p.person_ID
+                    LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+                    LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+                    WHERE gl.verification_status = 'pending' ORDER BY gl.created_at ASC";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to list pending licenses: " . $e->getMessage());
+            error_log("Failed to list pending licenses: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Verify or reject a license (sets verification_status and status)
+     * @param int $license_ID
+     * @param int $verifier_person_ID
+     * @param string $verification_status ('verified'|'rejected')
+     * @param string|null $status ('active'|'revoked' etc.) optional override
+     * @return bool
+     */
+    public function verifyLicense($license_ID, $verifier_person_ID, $verification_status = 'verified', $status = null) {
+        $allowed = ['verified', 'rejected'];
+        if (!in_array($verification_status, $allowed)) {
+            $this->setLastError("Invalid verification_status");
+            return false;
+        }
+
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $db->beginTransaction();
+
+            $sql = "UPDATE Guide_License SET verification_status = :verification_status, verified_by = :verified_by, verified_at = :verified_at";
+            if ($status !== null) {
+                $sql .= ", status = :status";
+            }
+            $sql .= " WHERE license_ID = :license_ID";
+
+            $stmt = $db->prepare($sql);
+            $now = date('Y-m-d H:i:s');
+            $stmt->bindParam(':verification_status', $verification_status);
+            $stmt->bindParam(':verified_by', $verifier_person_ID, PDO::PARAM_INT);
+            $stmt->bindParam(':verified_at', $now);
+            if ($status !== null) $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':license_ID', $license_ID, PDO::PARAM_INT);
+
+            $res = $stmt->execute();
+            if (!$res) {
+                $errorInfo = $stmt->errorInfo();
+                $this->setLastError("Failed to update license: " . ($errorInfo[2] ?? 'unknown'));
+                $db->rollBack();
+                return false;
+            }
+
+            $db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $db->rollBack();
+            $this->setLastError("Failed to verify license: " . $e->getMessage());
+            error_log("Failed to verify license: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Mark a license as expired
+     * @param int $license_ID
+     * @return bool
+     */
+    public function expireLicense($license_ID) {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE Guide_License SET status = 'expired' WHERE license_ID = :license_ID";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':license_ID', $license_ID, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to expire license: " . $e->getMessage());
+            error_log("Failed to expire license: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Expire licenses whose expiry_date is reached or passed.
+     * Returns number of licenses updated or false on error.
+     */
+    public function expireDueLicenses() {
+        $db = $this->connect();
+        if (!$db) {
+            $this->setLastError("Database connection failed");
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE Guide_License SET status = 'expired' WHERE expiry_date IS NOT NULL AND expiry_date <= CURDATE() AND status != 'expired'";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            $count = $stmt->rowCount();
+            return $count;
+        } catch (PDOException $e) {
+            $this->setLastError("Failed to expire due licenses: " . $e->getMessage());
+            error_log("Failed to expire due licenses: " . $e->getMessage());
             return false;
         }
     }

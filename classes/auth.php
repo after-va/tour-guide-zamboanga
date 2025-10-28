@@ -3,6 +3,14 @@ require_once "database.php";
 
 class Auth extends Database {
     
+    public function requireGuide() {
+        session_start();
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Guide') {
+            header('Location: ../../index.php');
+            exit;
+        }
+    }
+    
     public function login($username, $password) {
         try {
             $sql = "SELECT ul.*, p.person_ID, 

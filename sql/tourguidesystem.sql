@@ -283,22 +283,45 @@ CREATE TABLE IF NOT EXISTS Activity_Log (
     FOREIGN KEY (user_ID) REFERENCES Account_Role(account_role_ID) ON DELETE SET NULL
 );
 
--- Guide Certifications
--- CREATE TABLE IF NOT EXISTS Guide_Certification (
---     certification_ID INT AUTO_INCREMENT PRIMARY KEY,
---     guide_ID INT NOT NULL,
---     certification_type VARCHAR(100),
---     certification_number VARCHAR(100),
---     issue_date DATE,
---     expiry_date DATE,
---     document_path VARCHAR(255),
---     status ENUM('pending', 'verified', 'expired', 'rejected') DEFAULT 'pending',
---     verified_by INT,
---     verified_at DATETIME,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) ON DELETE CASCADE,
---     FOREIGN KEY (verified_by) REFERENCES Person(person_ID) ON DELETE SET NULL
--- );
+-- Guide Licenses and Certifications
+CREATE TABLE IF NOT EXISTS Guide_License (
+    license_ID INT AUTO_INCREMENT PRIMARY KEY,
+    guide_ID INT NOT NULL,
+    license_number VARCHAR(50) NOT NULL UNIQUE,
+    issue_date DATE,
+    expiry_date DATE,
+    issuing_authority VARCHAR(100),
+    license_type VARCHAR(50),
+    status ENUM('pending', 'active', 'expired', 'revoked') DEFAULT 'pending',
+    verification_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    verified_by INT,
+    verified_at DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by) REFERENCES Person(person_ID) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS Guide_Certification (
+    certification_ID INT AUTO_INCREMENT PRIMARY KEY,
+    guide_ID INT NOT NULL,
+    certification_type VARCHAR(100),
+    certification_number VARCHAR(100),
+    issue_date DATE,
+    expiry_date DATE,
+    document_path VARCHAR(255),
+    status ENUM('pending', 'verified', 'expired', 'rejected') DEFAULT 'pending',
+    verified_by INT,
+    verified_at DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (guide_ID) REFERENCES Person(person_ID) ON DELETE CASCADE,
+    FOREIGN KEY (verified_by) REFERENCES Person(person_ID) ON DELETE SET NULL
+);
+
+-- Create indexes for better performance
+CREATE INDEX idx_guide_license_number ON Guide_License(license_number);
+CREATE INDEX idx_guide_license_guide ON Guide_License(guide_ID);
+CREATE INDEX idx_guide_certification_guide ON Guide_Certification(guide_ID);
 
 -- Guide Availability
 CREATE TABLE IF NOT EXISTS Guide_Availability (
@@ -456,10 +479,57 @@ CREATE INDEX idx_city_province ON City(province_ID);
 CREATE INDEX idx_barangay_city ON Barangay(city_ID);
 CREATE INDEX idx_address_barangay ON Address_Info(barangay_ID);
 
--- Create views for common queries
 
 
-CREATE OR REPLACE VIEW v_booking_details AS
+-- View for guide license details with personal information
+CREATE OR REPLACE VIEW v_guide_license_details AS
+SELECT 
+    gl.license_ID,
+    gl.license_number,
+    gl.license_type,
+    gl.issue_date,
+    gl.expiry_date,
+    gl.status as license_status,
+    gl.verification_status,
+    gl.issuing_authority,
+    CONCAT(ni.name_first, ' ', ni.name_last) as guide_name,
+    p.person_ID as guide_ID,
+    ci.contactinfo_email,
+    pn.phone_number,
+    gl.created_at,
+    gl.updated_at,
+    CONCAT(vn.name_first, ' ', vn.name_last) as verified_by_name
+FROM Guide_License gl
+LEFT JOIN Person p ON gl.guide_ID = p.person_ID
+LEFT JOIN Name_Info ni ON p.name_ID = ni.name_ID
+LEFT JOIN Contact_Info ci ON p.contactinfo_ID = ci.contactinfo_ID
+LEFT JOIN Phone_Number pn ON ci.phone_ID = pn.phone_ID
+LEFT JOIN Person v ON gl.verified_by = v.person_ID
+LEFT JOIN Name_Info vn ON v.name_ID = vn.name_ID;
+
+-- View for expired or soon to expire licenses
+CREATE OR REPLACE VIEW v_guide_license_expiring AS
+SELECT 
+    *
+FROM v_guide_license_details
+WHERE 
+    status = 'active' 
+    AND (
+        expiry_date <= CURDATE() 
+        OR (
+            expiry_date IS NOT NULL 
+            AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+        )
+    );
+
+-- View for pending license verifications
+CREATE OR REPLACE VIEW v_guide_license_pending AS
+SELECT 
+    *
+FROM v_guide_license_details
+WHERE verification_status = 'pending';
+
+
 SELECT 
     b.booking_ID,
     b.booking_Status,
@@ -612,6 +682,19 @@ CREATE TABLE IF NOT EXISTS Package_Request_Messages (
 );
 
 -- Indexes for performance
+CREATE INDEX idx_custom_request_tourist ON Custom_Package_Request(tourist_ID);
+CREATE INDEX idx_custom_request_guide ON Custom_Package_Request(guide_ID);
+CREATE INDEX idx_custom_request_status ON Custom_Package_Request(request_status);
+CREATE INDEX idx_guide_offering_guide ON Guide_Package_Offering(guide_ID);
+CREATE INDEX idx_guide_offering_active ON Guide_Package_Offering(is_active);
+-- Add indexes for Guide License management
+CREATE INDEX idx_guide_license_guide ON Guide_License(guide_ID);
+CREATE INDEX idx_guide_license_number ON Guide_License(license_number);
+CREATE INDEX idx_guide_license_status ON Guide_License(status);
+CREATE INDEX idx_guide_license_verification ON Guide_License(verification_status);
+CREATE INDEX idx_guide_license_expiry ON Guide_License(expiry_date);
+
+-- Add indexes for existing package-related tables
 CREATE INDEX idx_custom_request_tourist ON Custom_Package_Request(tourist_ID);
 CREATE INDEX idx_custom_request_guide ON Custom_Package_Request(guide_ID);
 CREATE INDEX idx_custom_request_status ON Custom_Package_Request(request_status);

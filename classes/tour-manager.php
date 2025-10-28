@@ -7,6 +7,56 @@ require_once "trait/trait-rating.php";
 
 class TourManager extends Database {
     use TourPackageTrait, TourSpotsTrait, ScheduleTrait, RatingTrait;
+    
+    // Recommendation management methods
+    
+    public function recommendPackage($tourPackage_ID) {
+        try {
+            $sql = "INSERT INTO Package_Recommendations (tourPackage_ID, is_recommended) 
+                    VALUES (:tourPackage_ID, 1)
+                    ON DUPLICATE KEY UPDATE is_recommended = 1";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(':tourPackage_ID', $tourPackage_ID);
+            return $query->execute();
+        } catch (PDOException $e) {
+            error_log("Recommend Package Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function unrecommendPackage($tourPackage_ID) {
+        try {
+            $sql = "UPDATE Package_Recommendations 
+                    SET is_recommended = 0 
+                    WHERE tourPackage_ID = :tourPackage_ID";
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(':tourPackage_ID', $tourPackage_ID);
+            return $query->execute();
+        } catch (PDOException $e) {
+            error_log("Unrecommend Package Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function getRecommendedPackages() {
+        $sql = "SELECT tp.*, pr.recommendation_date 
+                FROM Tour_Package tp
+                INNER JOIN Package_Recommendations pr ON tp.tourPackage_ID = pr.tourPackage_ID
+                WHERE pr.is_recommended = 1
+                ORDER BY pr.recommendation_date DESC";
+        $query = $this->connect()->prepare($sql);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function isPackageRecommended($tourPackage_ID) {
+        $sql = "SELECT COUNT(*) FROM Package_Recommendations 
+                WHERE tourPackage_ID = :tourPackage_ID AND is_recommended = 1";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(':tourPackage_ID', $tourPackage_ID);
+        $query->execute();
+        return $query->fetchColumn() > 0;
+    }
 
     public function createPackageWithSpots($tourPackage_Name, $tourPackage_Description, $tourPackage_Capacity, 
                                           $tourPackage_Duration, $spot_IDs = []) {

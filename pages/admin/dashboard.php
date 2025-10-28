@@ -90,10 +90,10 @@ $recentBookings = $query->fetchAll(PDO::FETCH_ASSOC);
                 <a href="manage-bookings.php" style="color: #ff9800; text-decoration: none;">Manage &rarr;</a>
             </div>
             
-            <div style="background: #f3e5f5; padding: 20px; border-left: 4px solid #9c27b0;">
+                        <div style="background: #f3e5f5; padding: 20px; border-left: 4px solid #9c27b0;">
                 <h3 style="margin: 0 0 10px 0;">Total Users</h3>
-                <p style="font-size: 32px; font-weight: bold; margin: 0;"><?= $stats['total_users'] ?></p>
-                <a href="manage-users.php" style="color: #9c27b0; text-decoration: none;">Manage &rarr;</a>
+                <p style="font-size: 32px; font-weight: bold; margin: 0;">5</p>
+                <a href="manage-users.php" style="color: #9c27b0; text-decoration: none;">Manage →</a>
             </div>
         </div>
 

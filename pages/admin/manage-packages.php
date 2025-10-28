@@ -11,6 +11,33 @@ $tourManager = new TourManager();
 $user = $_SESSION['user'];
 
 $packages = $tourManager->getAllTourPackages();
+
+// Handle recommendation actions
+if (isset($_GET['action']) && isset($_GET['id'])) {
+    $packageId = (int)$_GET['id'];
+    
+    if ($_GET['action'] === 'recommend') {
+        if ($tourManager->recommendPackage($packageId)) {
+            $_SESSION['success_message'] = "Package has been recommended to guides.";
+        } else {
+            $_SESSION['error_message'] = "Failed to recommend package.";
+        }
+    } elseif ($_GET['action'] === 'unrecommend') {
+        if ($tourManager->unrecommendPackage($packageId)) {
+            $_SESSION['success_message'] = "Package has been removed from recommendations.";
+        } else {
+            $_SESSION['error_message'] = "Failed to remove package from recommendations.";
+        }
+    }
+    
+    header('Location: manage-packages.php');
+    exit;
+}
+
+// Check recommendation status for each package
+foreach ($packages as &$package) {
+    $package['is_recommended'] = $tourManager->isPackageRecommended($package['tourPackage_ID']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,9 +122,20 @@ $packages = $tourManager->getAllTourPackages();
                                     </a>
                                     <a href="delete-package.php?id=<?= $package['tourPackage_ID'] ?>" 
                                        onclick="return confirm('Are you sure you want to delete this package?')"
-                                       style="color: #f44336; text-decoration: none;">
+                                       style="color: #f44336; text-decoration: none; margin-right: 10px;">
                                         Delete
                                     </a>
+                                    <?php if ($package['is_recommended']): ?>
+                                        <a href="manage-packages.php?action=unrecommend&id=<?= $package['tourPackage_ID'] ?>" 
+                                           style="color: #f44336; text-decoration: none;">
+                                            Unrecommend
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="manage-packages.php?action=recommend&id=<?= $package['tourPackage_ID'] ?>" 
+                                           style="color: #4caf50; text-decoration: none;">
+                                            Recommend
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
