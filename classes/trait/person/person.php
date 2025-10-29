@@ -1,11 +1,12 @@
 <?php
 
-require_once "trait-name-info.php";
-require_once "trait-phone.php";
-require_once "trait-address.php";
-require_once "trait-emergency.php";
-require_once "trait-contact-info.php";
+require_once "name-info.php";
+require_once "phone.php";
+require_once "address.php";
+require_once "emergency.php";
+require_once "contact-info.php";
 trait PersonTrait {
+    use NameInfoTrait, PhoneTrait, AddressTrait, EmergencyTrait, ContactInfoTrait;
 
     // Check if person with same name and birthdate exists
     public function checkPersonExists($name_first, $name_second, $name_middle, $name_last, $name_suffix, 

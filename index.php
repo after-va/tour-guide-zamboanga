@@ -49,5 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <input type="password" name="password" placeholder="Password"><br><br>
         <button type="submit">Login</button>
     </form>
+    
+        <a href="tourist-registration.php">Register as A Tourist</a>
 </body>
 </html>
