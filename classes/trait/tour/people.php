@@ -51,4 +51,13 @@ trait PeopleTrait{
         }
     }
 
+    public function getPeopleByID($peopleID) {
+        $db = $this->connect();
+        $sql = "SELECT * FROM Number_Of_People WHERE numberofpeople_ID = :peopleID";
+        $query = $db->prepare($sql);
+        $query->bindParam(':peopleID', $peopleID);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+
 }

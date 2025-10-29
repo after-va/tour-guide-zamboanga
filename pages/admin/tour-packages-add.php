@@ -105,14 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Tour Package</title>
-    <style>
-        .error { color: red; font-size: 0.9em; }
-        .success { color: green; font-weight: bold; }
-        label { display: inline-block; width: 180px; }
-        input, textarea, select { width: 300px; padding: 8px; margin-bottom: 5px; }
-        textarea { height: 80px; }
-        .checkbox-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; background: #f9f9f9; }
-    </style>
+
 </head>
 <body>
     <h1>Add Tour Package</h1>

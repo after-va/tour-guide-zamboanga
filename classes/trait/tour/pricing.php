@@ -33,5 +33,13 @@ trait PricingTrait{
         }
     }
 
+    public function getPricingByID($pricingID) {
+        $db = $this->connect();
+        $sql = "SELECT * FROM Pricing WHERE pricing_ID = :pricingID";
+        $query = $db->prepare($sql);
+        $query->bindParam(':pricingID', $pricingID);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
 
 }

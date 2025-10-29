@@ -3,16 +3,12 @@
 trait ScheduleTrait{
 
     public function getScheduleByID($scheduleID) {
+        $db = $this->connect();
         $sql = "SELECT * FROM Schedule WHERE schedule_ID = :scheduleID";
-        $query = $this->db->prepare($sql);
+        $query = $db->prepare($sql);
         $query->bindParam(':scheduleID', $scheduleID);
         $query->execute();
-
-        if($query->execute()) {
-            return $query->fetch(PDO::FETCH_ASSOC);
-        } else {
-            return null;
-        }
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function addgetSchedule($schedule_days, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount, $db){
