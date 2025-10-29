@@ -68,8 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // === SAVE ONLY IF NO ERRORS ===
     if (empty($errors)) {
-        $result = $tourPackageObj->addTourPackagespots(
-            $tourPackage["spots"],                    // ← array of spot IDs
+        $tourpackage_ID = $tourPackageObj->addTourPackage( 
             $tourPackage["guide_ID"],
             $tourPackage["tourpackage_name"],
             $tourPackage["tourpackage_desc"],
@@ -81,9 +80,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $tourPackage["discount"]
         );
 
+        $result = $tourPackageObj->linkSpotToPackage($tourpackage_ID, $tourPackage["spots"] );
+
         if ($result) {
             $_SESSION['success'] = "Tour package added successfully!";
-            header("Location: view_packages.php"); // Change to your list page
+            header("Location: tour-packages.php"); // Changed from view_packages.php to tour-packages.php
             exit;
         } else {
             $errors['general'] = "Failed to save package. Please try again.";
