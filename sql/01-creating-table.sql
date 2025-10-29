@@ -208,8 +208,7 @@ CREATE TABLE Pricing(
     pricing_ID INT AUTO_INCREMENT PRIMARY KEY,
     pricing_currency VARCHAR(10) NOT NULL,
     pricing_based DECIMAL(10,2) NOT NULL,
-    pricing_discount DECIMAL(10,2) NOT NULL,
-    pricing_total DECIMAL(10,2) NOT NULL
+    pricing_discount DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE Number_Of_People(

@@ -3,12 +3,12 @@
 trait TourPackageSpot {
 
 
-    public function addTourPackagespots($tourspots_ID, $guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount){
+    public function addTourPackagespots($spots_ID, $guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount){
         $db = $this->connect();
         $db->beginTransaction();
 
         try{
-            $tourpackage_ID = $this->addTourPackage($guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount, $db);
+            $tourpackage_ID = $this->addTourPackage($guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days,  $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount, $db);
 
             if(!$tourpackage_ID){
                 return false;

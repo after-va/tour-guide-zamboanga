@@ -15,7 +15,7 @@ trait Schedule{
         }
     }
 
-    public function addgetSchedule($schedule_days, $numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount,$db){
+    public function addgetSchedule($schedule_days,  $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount,$db){
         $sql = "SELECT 
                     s.schedule_ID,
                     s.schedule_days,
@@ -53,7 +53,7 @@ trait Schedule{
             return $result["address_ID"];
         }
 
-        $numberofpeople_ID = $this->addgetPeople($numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount,$db);
+        $numberofpeople_ID = $this->addgetPeople( $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount,$db);
 
         if(!$numberofpeople_ID){
             return false;
