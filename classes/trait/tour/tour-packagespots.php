@@ -2,25 +2,36 @@
 
 trait TourPackageSpot {
 
-    public function linkSpotToPackage($tourpackage_ID, $tour_spots){
+
+    public function addTourPackagespots($tourspots_ID, $guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount){
         $db = $this->connect();
         $db->beginTransaction();
+
         try{
-            $sql = "INSERT INTO tour_package_spots (tourpackage_ID, spot_ID) 
-                    VALUES (:tourpackage_ID, :tour_spot_ID)";
-            $query = $db->prepare($sql);
-            foreach($tour_spots as $spot_ID){
-                $query->bindParam(':tourpackage_ID', $tourpackage_ID, PDO::PARAM_INT);
-                $query->bindParam(':tour_spot_ID', $spot_ID, PDO::PARAM_INT);
-                $query->execute();
+            $tourpackage_ID = $this->addTourPackage($guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_adult, $numberofpeople_children, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount, $db);
+
+            if(!$tourpackage_ID){
+                return false;
             }
-            $db->commit();
-            return true;
-        } catch (PDOException $e) {
+
+            $sql = "INSERT INTO Tour_Package_Spots(tourpackage_ID,spots_ID) VALUES (:tourpackage_ID, :spots_ID)";
+            $query = $db->prepare($sql);
+            $query->bindParam(":tourpackage_ID",$tourpackage_ID);
+            $query->bindParam(":spots_ID",$spots_ID);
+
+            if ($query_insert->execute()) {
+                return $db->lastInsertId();
+            } else {
+                return false;
+            }
+
+        }catch (PDOException $e) {
             $db->rollBack();
-            error_log("Error linking spots to package: " . $e->getMessage());
+            error_log("Error adding tour spot: " . $e->getMessage());
             return false;
         }
+
+
     }
 
      public function getSpotsByPackage($packageID) {

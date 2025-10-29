@@ -225,9 +225,7 @@ CREATE TABLE Number_Of_People(
 CREATE TABLE Schedule(
     schedule_ID INT AUTO_INCREMENT PRIMARY KEY,
     numberofpeople_ID INT,
-    schedule_date DATE NOT NULL,
-    schedule_start_time TIME NOT NULL,
-    schedule_end_time TIME NOT NULL,
+    schedule_days INT NOT NULL DEFAULT 1,
     FOREIGN KEY (numberofpeople_ID) REFERENCES Number_Of_People(numberofpeople_ID)    
 );
 
@@ -289,6 +287,8 @@ CREATE TABLE Booking(
     booking_status VARCHAR(50) NOT NULL,
     booking_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tourpackage_ID INT,
+    booking_start_date DATE NOT NULL,
+    booking_end_date DATE NOT NULL,
     FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID),
     FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID)
 );
