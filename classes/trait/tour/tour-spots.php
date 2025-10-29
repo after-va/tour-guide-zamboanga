@@ -11,30 +11,15 @@ trait TourSpotsTrait {
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getTourSpots($tour_ID) {
-        $db = $this->connect();
-        if (!$db) {
-            $this->setLastError("Database connection failed");
-            error_log("Database connection failed in getTourSpotsByTourID");
-            return false;
+    public function getTourSpotById($spots_ID) {
+        $sql = "SELECT * FROM Tour_Spots WHERE spots_ID = :spots_ID";
+        $query = $this->connect()->prepare($sql);
+        $query->bindParam(":spots_ID", $spots_ID);
+        
+        if ($query->execute()) {
+            return $query->fetch();
         }
-
-        $sql = "SELECT ts.* 
-                FROM tour_spots ts
-                INNER JOIN tour_tour_spots tts ON ts.tour_spot_ID = tts.tour_spot_ID
-                WHERE tts.tour_ID = :tour_ID";
-
-        try {
-            $query = $db->prepare($sql);
-            $query->bindParam(':tour_ID', $tour_ID, PDO::PARAM_INT);
-            $query->execute();
-            $tourSpots = $query->fetchAll(PDO::FETCH_ASSOC);
-
-            return $tourSpots;
-        } catch (PDOException $e) {
-            error_log("Error fetching tour spots for tour_ID $tour_ID: " . $e->getMessage());
-            return false;
-        }
+        return null;
     }
 
 
@@ -97,23 +82,20 @@ trait TourSpotsTrait {
         }
     }
 
-    public function deleteTourSpot($tourspot_ID){
-        $db = $this->connect();
-        $db->beginTransaction();
-        try{
-            $sql = "DELETE FROM tour_spots WHERE tour_spot_ID = :tour_spot_ID";
-            $query = $db->prepare($sql);
-            $query->bindParam(':tour_spot_ID', $tour_spot_ID, PDO::PARAM_INT);
-            if($query->execute()){
-                $db->commit();
+    public function deleteTourSpot($spots_ID) {
+        $sql = "DELETE FROM Tour_Spots WHERE spots_ID = :spots_ID";
+        
+        try {
+            $query = $this->connect()->prepare($sql);
+            $query->bindParam(":spots_ID", $spots_ID);
+            
+            if ($query->execute()) {
                 return true;
-            } else {
-                $db->rollBack();
-                return false;
             }
+            error_log("TourSpot Delete Error: " . print_r($query->errorInfo(), true));
+            return false;
         } catch (PDOException $e) {
-            $db->rollBack();
-            error_log("Error deleting tour spot: " . $e->getMessage());
+            error_log("TourSpot Delete Exception: " . $e->getMessage());
             return false;
         }
     }

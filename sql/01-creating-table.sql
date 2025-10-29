@@ -201,50 +201,6 @@ CREATE TABLE Guide_Languages(
 
 
 -- ==============================
---  TOURIST SPOTS SYSTEM TABLES
--- ==============================
-
---  Tour Spot
-CREATE TABLE Tour_Spots(
-    spots_ID INT AUTO_INCREMENT PRIMARY KEY,
-    spots_name VARCHAR(225) NOT NULL,
-    spots_category  VARCHAR(225) NOT NULL,
-    spots_description TEXT,
-    spots_address VARCHAR(500) NOT NULL,
-    spots_googlelink VARCHAR(500)
-
-);
-
-
---  Tour Packages
-CREATE TABLE Tour_Package(
-    tourpackage_ID INT AUTO_INCREMENT PRIMARY KEY,
-    tourpackage_name VARCHAR(225) NOT NULL,
-    tourpackage_desc TEXT
-);
-
---  Tour Package Spots (Many-to-Many Relationship)
-CREATE TABLE Tour_Package_Spots(
-    tourpackage_ID INT,
-    spots_ID INT,
-    PRIMARY KEY (tourpackage_ID, spots_ID),
-    FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID) ON DELETE CASCADE,
-    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID) ON DELETE CASCADE
-);
-
-CREATE TABLE Request_Package(
-    request_ID INT AUTO_INCREMENT PRIMARY KEY,
-    tourpackage_ID INT,
-    request_status VARCHAR(50) NOT NULL,
-    rejection_reason TEXT,
-    request_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    request_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID)
-);
-
-
-
--- ==============================
 --  SCHEDULE SYSTEM TABLES
 -- ==============================
 
@@ -276,21 +232,65 @@ CREATE TABLE Schedule(
 );
 
 -- ==============================
+--  TOURIST SPOTS SYSTEM TABLES
+-- ==============================
+
+--  Tour Spot
+CREATE TABLE Tour_Spots(
+    spots_ID INT AUTO_INCREMENT PRIMARY KEY,
+    spots_name VARCHAR(225) NOT NULL,
+    spots_category  VARCHAR(225) NOT NULL,
+    spots_description TEXT,
+    spots_address VARCHAR(500) NOT NULL,
+    spots_googlelink VARCHAR(500)
+
+);
+
+
+--  Tour Packages
+CREATE TABLE Tour_Package(
+    tourpackage_ID INT AUTO_INCREMENT PRIMARY KEY,
+    tourpackage_name VARCHAR(225) NOT NULL,
+    tourpackage_desc TEXT,
+    guide_ID INT,
+    schedule_ID INT,
+    FOREIGN KEY (schedule_ID) REFERENCES Schedule(schedule_ID),
+    FOREIGN KEY (guide_ID) REFERENCES Guide(guide_ID)
+);
+
+--  Tour Package Spots (Many-to-Many Relationship)
+CREATE TABLE Tour_Package_Spots(
+    tourpackage_ID INT,
+    spots_ID INT,
+    PRIMARY KEY (tourpackage_ID, spots_ID),
+    FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID) ON DELETE CASCADE,
+    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE Request_Package(
+    request_ID INT AUTO_INCREMENT PRIMARY KEY,
+    tourpackage_ID INT,
+    request_status VARCHAR(50) NOT NULL,
+    rejection_reason TEXT,
+    request_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    request_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID)
+);
+
+
+
+-- ==============================
 --  BOOKING SYSTEM TABLES
 -- ==============================
 
 CREATE TABLE Booking(
     booking_ID INT AUTO_INCREMENT PRIMARY KEY,
     tourist_ID INT,
-    guide_ID INT,
-    schedule_ID INT,
     booking_status VARCHAR(50) NOT NULL,
     booking_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tourpackage_ID INT,
     FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID),
-    FOREIGN KEY (guide_ID) REFERENCES Guide(guide_ID),
-    FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID),
-    FOREIGN KEY (schedule_ID) REFERENCES Schedule(schedule_ID)
+    FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID)
 );
 
 CREATE TABLE Companion_Category(
