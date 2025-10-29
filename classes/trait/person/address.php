@@ -45,7 +45,7 @@ trait AddressTrait {
         }
     }
 
-    public function fetchRegion($country_ID = null){
+    public function fetchRegion($country_ID){
         if ($country_ID === null) {
             $sql = "SELECT * FROM Region";
             $query = $this->connect()->prepare($sql);
