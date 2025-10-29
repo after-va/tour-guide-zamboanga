@@ -204,24 +204,17 @@ CREATE TABLE Guide_Languages(
 --  TOURIST SPOTS SYSTEM TABLES
 -- ==============================
 
---  Tour Spot Type
-CREATE TABLE Tourspot_Types(
-    type_ID INT AUTO_INCREMENT PRIMARY KEY,
-    type_name VARCHAR(100) NOT NULL UNIQUE,
-    type_description TEXT
-);
-
-
 --  Tour Spot
 CREATE TABLE Tour_Spots(
     spots_ID INT AUTO_INCREMENT PRIMARY KEY,
-    address_ID INT,
-    type_ID INT,
     spots_name VARCHAR(225) NOT NULL,
+    spots_category  VARCHAR(225) NOT NULL,
     spots_description TEXT,
-    FOREIGN KEY (address_ID) REFERENCES Address_Info(address_ID),
-    FOREIGN KEY (type_ID) REFERENCES Tourspot_Types(type_ID)
+    spots_address VARCHAR(500) NOT NULL,
+    spots_googlelink VARCHAR(500)
+
 );
+
 
 --  Tour Packages
 CREATE TABLE Tour_Package(
@@ -316,7 +309,8 @@ CREATE TABLE Booking_Bundle(
     bookingbundle_ID INT AUTO_INCREMENT PRIMARY KEY,
     booking_ID INT,
     companion_ID INT,
-    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
+    FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID),
+    FOREIGN KEY (companion_ID) REFERENCES Companion(companion_ID)
 );
 
 

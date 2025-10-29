@@ -1,13 +1,13 @@
 
 -- Insert default roles
-INSERT INTO Role_Info (role_name) VALUES 
+INSERT INTO Role(role_name) VALUES 
 ('Admin'),
 ('Tour Guide'),
 ('Tourist')
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
 
 -- Insert default payment methods
-INSERT INTO Payment_Method (method_name, method_type, processing_fee) VALUES
+INSERT INTO Method (method_name, method_type, method_processing_fee) VALUES
 ('Credit Card', 'card', 2.50),
 ('Debit Card', 'card', 2.50),
 ('GCash', 'ewallet', 1.00),
@@ -16,7 +16,7 @@ INSERT INTO Payment_Method (method_name, method_type, processing_fee) VALUES
 ('Cash', 'cash', 0.00)
 ON DUPLICATE KEY UPDATE method_name = VALUES(method_name);
 
-INSERT IGNORE INTO tour_spots(spots_Name, spots_Description, spots_category, spots_Address, spots_GoogleLink) VALUES 
+INSERT IGNORE INTO Tour_Spots(spots_name, spots_description, spots_category, spots_address, spots_googlelink) VALUES 
 ('Great Santa Cruz Island (Pink Sand Beach)', 'Famous for its unique pink-hued sand, which gets its color from crushed red organ pipe corals mixing with the white sand. Its a great spot for swimming, picnicking, and has a mangrove lagoon tour.', 'Beach', 'Zamboanga City', 'https://maps.app.goo.gl/3SR4NzSbEoCMeu689'), 
 ('Fort Pilar','A 17th-century military defense fortress built by the Spanish. It is now a Latin American-style outdoor shrine dedicated to the Our Lady of the Pillar and houses the National Museum Western-Southern Mindanao Regional Museum.','Historical','N.S. Valderosa St., Zamboanga City','https://maps.app.goo.gl/KfRWjCMRfhtMSn9Z7'), 
 ('Paseo del Mar','A vibrant seaside promenade near Fort Pilar, popular for strolling, enjoying the sunset, and serving as the jump-off point for Great Santa Cruz Island. Its also a great spot to try local food, like the famous Knickerbocker dessert.','Entertainment','N S Valderosa St. (Right beside Fort Pilar), Zone IV, Zamboanga City','https://maps.app.goo.gl/yfL5eojhbs3hdWqV8'), 
@@ -28,13 +28,8 @@ INSERT IGNORE INTO tour_spots(spots_Name, spots_Description, spots_category, spo
 ('Taluksangay Mosque','The oldest mosque in the Zamboanga Peninsula (built in 1885), distinguished by its distinctive red domes and recognized as a significant center for the propagation of Islam.','Religious','Brgy. Taluksangay, Zamboanga City','https://maps.app.goo.gl/tyEbMvVsNan8aeDR7'), 
 ('Metropolitan Cathedral of the Immaculate Conception','The main Catholic cathedral in the city, known for its distinct, modern architectural design.','Religious','La Purisima St., Zamboanga City','https://maps.app.goo.gl/vU5hH8E3MMMHbn7g7');
 
-
--- Insert Payment Methods
-INSERT IGNORE INTO Payment_Method (method_name, method_type, is_active, processing_fee) VALUES
-('Credit Card', 'card', 1, 2.50),
-('Debit Card', 'card', 1, 2.00),
-('GCash', 'ewallet', 1, 0.00),
-('PayMaya', 'ewallet', 1, 0.00),
-('Bank Transfer', 'bank', 1, 0.00),
-('Cash', 'cash', 1, 0.00);
+INSERT INTO Languages (language_name) VALUES
+('English'),
+('Filipino'),
+('Chavacano');
 
