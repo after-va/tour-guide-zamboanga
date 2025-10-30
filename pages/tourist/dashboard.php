@@ -5,7 +5,8 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
     exit;
 }
 require_once "../../classes/tourist.php";
-
+$tourist_ID = $_SESSION['user']['account_ID'];
+$torustObj = new Tourist();
 
 
 ?>
@@ -19,11 +20,10 @@ require_once "../../classes/tourist.php";
     
     <nav>
         <a href="dashboard.php">Dashboard</a> |
-        <a href="bookings.php">Bookings</a> |
+        <a href="booking.php">My Bookings</a> |
         <a href="tour-packages.php">View Tour Packages</a> |
         <a href="schedules.php">Schedules</a> |
-        <a href="payments.php">Payments</a> |
-        <a href="logout.php">Logout</a>
+        <a href="../../logout.php">Logout</a>
     </nav>
     
     <hr>

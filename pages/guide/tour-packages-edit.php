@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <a href="tour-spots.php">Tour Spots</a> |
         <a href="schedules.php">Schedules</a> |
         <a href="payments.php">Payments</a> |
-        <a href="logout.php">Logout</a>
+        <a href="../../logout.php">Logout</a>
     </nav>
     
     <hr>

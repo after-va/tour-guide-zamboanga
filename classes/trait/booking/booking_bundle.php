@@ -1,4 +1,6 @@
 <?php
+
+require_once "companion.php";
 trait BookingBundleTrait
 {
     use CompanionTrait; // Reuse companion logic

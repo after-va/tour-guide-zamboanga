@@ -283,7 +283,7 @@ CREATE TABLE Request_Package(
 CREATE TABLE Booking(
     booking_ID INT AUTO_INCREMENT PRIMARY KEY,
     tourist_ID INT,
-    booking_status VARCHAR(50) NOT NULL,
+    booking_status ENUM('Pending for Payment', 'Pending for Approval', 'Approved', 'In Progress', 'Completed', 'Cancelled', 'Refunded', 'Failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pending for Approval',
     booking_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     tourpackage_ID INT,
     booking_start_date DATE NOT NULL,
