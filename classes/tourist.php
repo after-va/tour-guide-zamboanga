@@ -2,9 +2,15 @@
 
 require_once __DIR__ . "/../config/database.php";
 require_once "trait/account/account-login.php";
+require_once "trait/person/address.php";
+require_once "trait/person/contact-info.php";
+require_once "trait/person/emergency.php";
+require_once "trait/person/name-info.php";
+require_once "trait/person/person.php";
+require_once "trait/person/phone.php";
 
 class Tourist extends Database {
-    use AccountLoginTrait;
+    use AccountLoginTrait, AddressTrait, ContactInfoTrait, NameInfoTrait, PersonTrait, PhoneTrait;
 
     public function addgetTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
         $houseno, $street, $barangay, $country_ID, $phone_number, $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $person_nationality, $person_gender, $person_dateofbirth, $user_username, $user_password){

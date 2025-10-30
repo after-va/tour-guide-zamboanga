@@ -61,7 +61,7 @@ trait AddressTrait {
         }
     }
 
-    public function fetchProvince($region_ID = null){
+    public function fetchProvince($region_ID){
         if ($region_ID === null || $region_ID === "") {
             $sql = "SELECT * FROM Province";
             $query = $this->connect()->prepare($sql);
@@ -77,7 +77,7 @@ trait AddressTrait {
         }
     }
 
-    public function fetchCity($province_ID = null){
+    public function fetchCity($province_ID){
         if ($province_ID === null || $province_ID === "") {
             $sql = "SELECT * FROM City";
             $query = $this->connect()->prepare($sql);
@@ -93,7 +93,7 @@ trait AddressTrait {
         }
     }
 
-    public function fetchBarangay($city_ID = null){
+    public function fetchBarangay($city_ID){
         if ($city_ID === null || $city_ID === "") {
             $sql = "SELECT * FROM Barangay";
             $query = $this->connect()->prepare($sql);

@@ -68,4 +68,48 @@ class Auth extends Database {
         }
     }
     
+    public function getAllUsers() {
+        $sql = " SELECT 
+                a.account_ID,
+                CONCAT_WS(' ',
+                    n.name_first,
+                    n.name_second,
+                    n.name_middle,
+                    n.name_last,
+                    n.name_suffix
+                ) AS full_name,
+                r.role_name AS role,
+                r.role_ID AS role_ID,
+                a.account_status AS status,
+                a.account_rating_score,
+                a.account_created_at,
+                u.user_username AS username,
+                u.user_ID AS user_ID,
+                p.person_ID AS person_ID,
+                CASE 
+                    WHEN ad.admin_ID IS NOT NULL THEN 'Admin'
+                    WHEN g.guide_ID IS NOT NULL THEN 'Guide'
+                    ELSE 'Tourist'
+                END AS account_type
+            FROM Account_Info a
+            JOIN User_Login u ON a.user_ID = u.user_ID
+            JOIN Person p ON u.person_ID = p.person_ID
+            JOIN Name_Info n ON p.name_ID = n.name_ID
+            JOIN Role r ON a.role_ID = r.role_ID
+            LEFT JOIN Admin ad ON a.account_ID = ad.account_ID
+            LEFT JOIN Guide g ON a.account_ID = g.account_ID
+            ORDER BY full_name
+            ";
+        
+        try {
+            $pdo = $this->connect();
+            $query = $pdo->prepare($sql);
+            $query->execute();
+            
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("GetAllUsers PDO Error: " . $e->getMessage());
+            return [];
+        }
+    }
 }
