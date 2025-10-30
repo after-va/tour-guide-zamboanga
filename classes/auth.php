@@ -14,8 +14,9 @@ class Auth extends Database {
                 ul.user_password, 
                 r.role_name,
                 r.role_ID, 
-                ai.account_status
-            FROM 
+                ai.account_status,
+                ai.account_ID
+            FROM
                 User_Login ul
             JOIN 
                 Account_Info ai ON ul.user_ID = ai.user_ID
@@ -42,7 +43,8 @@ class Auth extends Database {
                         "user_username" => $username,
                         "role_name" => $user['role_name'],
                         "role_ID" => $user['role_ID'],
-                        "account_status" => $user['account_status']
+                        "account_status" => $user['account_status'],
+                        "account_ID" => $user['account_ID']
                     ];
                 } else {
                     // Password does not match

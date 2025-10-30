@@ -15,8 +15,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $user = $authObj->login($auth["username"], $auth["password"]);
 
     if ($user && isset($user["role_ID"])) {
-        $_SESSION["user"] = $user; // optional if you want to store user data
-
+        $_SESSION["user"] = $user;
+        $_SESSION["account_ID"] = $user["account_ID"];  // ✅ add this line
+        $_SESSION["role_ID"] = $user["role_ID"];
+        $_SESSION["username"] = $user["user_username"];
         $role = $user["role_ID"];
 
         if ($role == 1) {

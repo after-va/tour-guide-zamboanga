@@ -48,7 +48,7 @@ class Tourist extends Database {
             $db->rollBack();
             error_log("Tourist Registration Error: " . $e->getMessage()); 
             return false;
-        }
+            }
 
 
     }
