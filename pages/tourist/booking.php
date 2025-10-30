@@ -4,18 +4,23 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
     header('Location: ../../index.php');
     exit;
 }
+
 require_once "../../classes/booking.php";
 require_once "../../classes/tourist.php";
+
 $tourist_ID = $_SESSION['user']['account_ID'];
-$toristObj = new Tourist();
+$touristObj = new Tourist();
 $bookingObj = new Booking();
 
 
+$bookings = $bookingObj->viewBookingByTourist($tourist_ID);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Dashboard</title>
+    
+    
 </head>
 <body>
     <h1>Dashboard</h1>
@@ -33,52 +38,57 @@ $bookingObj = new Booking();
     <h2>My Bookings</h2>
     
     <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success">
-            <?php 
-                echo $_SESSION['success']; 
-                unset($_SESSION['success']);
-            ?>
+        <div class="alert-success">
+            <?= htmlspecialchars($_SESSION['success']); ?>
+            <?php unset($_SESSION['success']); ?>
         </div>
     <?php endif; ?>
     
     <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-error">
-            <?php 
-                echo $_SESSION['error']; 
-                unset($_SESSION['error']);
-            ?>
+        <div class="alert-error">
+            <?= htmlspecialchars($_SESSION['error']); ?>
+            <?php unset($_SESSION['error']); ?>
         </div>
     <?php endif; ?>
     
     <p><a href="tour-packages-browse.php">Browse Tour Packages</a></p>
-    
-    <table border="1">
-        <tr>
-            <th>No.</th>
-            <th>Package Name</th>
-            <th>Description</th>
-            <th>Schedule Days</th>
-            <th>Tour Guide</th>
-            <th>Status</th>
-            <th>Tour Spots</th>
-            <th>Actions</th>
-        </tr>
-        
-        <tr>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td><?php  ?></td>
-            <td>
-                <a href="booking-edit.php?id=<?php  ?>">Edit</a> |
-                <a href="booking-cancel.php?id=<?php  ?>" onclick="return confirm('Are you sure?')">Cancel</a> | <a href="booking-view.php?id=<?php  ?>">View</a>
-            </td>
-        </tr>
-        <?php ?>
-    </table>
-    
+
+    <?php if (!empty($bookings)): ?>
+        <table border = 1>
+            <tr>
+                <th>No.</th>
+                <th>Package Name</th>
+                <th>Description</th>
+                <th>Schedule Days</th>
+                <th>Tour Guide</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Tour Spots</th>
+                <th>Actions</th>
+            </tr>
+
+            <?php foreach ($bookings as $i => $booking): ?>
+                <tr>
+                    <td><?= $i + 1 ?></td>
+                    <td><?= htmlspecialchars($booking['tourpackage_name']) ?></td>
+                    <td><?= htmlspecialchars($booking['tourpackage_desc']) ?></td>
+                    <td><?= htmlspecialchars($booking['schedule_days']) ?> days</td>
+                    <td><?= htmlspecialchars($booking['guide_name']) ?></td>
+                    <td><?= htmlspecialchars($booking['booking_start_date']) ?></td>
+                    <td><?= htmlspecialchars($booking['booking_end_date']) ?></td>
+                    <td><?= htmlspecialchars($booking['booking_status']) ?></td>
+                    <td><?= htmlspecialchars($booking['tour_spots'] ?? '—') ?></td>
+                    <td>
+                        <a href="booking-edit.php?id=<?= $booking['booking_ID'] ?>">Edit</a> |
+                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
+                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php else: ?>
+        <p><em>You currently have no bookings.</em></p>
+    <?php endif; ?>
 </body>
 </html>
