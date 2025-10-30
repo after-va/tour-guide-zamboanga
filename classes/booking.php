@@ -15,6 +15,14 @@ class Booking extends Database{
     // 'Cancelled',
     // 'Refunded',
     // 'Failed'
+    public function getAllCompanionCategories(){
+        $sql = "SELECT * FROM `companion_category`";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function viewBookingForTourist($tourist_ID){
         $sql = "SELECT * FROM Booking WHERE tourist_ID = :tourist_ID";
         $db = $this->connect();
@@ -24,35 +32,36 @@ class Booking extends Database{
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date){
+    public function addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date)
+    {
         $db = $this->connect();
         $db->beginTransaction();
 
         try {
-            $sql = "INSERT INTO Booking (tourist_ID, tourpackage_ID	
-            , booking_start_date, booking_end_date) VALUES (:tourist_ID, :tourpackage_ID, :booking_start_date, :booking_end_date) ";
+            $sql = "INSERT INTO booking (tourist_ID, tourpackage_ID, booking_start_date, booking_end_date) 
+                    VALUES (:tourist_ID, :tourpackage_ID, :booking_start_date, :booking_end_date)";
             $query = $db->prepare($sql);
-            $query->bindParam(':tourist_ID', $tourist_ID);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
+            $query->bindParam(':tourist_ID', $tourist_ID, PDO::PARAM_INT);
+            $query->bindParam(':tourpackage_ID', $tourpackage_ID, PDO::PARAM_INT);
             $query->bindParam(':booking_start_date', $booking_start_date);
             $query->bindParam(':booking_end_date', $booking_end_date);
             $result = $query->execute();
 
-            if (!$result) {
-                    $db->rollBack();
-                    return false;
-                } else {
-                    $db->commit();
-                    return true;
-                }
+            if ($result) {
+                $booking_ID = $db->lastInsertId();
+                $db->commit();
+                return $booking_ID;
+            } else {
+                $db->rollBack();
+                return false;
+            }
         } catch (PDOException $e) {
             $db->rollBack();
-            error_log("Booking Transaction Error: " . $e->getMessage()); 
+            error_log("Booking Transaction Error: " . $e->getMessage());
             return false;
         }
-        
-
     }
+
 
     
 
