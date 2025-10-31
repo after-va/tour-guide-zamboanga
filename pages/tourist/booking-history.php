@@ -52,7 +52,6 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     <?php endif; ?>
     
     <p><a href="tour-packages-browse.php">Browse Tour Packages</a></p>
-    <p><a href="booking-history.php">View Booking History</a></p>
 
     <?php if (!empty($bookings)): ?>
         <table border = 1>
@@ -68,11 +67,11 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
                 <th>Tour Spots</th>
                 <th>Actions</th>
             </tr>
-
-            <?php $no = 1; foreach ($bookings as $i => $booking){ 
-                    if($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval' || $booking['booking_status'] == 'Approved'){?>
+             <!-- 'Pending for Payment','Pending for Approval','Approved','In Progress','Completed','Cancelled','Refunded','Failed', 'Rejected by the Guide', 'Booking Expired — Payment Not Completed', 'Booking Expired — Guide Did Not Confirm in Time' -->
+            <?php foreach ($bookings as $i => $booking){ 
+                    if($booking['booking_status'] == 'Cancelled' || $booking['booking_status'] == 'Refunded' || $booking['booking_status'] == 'Failed' || $booking['booking_status'] == 'Rejected by the Guide' || $booking['booking_status'] == 'Booking Expired — Payment Not Completed' || $booking['booking_status'] == 'Booking Expired — Guide Did Not Confirm in Time'){?>
                 <tr>
-                    <td><?= $no++;?></td>
+                    <td><?= $i + 1 ?></td>
                     <td><?= htmlspecialchars($booking['tourpackage_name']) ?></td>
                     <td><?= htmlspecialchars($booking['tourpackage_desc']) ?></td>
                     <td><?= htmlspecialchars($booking['schedule_days']) ?> days</td>
@@ -82,9 +81,9 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
                     <td><?= htmlspecialchars($booking['booking_status']) ?></td>
                     <td><?= htmlspecialchars($booking['tour_spots'] ?? '—') ?></td>
                     <td>
-                        <a href="booking-edit.php?id=<?= $booking['booking_ID'] ?>">Edit</a> |
-                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
-                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
+                        <a href="booking-again.php?id=<?= $booking['booking_ID'] ?>&ref=<?= $booking['tourpackage_ID'] ?>" 
+                       onclick="return confirm('Are you sure you want to book this again?')">Rebook</a>
+
                     </td>
                 </tr>
             <?php }} ?>

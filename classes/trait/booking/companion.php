@@ -34,7 +34,17 @@ trait CompanionTrait{
         return $success ? $db->lastInsertId() : false;
     }
 
-
+    public function getCompanionsByBooking($booking_ID) {
+        $sql = "SELECT c.companion_name, c.companion_category_ID 
+                FROM Booking_Bundle b
+                JOIN Companion c ON b.companion_ID = c.companion_ID
+                WHERE b.booking_ID = :id";
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $booking_ID, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     
 }

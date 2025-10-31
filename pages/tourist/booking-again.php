@@ -10,30 +10,39 @@ require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 require_once "../../classes/booking.php";
 
-$tourist_ID = $_SESSION['user']['account_ID'];
-
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    $_SESSION['error'] = "Invalid tour package ID.";
-    header("Location: tour-packages.php");
-    exit();
-}
-
-$tourpackage_ID = intval($_GET['id']);
+// Initialize all required objects early
 $tourManager = new TourManager();
 $guideObj = new Guide();
 $bookingObj = new Booking();
 $touristObj = new Tourist();
 
+$tourist_ID = $_SESSION['user']['account_ID'];
+
+// Get parameters safely
+$oldBookingID = isset($_GET['id']) ? intval($_GET['id']) : 0; // old booking ID
+$tourpackage_ID = isset($_GET['ref']) ? intval($_GET['ref']) : 0; // tour package ID
+
 $errors = [];
+$rebookData = null;
+// well
+// Load previous booking details (only if valid and owned by this user)
+if ($oldBookingID > 0) {
+    $rebookData = $bookingObj->getBookingDetailsByBooking($oldBookingID);
+    if (!$rebookData || !isset($rebookData['tourist_ID']) || $rebookData['tourist_ID'] != $tourist_ID || $rebookData['booking_status'] !== 'Cancelled') {
+        
 
+    }
+}
+
+// Validate tour package
 $package = $tourManager->getTourPackageById($tourpackage_ID);
-
 if (!$package) {
     $_SESSION['error'] = "Tour package not found.";
     header("Location: tour-packages.php");
     exit();
 }
 
+// Get guide name
 $guides = $guideObj->viewAllGuide();
 $guideName = "";
 foreach ($guides as $guide) {
@@ -43,13 +52,13 @@ foreach ($guides as $guide) {
     }
 }
 
+// Get tour spots
 $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
 
+// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $companion_names = $_POST['companion_name'] ?? [];
     $companion_categories = $_POST['companion_category'] ?? [];
-
-
     $companions_count = is_array($companion_names) ? count($companion_names) : 0;
 
     $min_people = intval($package['numberofpeople_based']);
@@ -67,8 +76,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Start date cannot be in the past.";
     }
 
-    if(empty($companion_names)){
-        $errors = "This is required at least";
+    // ✅ Validate companions
+    if (empty($companion_names)) {
+        $errors[] = "Please add at least one companion.";
     }
 
     if ($companions_count < $min_people) {
@@ -79,34 +89,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "You can only add up to {$max_people} companions.";
     }
 
+    // ✅ Proceed if no errors
     if (empty($errors)) {
         $booking_ID = $bookingObj->addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date);
-
 
         if ($booking_ID) {
             foreach ($companion_names as $index => $name) {
                 $category_ID = $companion_categories[$index];
                 $bookingObj->addCompanionToBooking($booking_ID, $name, $category_ID);
             }
-        }
 
-        
-        // $bookingObj->createBooking($tourist_ID, $tourpackage_ID, $companion_names, $companion_categories);
-        $_SESSION['success'] = "Companions validated successfully. Proceeding to payment.";
-        header("Location: payment.php?id=" . $booking_ID);
-        exit();
+            $_SESSION['success'] = "Booking re-created successfully. Proceeding to payment.";
+            header("Location: payment.php?id=" . $booking_ID);
+            exit();
+        } else {
+            $errors[] = "Failed to create booking. Please try again.";
+        }
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Booking</title>
-    
+    <title>Rebook Tour Package</title>
 </head>
 <body>
     <div class="container">
-        <h1>Book Tour Package</h1>
+        <h1>Rebook Tour Package</h1>
 
         <?php if (!empty($errors)): ?>
             <div style="color:red;">
@@ -115,6 +124,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+        <?php if ($rebookData){?>
+            <div style="background:#f8f9fa; padding:10px; border-radius:8px;">
+                <p>⚠️ You are rebooking your cancelled trip from 
+                   <strong><?= htmlspecialchars($rebookData['booking_start_date']) ?></strong> 
+                   to <strong><?= htmlspecialchars($rebookData['booking_end_date']) ?></strong>.
+                </p>
+            </div>
+        <?php } ?>
 
         <div class="package-details">
             <h3>Package Information</h3>
@@ -131,10 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <p><strong>Tour Spots:</strong></p>
                 <ul>
                     <?php foreach ($spots as $spot): ?>
-                        <li>
-                            <strong><?= htmlspecialchars($spot['spots_name']); ?></strong> - 
-                            <?= htmlspecialchars($spot['spots_description']); ?>
-                        </li>
+                        <li><strong><?= htmlspecialchars($spot['spots_name']); ?></strong> - <?= htmlspecialchars($spot['spots_description']); ?></li>
                     <?php endforeach; ?>
                 </ul>
             <?php else: ?>
@@ -144,33 +159,65 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <form action="" method="post">
             <h2>Booking Dates</h2>
+            <?php $bookingdate =[];
+                if($rebookData){
+                    $bookingdate = $bookingObj->getBookingDateByOldBooking($oldBookingID);
+                }
+                if (!empty($bookingdate)){
+                ?>
             <label for="booking_start_date">Start Date:</label>
-            <input type="date" name="booking_start_date" id="booking_start_date" required>
+            <input type="date" name="booking_start_date" id="booking_start_date" 
+                value="<?= htmlspecialchars($bookingdate['booking_start'] ?? '') ?>" required>
 
             <label for="booking_end_date">End Date:</label>
-            <input type="date" name="booking_end_date" id="booking_end_date" readonly required>
-
+            <input type="date" name="booking_end_date" id="booking_end_date" 
+                value="<?= htmlspecialchars($bookingdate['booking_end'] ?? '') ?>" readonly required>
+            <?php }?>    
             <h2>Companions</h2>
             <div id="inputContainer">
-                <div>
-                    <input type="text" name="companion_name[]" placeholder="Name" required>
-                    <select name="companion_category[]" required>
-                        <option value="">-- SELECT CATEGORY ---</option>
-                        <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                            <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
-                        <?php } ?>
-                    </select>
-                </div>
-            </div>
-            <button type="button" onclick="addInput()">Add Companion</button><br><br>
+                <?php 
+                $companions = [];
+                if ($rebookData) {
+                    $companions = $bookingObj->getCompanionsByBooking($oldBookingID);
+                }
 
+                if (!empty($companions)) {
+                    foreach ($companions as $c) { ?>
+                        <div>
+                            <input type="text" name="companion_name[]" value="<?= htmlspecialchars($c['companion_name']) ?>" required>
+                            <select name="companion_category[]" required>
+                                <option value="">-- SELECT CATEGORY ---</option>
+                                <?php 
+                                foreach ($bookingObj->getAllCompanionCategories() as $cat) {
+                                    $selected = $c['companion_category_ID'] == $cat['companion_category_ID'] ? 'selected' : '';
+                                    echo "<option value='{$cat['companion_category_ID']}' $selected>{$cat['companion_category_name']}</option>";
+                                }
+                                ?>
+                            </select>
+                            <button type="button" onclick="this.parentNode.remove()">Remove</button>
+                        </div>
+                    <?php } 
+                } else { ?>
+                    <div>
+                        <input type="text" name="companion_name[]" placeholder="Name" required>
+                        <select name="companion_category[]" required>
+                            <option value="">-- SELECT CATEGORY ---</option>
+                            <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
+                                <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                <?php } ?>
+            </div>
+
+            <button type="button" onclick="addInput()">Add Companion</button><br><br>
             <input type="submit" value="Proceed to Payment">
         </form>
 
         <a href="tour-packages-browse.php">← Back to Tour Packages</a>
     </div>
+
     <script>
-        // ✅ Allow dynamic companion input fields
         function addInput() {
             const container = document.getElementById('inputContainer');
             const div = document.createElement('div');
@@ -190,16 +237,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         const scheduleDays = <?= intval($package['schedule_days']); ?>;
 
         document.getElementById('booking_start_date').addEventListener('change', function () {
-                const startDate = new Date(this.value);
-                if (isNaN(startDate.getTime())) return;
-
-                // Add (scheduleDays - 1) because the start day counts as day 1
-                startDate.setDate(startDate.getDate() + scheduleDays - 1);
-
-                // Format date to YYYY-MM-DD
-                const formatted = startDate.toISOString().split('T')[0];
-                document.getElementById('booking_end_date').value = formatted;
-        
+            const startDate = new Date(this.value);
+            if (isNaN(startDate.getTime())) return;
+            startDate.setDate(startDate.getDate() + scheduleDays - 1);
+            const formatted = startDate.toISOString().split('T')[0];
+            document.getElementById('booking_end_date').value = formatted;
         });
     </script>
 </body>

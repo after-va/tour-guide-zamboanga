@@ -26,6 +26,8 @@ class Booking extends Database{
     public function viewBookingByTourist($tourist_ID){
         $sql = "SELECT 
             b.booking_ID,
+            b.tourist_ID AS tourist_ID,
+            tp.tourpackage_ID,
             tp.tourpackage_name,
             tp.tourpackage_desc,
             CONCAT(n.name_first, ' ', n.name_last) AS guide_name,
@@ -85,62 +87,100 @@ class Booking extends Database{
     }
 
 
-    public function cancelBookingIfPendingForApproval($booking_ID, $account_ID){
-    $booking_ID = (int)$booking_ID;
-    $account_ID = (int)$account_ID;
+    public function cancelBookingIfPendingForPayment($booking_ID, $account_ID){
+        $booking_ID = (int)$booking_ID;
+        $account_ID = (int)$account_ID;
 
-    if ($booking_ID <= 0 || $account_ID <= 0) {
-        return "Invalid ID provided.";
+        if ($booking_ID <= 0 || $account_ID <= 0) {
+            return "Invalid ID provided.";
+        }
+
+        $db = $this->connect();
+        $db->beginTransaction();
+
+        try {
+            // Step 1: Check current booking status
+            $checkSql = "SELECT booking_status FROM Booking WHERE booking_ID = :booking_ID";
+            $checkStmt = $db->prepare($checkSql);
+            $checkStmt->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $checkStmt->execute();
+            $status = $checkStmt->fetchColumn();
+
+            if ($status === false) {
+                $db->rollback();
+                return "Booking not found.";
+            }
+
+            if ($status !== 'Pending for Payment') {
+                $db->rollback();
+                return "Cannot cancel booking. Current status: {$status}";
+            }
+
+            // Step 3: Atomic update with status check
+            $updateSql = "UPDATE Booking 
+                        SET booking_status = 'Cancelled' 
+                        WHERE booking_ID = :booking_ID 
+                            AND booking_status = 'Pending for Payment'";
+            $updateStmt = $db->prepare($updateSql);
+            $updateStmt->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $updateStmt->execute();
+
+            if ($updateStmt->rowCount() === 0) {
+                $db->rollback();
+                return "Update failed: Status may have changed or booking not found.";
+            }
+
+            
+            $db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $db->rollback();
+            error_log("Cancel Booking Error: " . $e->getMessage());
+            return false;
+        }
     }
 
-    $db = $this->connect();
-    $db->beginTransaction();
+    public function getBookingDateByOldBooking($old_bookingID){
+        $sql = "SELECT 
+                booking_start_date AS booking_start,
+                booking_end_date AS booking_end 
+                FROM Booking WHERE booking_ID = :booking_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(":booking_ID", $old_bookingID);
+        
+        $result = $query->execute();
 
-    try {
-        // Step 1: Check current booking status
-        $checkSql = "SELECT booking_status FROM Booking WHERE booking_ID = :booking_ID";
-        $checkStmt = $db->prepare($checkSql);
-        $checkStmt->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
-        $checkStmt->execute();
-        $status = $checkStmt->fetchColumn();
-
-        if ($status === false) {
-            $db->rollBack();
-            return "Booking not found.";
+        if($result){
+            return $query->fetch(PDO::FETCH_ASSOC);
+        } else {
+            return false;
         }
-
-        if ($status !== 'Pending for Approval') {
-            $db->rollBack();
-            return "Cannot cancel booking. Current status: {$status}";
-        }
-
-        // Step 3: Atomic update with status check
-        $updateSql = "UPDATE Booking 
-                      SET booking_status = 'Cancelled' 
-                      WHERE booking_ID = :booking_ID 
-                        AND booking_status = 'Pending for Approval'";
-        $updateStmt = $db->prepare($updateSql);
-        $updateStmt->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
-        $updateStmt->execute();
-
-        if ($updateStmt->rowCount() === 0) {
-            $db->rollBack();
-            return "Update failed: Status may have changed or booking not found.";
-        }
-
-        // ... rest of action_ID and logging ...
-
-        $db->commit();
-        return true;
-
-    } catch (Exception $e) {
-        $db->rollBack();
-        error_log("Cancel Booking Error: " . $e->getMessage());
-        return false;
     }
-}
+
+    public function getBookingDetailsByBooking($old_bookingID){
+        $sql = "SELECT booking_ID,
+                tourist_ID,
+                booking_status,
+                tourpackage_ID,
+                booking_start_date,
+                booking_end_date 
+                FROM Booking WHERE booking_ID = :booking_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(":booking_ID", $old_bookingID);
+        
+        $result = $query->execute();
+
+        if($result){
+            return $query->fetch(PDO::FETCH_ASSOC);
+        } else {
+            return false;
+        }
 
 
+    }
 
     // public function viewBookingByBookingID($tourist_ID){
     //     $sql = "SELECT * FROM Booking WHERE booking_ID = :booking_ID";
