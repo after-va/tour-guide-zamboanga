@@ -6,7 +6,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 }
 require_once "../../classes/tourist.php";
 $tourist_ID = $_SESSION['user']['account_ID'];
-$torustObj = new Tourist();
+$toristObj = new Tourist();
 
 
 ?>

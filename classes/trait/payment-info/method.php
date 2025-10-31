@@ -2,8 +2,8 @@
 
 trait MethodTrait{
 
-    public function viewAllPaymentMethod(){
-         $sql = "SELECT * FROM Method";
+    public function viewAllPaymentMethodCategory(){
+        $sql = "SELECT * FROM Method_Category";
         $db = $this->connect();
         $query = $db->prepare($sql);
         $query->execute();

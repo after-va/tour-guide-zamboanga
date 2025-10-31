@@ -5,6 +5,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
     exit;
 }
 require_once "../../classes/tourist.php";
+require_once "../../classes/payment.php"
 $tourist_ID = $_SESSION['user']['account_ID'];
 $torustObj = new Tourist();
 $booking_ID = intval($_GET['id']);
@@ -50,28 +51,45 @@ $booking_ID = intval($_GET['id']);
   <input type="date" name="paymentinfo_date" id="paymentinfo_date" required>
 
   <!-- Transaction Info -->
-  <h3>Transaction Details</h3>
-  <label for="method_ID">Payment Method:</label>
-  <select name="method_ID" id="method_ID" required>
-    <option value="">Select Method</option>
-    <option value="1">GCash</option>
-    <option value="2">PayPal</option>
-    <option value="3">Credit Card</option>
-    <!-- Dynamically load from Method table -->
-  </select>
+  <form action="method-save.php" method="POST" enctype="multipart/form-data">
+    <h2>Add Payment Method</h2>
 
-  <label for="transaction_reference">Transaction Reference:</label>
-  <input type="text" name="transaction_reference" id="transaction_reference" placeholder="e.g. G123456789" required>
+      <label>Method Name:</label>
+      <input type="text" name="method_name" placeholder="e.g., GCash" required>
 
-  <label for="transaction_status">Transaction Status:</label>
-  <select name="transaction_status" id="transaction_status" required>
-    <option value="Pending">Pending</option>
-    <option value="Completed">Completed</option>
-    <option value="Failed">Failed</option>
-  </select>
+      <label>Type:</label>
+      <select name="method_type">
+        <option value="E-Wallet">E-Wallet</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Online Payment">Online Payment</option>
+        <option value="Card">Card</option>
+        <option value="Offline">Offline</option>
+      </select>
 
-  <button type="submit">Submit Payment</button>
-</form>
+      <label>Account Name:</label>
+      <input type="text" name="method_account_name" placeholder="Juan Dela Cruz">
+
+      <label>Account Number / Email:</label>
+      <input type="text" name="method_account_number" placeholder="09171234567 or paypal@email.com">
+
+      <label>Upload QR Code (Optional):</label>
+      <input type="file" name="method_qr_code">
+
+      <label>Processing Fee (% or Fixed):</label>
+      <input type="number" step="0.01" name="method_processing_fee" value="0.00">
+
+      <label>Status:</label>
+      <select name="method_status">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <label>Description:</label>
+      <textarea name="method_description" rows="3" placeholder="Additional details or instructions"></textarea>
+
+    <button type="submit">Save Method</button>
+  </form>
+
 
     
     

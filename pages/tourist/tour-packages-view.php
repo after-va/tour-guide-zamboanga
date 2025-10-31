@@ -9,7 +9,7 @@ require_once "../../classes/tour-manager.php";
 require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 $tourist_ID = $_SESSION['user']['account_ID'];
-$torustObj = new Tourist();
+$toristObj = new Tourist();
 // Validate and get package ID
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     $_SESSION['error'] = "Invalid tour package ID.";
