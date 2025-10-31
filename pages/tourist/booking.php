@@ -70,7 +70,7 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
             </tr>
 
             <?php $no = 1; foreach ($bookings as $i => $booking){ 
-                    if($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval' || $booking['booking_status'] == 'Approved'){?>
+                    if($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval'){?>
                 <tr>
                     <td><?= $no++;?></td>
                     <td><?= htmlspecialchars($booking['tourpackage_name']) ?></td>
@@ -81,16 +81,27 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
                     <td><?= htmlspecialchars($booking['booking_end_date']) ?></td>
                     <td><?= htmlspecialchars($booking['booking_status']) ?></td>
                     <td><?= htmlspecialchars($booking['tour_spots'] ?? '—') ?></td>
+                    <?php if ($booking['booking_status'] =='Pending for Payment'){ ?>
                     <td>
-                        <a href="booking-edit.php?id=<?= $booking['booking_ID'] ?>">Edit</a> |
+                        <a href="payment.php?id=<?= $booking['booking_ID'] ?>">Proceed to Payment</a> |
                         <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
                         <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
                     </td>
+                    <?php }else if ($booking['booking_status'] =='Pending for Approval' || $booking['booking_status'] =='In Progress'){ ?>
+                    <td>
+                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
+                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
+                    </td>
+                    <?php } ?>
+                    
                 </tr>
+                
             <?php }} ?>
         </table>
     <?php else: ?>
         <p><em>You currently have no bookings.</em></p>
     <?php endif; ?>
+
+    <!-- 'Pending for Payment','Pending for Approval','Approved','In Progress','Completed','Cancelled','Refunded','Failed','Rejected by the Guide','Booking Expired — Payment Not Completed','Booking Expired — Guide Did Not Confirm in Time' -->
 </body>
 </html>

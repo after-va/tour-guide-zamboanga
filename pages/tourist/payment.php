@@ -17,7 +17,7 @@ $booking_ID = intval($_GET['id']);
     <title>Payment</title>
 </head>
 <body>
-    <h1>Dashboard</h1>
+    <h1>Payment</h1>
     
     <nav>
         <a href="dashboard.php">Dashboard</a> |
