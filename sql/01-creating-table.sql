@@ -300,6 +300,7 @@ CREATE TABLE Companion_Category(
 CREATE TABLE Companion(
     companion_ID INT AUTO_INCREMENT PRIMARY KEY,
     companion_name VARCHAR(225) NOT NULL,
+    companion_age INT NOT NULL,
     companion_category_ID INT,
     FOREIGN KEY (companion_category_ID) REFERENCES Companion_Category(companion_category_ID)
 );

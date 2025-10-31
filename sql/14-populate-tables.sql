@@ -1,4 +1,4 @@
--- 1️⃣ Insert refund reason names
+
 INSERT INTO CategoryRefund_Name (categoryrefundname_name) VALUES
 ('Change of Plans'),
 ('Personal Emergencies'),
@@ -101,3 +101,5 @@ WHERE categoryrefundname_name IN (
     'Violation of Terms',
     'Tourist Requested Cancellation'
 );
+
+INSERT INTO Companion_Category(companion_category_name) VALUES ('Infant'), ('Child'), ('Young Adult'), ('Adult'), ('Senior'), ('PWD');
