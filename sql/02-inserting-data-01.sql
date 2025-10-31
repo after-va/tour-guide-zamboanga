@@ -7,14 +7,14 @@ INSERT INTO Role(role_name) VALUES
 ON DUPLICATE KEY UPDATE role_name = VALUES(role_name);
 
 -- Insert default payment methods
-INSERT INTO Method (method_name, method_type, method_processing_fee) VALUES
+INSERT INTO Method_Category (methodcategory_name, methodcategory_type, methodcategory_processing_fee) VALUES
 ('Credit Card', 'card', 2.50),
 ('Debit Card', 'card', 2.50),
 ('GCash', 'ewallet', 1.00),
 ('PayMaya', 'ewallet', 1.00),
 ('Bank Transfer', 'bank', 0.00),
 ('Cash', 'cash', 0.00)
-ON DUPLICATE KEY UPDATE method_name = VALUES(method_name);
+ON DUPLICATE KEY UPDATE methodcategory_name = VALUES(methodcategory_name);
 
 INSERT IGNORE INTO Tour_Spots(spots_name, spots_description, spots_category, spots_address, spots_googlelink) VALUES 
 ('Great Santa Cruz Island (Pink Sand Beach)', 'Famous for its unique pink-hued sand, which gets its color from crushed red organ pipe corals mixing with the white sand. Its a great spot for swimming, picnicking, and has a mangrove lagoon tour.', 'Beach', 'Zamboanga City', 'https://maps.app.goo.gl/3SR4NzSbEoCMeu689'), 

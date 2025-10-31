@@ -326,14 +326,25 @@ CREATE TABLE Payment_Info(
     FOREIGN KEY (booking_ID) REFERENCES Booking(booking_ID)
 );
 
-CREATE TABLE Method(
-    method_ID INT AUTO_INCREMENT PRIMARY KEY,
-    method_name VARCHAR(100) NOT NULL UNIQUE,
-    method_type VARCHAR(100) NOT NULL,
-    method_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    method_processing_fee DECIMAL(10,2) NOT NULL,
-    method_is_active BOOLEAN DEFAULT TRUE
+CREATE TABLE Method_Category(
+    methodcategory_ID INT AUTO_INCREMENT PRIMARY KEY,
+    methodcategory_name VARCHAR(100) NOT NULL UNIQUE,
+    methodcategory_type VARCHAR(100) NOT NULL,
+    methodcategory_processing_fee DECIMAL(10,2) NOT NULL,
+    methodcategory_is_active BOOLEAN DEFAULT TRUE
 );
+
+CREATE TABLE Method (
+    method_ID INT AUTO_INCREMENT PRIMARY KEY,
+    methodcategory_ID INT,
+    method_account_name VARCHAR(100),                -- e.g., 'Juan Dela Cruz'
+    method_account_number VARCHAR(50),               -- e.g., GCash number, bank account number, or PayPal email
+    method_qr_code VARCHAR(255),                     -- Optional: store path or link to QR image
+    method_status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    method_created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (methodcategory_ID) REFERENCE Method_Category(methodcategory_ID)
+);
+
 
 CREATE TABLE Payment_Transaction(
     transaction_ID INT AUTO_INCREMENT PRIMARY KEY,
