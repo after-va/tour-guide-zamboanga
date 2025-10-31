@@ -346,17 +346,35 @@ CREATE TABLE Payment_Transaction(
     FOREIGN KEY (method_ID) REFERENCES Method(method_ID)
 );
 
+CREATE TABLE CategoryRefund_Name(
+    categoryrefundname_ID AUTO_INCREMENT PRIMARY KEY,
+    categoryrefundname_name VARCHAR(225)
+);
+
+CREATE TABLE Category_Refund (
+    categoryrefund_ID AUTO_INCREMENT PRIMARY KEY,
+    categoryrefundname_ID INT,
+    role_ID INT,
+    FOREIGN KEY (categoryrefundname_ID) REFERENCES CategoryRefund_Name(categoryrefundname_ID),
+    FOREIGN KEY (role_ID) REFERENCES Role(role_ID)
+);
+
 CREATE TABLE Refund(
     refund_ID INT AUTO_INCREMENT PRIMARY KEY,
     transaction_ID INT,
+    categoryrefund_ID INT,
     refund_reason TEXT,
     refund_status VARCHAR(50) NOT NULL,
     refund_requested_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     refund_approval_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    refund_fee DECIMAL(10,2),
+    refund_processingfee DECIMAL(10,2),
+    refund_refundfee DECIMAL(10,2),
     refund_total_amount DECIMAL(10,2),
-    FOREIGN KEY (transaction_ID) REFERENCES Payment_Transaction(transaction_ID)
+    FOREIGN KEY (transaction_ID) REFERENCES Payment_Transaction(transaction_ID),
+    FOREIGN KEY (categoryrefund_ID) REFERENCES Category_Refund(categoryrefund_ID)
 );
+
+
 
 -- ==============================
 --  RATING SYSTEM TABLES
