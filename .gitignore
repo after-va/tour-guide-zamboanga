@@ -1,0 +1,15 @@
+# Environment variables
+paymongo.env
+.env
+
+# Composer / vendor files (optional)
+vendor/
+
+# Logs
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+##$secretKey = getenv('PAYMONGO_SECRET_KEY');
+##Paymongo\Paymongo::setApiKey($secretKey);

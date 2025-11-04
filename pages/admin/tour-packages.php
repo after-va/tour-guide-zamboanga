@@ -28,11 +28,7 @@ foreach ($guides as $guide) {
     <nav>
         <a href="dashboard.php">Dashboard</a> |
         <a href="bookings.php">Bookings</a> |
-        <a href="manage-users.php">Users</a> |
-        <a href="tour-packages.php">Tour Packages</a> |
         <a href="tour-spots.php">Tour Spots</a> |
-        <a href="schedules.php">Schedules</a> |
-        <a href="payments.php">Payments</a> |
         <a href="logout.php">Logout</a>
     </nav>
     

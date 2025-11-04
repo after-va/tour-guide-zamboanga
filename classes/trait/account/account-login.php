@@ -1,7 +1,7 @@
 <?php
 
 require_once "user-login.php";
-require_once __DIR__ . "/../person/person.php";
+require_once __DIR__ . "/../person/trait-person.php";
 trait AccountLoginTrait {
     use UserLoginTrait, PersonTrait;
 

@@ -1,10 +1,18 @@
 <?php
 session_start();
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
+    header('Location: ../../index.php');
+    exit;
+} else if ($_SESSION['user']['account_status'] == 'Suspended'){
+    header('Location: account-suspension.php');
+    exit;
+} else if ($_SESSION['user']['account_status'] == 'Pending'){
+    header('Location: account-pending.php');
+}
 
 require_once "../../classes/tour-manager.php";
 require_once "../../classes/guide.php";
 
-// Get package ID from URL
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     $_SESSION['error'] = "Invalid tour package ID.";
     header("Location: tour-packages.php");
@@ -12,11 +20,35 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 }
 
 $tourpackage_ID = intval($_GET['id']);
-$tourManager = new TourManager();
+$tourMgrObj = new TourManager();
 $guideObj = new Guide();
 
+ 
 // Check if package exists and get its details
-$package = $tourManager->getTourPackageById($tourpackage_ID);
+$package = $tourMgrObj->getTourPackageById($tourpackage_ID);
+$schedule          = $tourMgrObj->getScheduleByID($package['schedule_ID']);
+$numberofpeople    = $tourMgrObj->getPeopleByID($schedule['numberofpeople_ID']);
+$pricing           = $tourMgrObj->getPricingByID($numberofpeople['pricing_ID']);
+$tourpackage_spots = $tourMgrObj->getSpotsByPackageID($tourpackage_ID);
+
+
+$pkg = [
+    'tourpackage_name'       => $old['tourpackage_name']       ?? $tourpackage['tourpackage_name'] ?? '',
+    'tourpackage_desc'       => $old['tourpackage_desc']       ?? $tourpackage['tourpackage_desc'] ?? '',
+    'schedule_days'          => $old['schedule_days']          ?? $schedule['schedule_days'] ?? 1,
+    'numberofpeople_maximum' => $old['numberofpeople_maximum'] ?? $numberofpeople['numberofpeople_maximum'] ?? '',
+    'numberofpeople_based'   => $old['numberofpeople_based']   ?? $numberofpeople['numberofpeople_based'] ?? '',
+    'pricing_foradult'       => $old['pricing_foradult']       ?? $pricing['pricing_foradult'] ?? '',
+    'pricing_currency'       => $old['pricing_currency']       ?? $pricing['pricing_currency'] ?? '',
+    'pricing_forchild'       => $old['pricing_forchild']       ?? $pricing['pricing_forchild'] ?? '',
+    'pricing_foryoungadult'  => $old['pricing_foryoungadult']  ?? $pricing['pricing_foryoungadult'] ?? '',
+    'pricing_forsenior'      => $old['pricing_forsenior']      ?? $pricing['pricing_forsenior'] ?? '',
+    'pricing_forpwd'         => $old['pricing_forpwd']         ?? $pricing['pricing_forpwd'] ?? '',
+    'include_meal'           => $old['include_meal']           ?? $pricing['include_meal'] ?? 0,
+    'meal_fee'               => $old['meal_fee']               ?? $pricing['meal_fee'] ?? '0.00',
+    'transport_fee'          => $old['transport_fee']          ?? $pricing['transport_fee'] ?? '0.00',
+    'discount'               => $old['discount']               ?? $pricing['discount'] ?? '0.00',
+];
 
 if (!$package) {
     $_SESSION['error'] = "Tour package not found.";
@@ -35,11 +67,11 @@ foreach ($guides as $guide) {
 }
 
 // Get associated spots
-$spots = $tourManager->getSpotsByPackage($tourpackage_ID);
+$spots = $tourMgrObj->getSpotsByPackage($tourpackage_ID);
 
 // Handle confirmation
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
-    $result = $tourManager->deleteTourPackage($tourpackage_ID);
+    $result = $tourMgrObj->deleteTourPackage($spots, $tourpackage_ID, $package['schedule_ID'], $schedule['numberofpeople_ID'], $numberofpeople['pricing_ID']);
     
     if ($result) {
         $_SESSION['success'] = "Tour package deleted successfully!";
@@ -115,23 +147,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
         
         <div class="package-details">
             <h3>Tour Package Details:</h3>
-            <p><strong>Package Name:</strong> <?php echo htmlspecialchars($package['tourpackage_name']); ?></p>
-            <p><strong>Description:</strong> <?php echo htmlspecialchars($package['tourpackage_desc']); ?></p>
-            <p><strong>Guide:</strong> <?php echo htmlspecialchars($guideName); ?></p>
-            <p><strong>Schedule Days:</strong> <?php echo htmlspecialchars($package['schedule_days']); ?> days</p>
-            <p><strong>Maximum People:</strong> <?php echo htmlspecialchars($package['numberofpeople_maximum']); ?></p>
-            <p><strong>Minimum People:</strong> <?php echo htmlspecialchars($package['numberofpeople_based']); ?></p>
-            <p><strong>Base Amount:</strong> <?php echo htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_based'], 2)); ?></p>
-            <p><strong>Discount:</strong> <?php echo htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_discount'], 2)); ?></p>
+            <p><strong>Package Name:</strong> <?= $pkg['tourpackage_name']; ?></p>
+            <p><strong>Description:</strong> <?= $pkg['tourpackage_desc']; ?></p>
+            <p><strong>Schedule Days:</strong> <?= $pkg['schedule_days']; ?> days</p>
+            <p><strong>Maximum People:</strong> <?= $pkg['numberofpeople_maximum']; ?></p>
+            <p><strong>Minimum People:</strong> <?= $pkg['numberofpeople_based']; ?></p>
+            <p><strong>Base Amount:</strong> <?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2); ?></p>
+            <p><strong>Discount:</strong> <?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2); ?></p>
             
             <?php if (!empty($spots)): ?>
             <p><strong>Tour Spots:</strong></p>
             <ul class="spots-list">
                 <?php foreach ($spots as $spot): ?>
                 <li>
-                    <strong><?php echo htmlspecialchars($spot['spots_name']); ?></strong>
+                    <strong><?= $spot['spots_name']; ?></strong>
                     <div style="margin-left: 20px; color: #666;">
-                        <?php echo htmlspecialchars($spot['spots_description']); ?>
+                        <?= $spot['spots_description']; ?>
                     </div>
                 </li>
                 <?php endforeach; ?>

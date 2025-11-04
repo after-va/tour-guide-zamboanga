@@ -300,4 +300,63 @@ class Guide extends Database {
             return false;
         }
     }
+
+    
+    public function addgetTouristByUserID($user_ID){
+        $sql = "SELECT account_ID FROM Account_Info WHERE user_ID = :user_ID AND role_ID = 3";
+        $db = $this->connect();
+        $query_select = $db->prepare($sql);
+        $query_select->bindParam(":user_ID", $user_ID);
+        $query_select->execute();
+        $result = $query_select->fetch();
+
+        if($result){
+            return $result["account_ID"];
+        }
+
+        $sql = "INSERT INTO Account_Info(user_ID, role_ID) VALUES (:user_ID, 3)";
+        $query_insert = $db->prepare($sql);
+        $query_insert->bindParam(":user_ID", $user_ID);
+
+        if ($query_insert->execute()) {
+            return $db->lastInsertId();
+        } else {
+            return false;
+        }
+    }
+
+    public function changeAccountToTourist($user_ID){
+        $db = $this->connect();
+        $db->beginTransaction();
+
+        try {
+           $sql = "SELECT account_ID FROM Account_Info WHERE user_ID = :user_ID AND role_ID = 3";
+            $db = $this->connect();
+            $query_select = $db->prepare($sql);
+            $query_select->bindParam(":user_ID", $user_ID);
+            $query_select->execute();
+            $result = $query_select->fetch();
+
+            if($result){
+                return $result["account_ID"];
+            }
+
+            $sql = "INSERT INTO Account_Info(user_ID, role_ID, account_status) VALUES (:user_ID, 3, Active)";
+            $query_insert = $db->prepare($sql);
+            $query_insert->bindParam(":user_ID", $user_ID);
+
+            if ($query_insert->execute()) {
+                return $db->lastInsertId();
+            } else {
+                return false;
+            }
+           
+        } catch (PDOException $e) {
+            $db->rollBack();
+            $this->setLastError($e->getMessage());
+            error_log("Change Account Error: " . $e->getMessage()); 
+            return false;
+        }
+    }
+
 }

@@ -1,4 +1,6 @@
 <?php
+// git config --global core.autocrlf true
+
 ob_start();
 session_start();
 require_once "config/database.php";

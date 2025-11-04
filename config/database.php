@@ -7,6 +7,7 @@ class Database {
     private $dbname = "tour";
     private $lastError = "";
     protected $conn;
+    
 
     public function connect() {
         try {

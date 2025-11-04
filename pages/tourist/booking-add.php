@@ -26,7 +26,7 @@ $touristObj = new Tourist();
 
 $errors = [];
 
-$package = $tourManager->getTourPackageById($tourpackage_ID);
+$package = $tourManager->getTourPackageDetailsByID($tourpackage_ID);
 
 if (!$package) {
     $_SESSION['error'] = "Tour package not found.";
@@ -46,19 +46,58 @@ foreach ($guides as $guide) {
 $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $errors = []; // always initialize as array
+
+    // Initialize variables
+    $is_selfIncluded = (isset($_POST['is_selfIncluded']) && $_POST['is_selfIncluded'] === 'yes') ? 1 : 0;
     $companion_names = $_POST['companion_name'] ?? [];
     $companion_categories = $_POST['companion_category'] ?? [];
 
+    if (!is_array($companion_names)) $companion_names = [];
+    if (!is_array($companion_categories)) $companion_categories = [];
 
-    $companions_count = is_array($companion_names) ? count($companion_names) : 0;
+    $companions_count = count($companion_names);
 
-    $min_people = intval($package['numberofpeople_based']);
-    $max_people = intval($package['numberofpeople_maximum']);
+    $min_people = (int)$package['numberofpeople_based'];
+    $max_people = (int)$package['numberofpeople_maximum'];
+    $total_people = $is_selfIncluded + $companions_count;
 
+    // Validate total people against min/max
+    if ($total_people < $min_people) {
+        $errors[] = "You must have at least {$min_people} person(s) in total (including yourself if selected).";
+    }
+    if ($total_people > $max_people) {
+        $errors[] = "You can only have up to {$max_people} people (including yourself).";
+    }
+
+    // Special case: max = 1
+    if ($max_people === 1) {
+        if ($is_selfIncluded && $companions_count > 0) {
+            $errors[] = "Only one person is allowed for this package — remove companions.";
+        }
+        if (!$is_selfIncluded && $companions_count === 0) {
+            $errors[] = "One companion is required if you do not include yourself.";
+        }
+    }
+
+    // Booking dates
     $booking_start_date = $_POST['booking_start_date'] ?? '';
     $booking_end_date = $_POST['booking_end_date'] ?? '';
 
-    // ✅ Validate dates
+    $bookings = $bookingObj->existingBookingsInGuide($package['guide_ID']);
+        foreach ($bookings as $b) {
+            if (
+                strtotime($booking_start_date) <= strtotime($b['booking_end_date']) &&
+                strtotime($b['booking_start_date']) <= strtotime($booking_end_date)
+            ) {
+                $errors[] = "The guide is already booked during this period.";
+                break;
+            }
+        }
+
+    
+
     if (empty($booking_start_date) || empty($booking_end_date)) {
         $errors[] = "Please select both a start and end date.";
     } elseif ($booking_start_date > $booking_end_date) {
@@ -67,36 +106,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Start date cannot be in the past.";
     }
 
-    if(empty($companion_names)){
-        $errors = "This is required at least";
-    }
-
-    if ($companions_count < $min_people) {
-        $errors[] = "You must add at least {$min_people} companions.";
-    }
-
-    if ($companions_count > $max_people) {
-        $errors[] = "You can only add up to {$max_people} companions.";
-    }
-
+    // ✅ Only add companions if there are companion names
     if (empty($errors)) {
-        $booking_ID = $bookingObj->addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date);
+        $booking_ID = $bookingObj->addBookingForTourist(
+            $tourist_ID,
+            $tourpackage_ID,
+            $booking_start_date,
+            $booking_end_date,
+            $is_selfIncluded
+        );
 
-
-        if ($booking_ID) {
+        if ($booking_ID && $companions_count > 0) {
             foreach ($companion_names as $index => $name) {
-                $category_ID = $companion_categories[$index];
-                $bookingObj->addCompanionToBooking($booking_ID, $name, $category_ID);
+                $category_ID = $companion_categories[$index] ?? null;
+                if ($name && $category_ID) {
+                    $bookingObj->addCompanionToBooking($booking_ID, $name, $category_ID);
+                }
             }
         }
 
-        
-        // $bookingObj->createBooking($tourist_ID, $tourpackage_ID, $companion_names, $companion_categories);
-        $_SESSION['success'] = "Companions validated successfully. Proceeding to payment.";
-        header("Location: payment.php?id=" . $booking_ID);
+        $_SESSION['success'] = "Booking successful. Proceeding to payment.";
+        header("Location: payment-form.php?id=" . $booking_ID);
         exit();
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -124,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p><strong>Schedule Days:</strong> <?= htmlspecialchars($package['schedule_days']); ?> days</p>
             <p><strong>Maximum People:</strong> <?= htmlspecialchars($package['numberofpeople_maximum']); ?></p>
             <p><strong>Minimum People:</strong> <?= htmlspecialchars($package['numberofpeople_based']); ?></p>
-            <p><strong>Base Amount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_based'], 2)); ?></p>
+            <p><strong>Base Amount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_foradult'], 2)); ?></p>
             <p><strong>Discount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_discount'], 2)); ?></p>
 
             <?php if (!empty($spots)): ?>
@@ -149,8 +183,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <label for="booking_end_date">End Date:</label>
             <input type="date" name="booking_end_date" id="booking_end_date" readonly required>
+            <div id="overlapWarning" style="color:red; display:none;">
+                ⚠️ The selected dates overlap with another booking for this guide.
+            </div>
+
 
             <h2>Companions</h2>
+            <p>Are you including yourself in the booking?</p>
+            <label><input type="radio" name="is_selfIncluded" value="yes" required> Yes</label>
+            <label><input type="radio" name="is_selfIncluded" value="no" required> No</label>
+
+
+
             <div id="inputContainer">
                 <div>
                     <input type="text" name="companion_name[]" placeholder="Name" required>
@@ -169,38 +213,104 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         <a href="tour-packages-browse.php">← Back to Tour Packages</a>
     </div>
-    <script>
-        // ✅ Allow dynamic companion input fields
-        function addInput() {
-            const container = document.getElementById('inputContainer');
-            const div = document.createElement('div');
-            div.innerHTML = `
-                <input type="text" name="companion_name[]" placeholder="Name" required>
-                <select name="companion_category[]" required>
-                    <option value="">-- SELECT CATEGORY ---</option>
-                    <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                        <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
-                    <?php } ?>
-                </select>
-                <button type="button" onclick="this.parentNode.remove()">Remove</button>
-            `;
-            container.appendChild(div);
+<script>
+const maxPeople = <?= intval($package['numberofpeople_maximum']); ?>;
+const minPeople = <?= intval($package['numberofpeople_based']); ?>;
+const inputContainer = document.getElementById('inputContainer');
+const addBtn = document.querySelector('button[onclick="addInput()"]');
+const selfIncludedRadios = document.querySelectorAll('input[name="is_selfIncluded"]');
+
+// Initially hide add companion button if max = 1
+if (maxPeople === 1) {
+    addBtn.style.display = 'none';
+    inputContainer.innerHTML = ''; // remove any companion field
+}
+
+// Handle self-inclusion change
+selfIncludedRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+        const selfIncluded = this.value === 'yes';
+
+        // Max = 1 logic
+        if (maxPeople === 1) {
+            if (selfIncluded) {
+                // User included themselves → remove companion fields
+                inputContainer.innerHTML = '';
+            } else {
+                // User not included → add exactly one companion
+                if (inputContainer.children.length === 0) {
+                    addInput();
+                }
+            }
         }
+    });
+});
 
-        const scheduleDays = <?= intval($package['schedule_days']); ?>;
+// Function to add companion fields
+function addInput() {
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <input type="text" name="companion_name[]" placeholder="Name" required>
+        <select name="companion_category[]" required>
+            <option value="">-- SELECT CATEGORY ---</option>
+            <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
+                <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
+            <?php } ?>
+        </select>
+        <button type="button" onclick="this.parentNode.remove();">Remove</button>
+    `;
+    inputContainer.appendChild(div);
+}
 
-        document.getElementById('booking_start_date').addEventListener('change', function () {
-                const startDate = new Date(this.value);
-                if (isNaN(startDate.getTime())) return;
+// Auto-calculate booking end date
+const scheduleDays = <?= intval($package['schedule_days']); ?>;
+document.getElementById('booking_start_date').addEventListener('change', function () {
+    const startDate = new Date(this.value);
+    if (isNaN(startDate.getTime())) return;
+    startDate.setDate(startDate.getDate() + scheduleDays - 1);
+    document.getElementById('booking_end_date').value = startDate.toISOString().split('T')[0];
+});
 
-                // Add (scheduleDays - 1) because the start day counts as day 1
-                startDate.setDate(startDate.getDate() + scheduleDays - 1);
+    const guideID = <?= intval($package['guide_ID']); ?>;
+    const startDateInput = document.getElementById('booking_start_date');
+    const endDateInput = document.getElementById('booking_end_date');
+    const overlapWarning = document.getElementById('overlapWarning');
 
-                // Format date to YYYY-MM-DD
-                const formatted = startDate.toISOString().split('T')[0];
-                document.getElementById('booking_end_date').value = formatted;
-        
-        });
-    </script>
+    async function checkOverlap() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (!startDate || !endDate) return;
+
+        try {
+            const response = await fetch('booking-overlap.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    guide_ID: guideID,
+                    start_date: startDate,
+                    end_date: endDate
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.overlap) {
+                overlapWarning.style.display = 'block';
+            } else {
+                overlapWarning.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error checking overlap:", error);
+        }
+    }
+
+    // Recheck when date changes
+    startDateInput.addEventListener('change', checkOverlap);
+    endDateInput.addEventListener('change', checkOverlap);
+
+</script>
+
+
 </body>
 </html>

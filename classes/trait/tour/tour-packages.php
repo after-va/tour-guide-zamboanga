@@ -1,41 +1,62 @@
 <?php
 
 trait TourPackagesTrait {
-    
 
-    public function addTourPackage($guide_ID, $tourpackage_name, $tourpackage_desc, $schedule_days, $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount){
-        $db = $this->connect();
-        $db->beginTransaction();
-        try{
-            $schedule_ID = $this->addgetSchedule($schedule_days,  $numberofpeople_maximum, $numberofpeople_based, $currency, $basedAmount, $discount,$db);
-            if(!$schedule_ID){
-                $db->rollBack();
+    //addGetSchedule($days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db)
+
+    public function addTourPackage($guide_ID, $name, $desc, $days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db) {
+        $schedule_ID = $this->addGetSchedule($days, $numberofpeople_maximum, $numberofpeople_based, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db);
+
+        if (!$schedule_ID) {
                 return false;
-            }
-
-            $sql = "INSERT INTO Tour_Package(guide_ID, tourpackage_name, tourpackage_desc, schedule_ID) VALUES(:guide_ID, :tourpackage_name, :tourpackage_desc, :schedule_ID)";
-            $query = $db->prepare($sql);
-            $query->bindParam(':guide_ID',$guide_ID);
-            $query->bindParam(':tourpackage_name',$tourpackage_name);
-            $query->bindParam(':tourpackage_desc',$tourpackage_desc);
-            $query->bindParam(':schedule_ID',$schedule_ID);
-
-            if ($query->execute()){
-                $lastInsertId = $db->lastInsertId();
-                $db->commit();
-                return $lastInsertId;
-            } else {   
-                $db->rollBack();
-                return false;
-            }
-
-        }catch (PDOException $e) {
-            $db->rollBack();
-            error_log("Adding Package Error: " . $e->getMessage()); 
-            return false;
         }
+
+        $sql = "INSERT INTO Tour_Package(guide_ID, tourpackage_name, tourpackage_desc, schedule_ID) VALUES (:guide_ID, :tourpackage_name, :tourpackage_desc, :schedule_ID)";
+            $query = $db->prepare($sql);
+            $query->bindParam(':guide_ID', $guide_ID);
+            $query->bindParam(':tourpackage_name', $name);
+            $query->bindParam(':tourpackage_desc', $desc);
+            $query->bindParam(':schedule_ID', $schedule_ID);
+            $query->execute();
+            return $db->lastInsertId();
+
+
+        
     }
 
+    public function updateTourPackages($tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db) {
+        
+        $result = $this->updateSchedule($schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db);
+
+        if (!$result) {
+                return false;
+        }
+
+        $sql = "UPDATE Number_Of_People
+                SET pricing_ID = :pricing_ID,
+                    numberofpeople_maximum = :max,
+                    numberofpeople_based = :based
+                WHERE numberofpeople_ID = :numberofpeople_ID;";
+            $query = $db->prepare($sql);
+            $query->bindParam(':numberofpeople_ID', $numberofpeople_ID);
+            $query->bindParam(':max', $numberofpeople_maximum);
+            $query->bindParam(':based', $numberofpeople_based);
+            
+            return $query->execute();
+
+
+        
+    }
+
+    public function getTourPackageByID($tourpackage_ID){
+        $sql = "SELECT * FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':tourpackage_ID', $tourpackage_ID);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
 
     public function viewAllPackages(){
         $sql = "SELECT * FROM Tour_Package";
@@ -45,137 +66,99 @@ trait TourPackagesTrait {
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    public function getTourPackageById($tourpackage_ID) {
+    
+    public function getTourPackageDetailsByID($tourpackage_ID){
+        $sql = "SELECT
+            tp.tourpackage_ID,
+            tp.tourpackage_name,
+            tp.tourpackage_desc,
+            CONCAT(n.name_first, ' ', n.name_last) AS guide_name,
+            s.schedule_days,
+            g.guide_ID,
+            np.numberofpeople_maximum,
+            np.numberofpeople_based,
+            pc.pricing_currency,
+            pc.pricing_foradult,
+            pc.pricing_forchild,
+            pc.pricing_foryoungadult,
+            pc.pricing_forsenior,
+            pc.pricing_forpwd,
+            pc.include_meal,
+            pc.pricing_mealfee,
+            pc.transport_fee,
+            pc.pricing_discount,
+            GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
+        FROM tour_package tp
+        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
+        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
+        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
+        JOIN guide g ON tp.guide_ID = g.guide_ID
+        JOIN account_info ai ON g.account_ID = ai.account_ID
+        JOIN user_login ul ON ai.user_ID = ul.user_ID
+        JOIN person p ON ul.person_ID = p.person_ID
+        JOIN name_info n ON p.name_ID = n.name_ID
+        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+        JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
+        WHERE tp.tourpackage_ID = :tourpackage_ID";
         $db = $this->connect();
-        try {
-            // Get tour package information
-            $sql = "SELECT tp.*, s.schedule_days, nop.numberofpeople_maximum, nop.numberofpeople_based,
-                    p.pricing_currency, p.pricing_based, p.pricing_discount
-                    FROM Tour_Package tp
-                    JOIN Schedule s ON tp.schedule_ID = s.schedule_ID
-                    JOIN Number_Of_People nop ON s.numberofpeople_ID = nop.numberofpeople_ID
-                    JOIN Pricing p ON nop.pricing_ID = p.pricing_ID
-                    WHERE tp.tourpackage_ID = :tourpackage_ID";
-            
-            $query = $db->prepare($sql);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            $query->execute();
-            
-            $package = $query->fetch(PDO::FETCH_ASSOC);
-            if (!$package) {
-                return null;
-            }
-
-            // Get associated spots
-            $sql = "SELECT spots_ID FROM Tour_Package_Spots WHERE tourpackage_ID = :tourpackage_ID";
-            $query = $db->prepare($sql);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            $query->execute();
-            $package['spots'] = array_column($query->fetchAll(PDO::FETCH_ASSOC), 'spots_ID');
-
-            return $package;
-        } catch (PDOException $e) {
-            error_log("Error getting tour package: " . $e->getMessage());
-            return null;
-        }
+        $query = $db->prepare($sql);
+        $query->bindParam(':tourpackage_ID', $tourpackage_ID);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function updateTourPackage($tourpackage_ID, $guide_ID, $tourpackage_name, $tourpackage_desc, 
-                                    $schedule_days, $numberofpeople_maximum, $numberofpeople_based, 
-                                    $currency, $basedAmount, $discount, $spots) {
-        $db = $this->connect();
-        $db->beginTransaction();
-        
-        try {
-            // Get current package data to find related records
-            $currentPackage = $this->getTourPackageById($tourpackage_ID);
-            if (!$currentPackage) {
-                throw new Exception("Package not found");
-            }
+    // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
+    //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
+    //     $db = $this->connect();
+    //     $query = $db->prepare($sql);
+    //     $query->bindParam(':tourpackage_ID', $tourpackage_ID);
+    //     $query->execute();
 
-            // Update schedule and related information
-            $schedule_ID = $this->addgetSchedule($schedule_days, $numberofpeople_maximum, $numberofpeople_based, 
-                                               $currency, $basedAmount, $discount, $db);
-            if (!$schedule_ID) {
-                throw new Exception("Failed to update schedule");
-            }
+    //     return $query->fetch(PDO::FETCH_ASSOC);
 
-            // Update tour package
-            $sql = "UPDATE Tour_Package SET 
-                    guide_ID = :guide_ID,
-                    tourpackage_name = :tourpackage_name,
-                    tourpackage_desc = :tourpackage_desc,
-                    schedule_ID = :schedule_ID
-                    WHERE tourpackage_ID = :tourpackage_ID";
-            
-            $query = $db->prepare($sql);
-            $query->bindParam(':guide_ID', $guide_ID);
-            $query->bindParam(':tourpackage_name', $tourpackage_name);
-            $query->bindParam(':tourpackage_desc', $tourpackage_desc);
-            $query->bindParam(':schedule_ID', $schedule_ID);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            
-            if (!$query->execute()) {
-                throw new Exception("Failed to update tour package");
-            }
+    // }
 
-            // Delete existing spots
-            $sql = "DELETE FROM Tour_Package_Spots WHERE tourpackage_ID = :tourpackage_ID";
-            $query = $db->prepare($sql);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            $query->execute();
+    // public function addTourPackage($guide_ID, $name, $desc, $days, $max, $min, $currency, $adult, $child, $young, $senior, $pwd, $meal, $meal_fee, $transport, $discount) {
+    //     $sql = "INSERT INTO Tour_Packages 
+    //             (guide_ID, tourpackage_name, tourpackage_desc, schedule_days,
+    //              numberofpeople_maximum, numberofpeople_based, currency,
+    //              pricing_foradult, pricing_forchild, pricing_foryoungadult,
+    //              pricing_forsenior, pricing_forpwd,
+    //              include_meal, meal_fee, transport_fee, discount)
+    //             VALUES
+    //             (:guide_ID, :name, :desc, :days,
+    //              :max, :min, :currency,
+    //              :adult, :child, :young,
+    //              :senior, :pwd,
+    //              :meal, :meal_fee, :transport, :discount)";
 
-            // Add new spots
-            if (!empty($spots)) {
-                $this->linkSpotToPackage($tourpackage_ID, $spots);
-            }
+    //     try {
+    //         $db = $this->connect();
+    //         $q = $db->prepare($sql);
+    //         $q->execute([
+    //             ':guide_ID'   => $guide_ID,
+    //             ':name'       => $name,
+    //             ':desc'       => $desc,
+    //             ':days'       => $days,
+    //             ':max'        => $max,
+    //             ':min'        => $min,
+    //             ':currency'   => $currency,
+    //             ':adult'      => $adult,
+    //             ':child'      => $child,
+    //             ':young'      => $young,
+    //             ':senior'     => $senior,
+    //             ':pwd'        => $pwd,
+    //             ':meal'       => $meal,
+    //             ':meal_fee'   => $meal_fee,
+    //             ':transport'  => $transport,
+    //             ':discount'   => $discount,
+    //         ]);
 
-            $db->commit();
-            return true;
-
-        } catch (Exception $e) {
-            $db->rollBack();
-            error_log("Error updating tour package: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function deleteTourPackage($tourpackage_ID) {
-        $db = $this->connect();
-        $db->beginTransaction();
-        
-        try {
-            // Get current package data to find related records
-            $package = $this->getTourPackageById($tourpackage_ID);
-            if (!$package) {
-                throw new Exception("Package not found");
-            }
-
-            // Delete associated spots first
-            $sql = "DELETE FROM Tour_Package_Spots WHERE tourpackage_ID = :tourpackage_ID";
-            $query = $db->prepare($sql);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            if (!$query->execute()) {
-                throw new Exception("Failed to delete package spots");
-            }
-
-            // Delete the tour package
-            $sql = "DELETE FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
-            $query = $db->prepare($sql);
-            $query->bindParam(':tourpackage_ID', $tourpackage_ID);
-            
-            if (!$query->execute()) {
-                throw new Exception("Failed to delete tour package");
-            }
-
-            $db->commit();
-            return true;
-
-        } catch (Exception $e) {
-            $db->rollBack();
-            error_log("Error deleting tour package: " . $e->getMessage());
-            return false;
-        }
-    }
+    //         $id = (int)$db->lastInsertId();
+    //         return $id > 0 ? $id : false;
+    //     } catch (Exception $e) {
+    //         error_log("addTourPackage error: " . $e->getMessage());
+    //         return false;
+    //     }
+    // }
 }

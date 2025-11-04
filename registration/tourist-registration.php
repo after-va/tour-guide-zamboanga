@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 // Include required files
 require_once "../classes/tourist.php";
 
-$touristObj=new Tourist();
+// Initialize variables
 $tourist = [];
 $errors = [];
 $success = "";
@@ -40,7 +40,7 @@ function testRegistration($touristObj) {
         'person_nationality' => 'Filipino',
         'person_gender' => 'Male',
         'person_dateofbirth' => '1990-01-01',
-        'username' => 'testuser' . time(), // Unique username
+        'user_username' => 'testuser' . time(), // Unique user_username
         'password' => 'Test@1234'
     ];
     
@@ -69,7 +69,7 @@ function testRegistration($touristObj) {
             $testData['person_nationality'],
             $testData['person_gender'],
             $testData['person_dateofbirth'],
-            $testData['username'],
+            $testData['user_username'],
             $testData['password']
         );
         
@@ -115,7 +115,7 @@ try {
                                     // $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
                                     // $contactinfo_email,
                                     // $person_nationality, $person_gender, $person_dateofbirth,
-                                    // $username, $password)
+                                    // $user_username, $password)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Check if database is available
     if (!empty($dbError)) {
@@ -136,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         "country_ID", "emergency_name", "emergency_country_ID",
         "emergency_phonenumber", "emergency_relationship", "contactinfo_email",
         "person_nationality", "person_gender", "person_dateofbirth",
-        "username", "password"
+        "user_username", "password"
     ]; // Removed phone_number from required fields
 
     foreach ($required as $field) {
@@ -217,7 +217,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             error_log("Calling addTourist with data: " . print_r([
                 'name_first' => $tourist["name_first"],
                 'name_last' => $tourist["name_last"],
-                'username' => $tourist["username"]
+                'user_username' => $tourist["user_username"]
                 // Add other fields as needed for debugging
             ], true));
 
@@ -240,7 +240,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $tourist["person_nationality"], 
                 $tourist["person_gender"], 
                 $tourist["person_dateofbirth"], 
-                $tourist["username"], 
+                $tourist["user_username"], 
                 $tourist["password"]
             );
             
@@ -265,8 +265,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
             // More specific error message
             if (strpos(strtolower($errorDetails), 'duplicate entry') !== false) {
-                if (strpos(strtolower($errorDetails), 'username') !== false) {
-                    $errors["username"] = "This username is already taken. Please choose another one.";
+                if (strpos(strtolower($errorDetails), 'user_username') !== false) {
+                    $errors["user_username"] = "This user_username is already taken. Please choose another one.";
                 } elseif (strpos(strtolower($errorDetails), 'email') !== false) {
                     $errors["contactinfo_email"] = "This email is already registered. Please use a different email or try to log in.";
                 } else {
@@ -441,13 +441,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if (regionText) regionText.style.display = isPhilippines ? "none" : "block";
             const regionID = document.getElementById("region_ID");
             const regionName = document.getElementById("region_name");
-            if (regionID) {
-                regionID.disabled = !isPhilippines;
-                if (isPhilippines) {
-                    // Enable region dropdown for Philippines
-                    regionID.disabled = false;
-                }
-            }
+            if (regionID) regionID.disabled = !isPhilippines;
             if (regionName) regionName.disabled = isPhilippines;
             
             // Toggle Province
@@ -490,7 +484,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         function loadRegions(countryID) {
-            console.log("Loading regions for country ID:", countryID);
             fetch("fetch-region.php?country_ID=" + countryID)
                 .then(res => res.text())
                 .then(data => {
@@ -499,23 +492,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     const cityEl = document.getElementById("city_ID");
                     const barangayEl = document.getElementById("barangay_ID");
                     
-                    if (regionEl) {
-                        regionEl.innerHTML = data;
-                        regionEl.disabled = false; // Enable region dropdown
-                        console.log("Regions loaded successfully");
-                    }
-                    if (provinceEl) {
-                        provinceEl.innerHTML = "<option value=''>--SELECT PROVINCE--</option>";
-                        provinceEl.disabled = true; // Disable until region selected
-                    }
-                    if (cityEl) {
-                        cityEl.innerHTML = "<option value=''>--SELECT CITY--</option>";
-                        cityEl.disabled = true;
-                    }
-                    if (barangayEl) {
-                        barangayEl.innerHTML = "<option value=''>--SELECT BARANGAY--</option>";
-                        barangayEl.disabled = true;
-                    }
+                    if (regionEl) regionEl.innerHTML = data;
+                    if (provinceEl) provinceEl.innerHTML = "<option value=''>--SELECT PROVINCE--</option>";
+                    if (cityEl) cityEl.innerHTML = "<option value=''>--SELECT CITY--</option>";
+                    if (barangayEl) barangayEl.innerHTML = "<option value=''>--SELECT BARANGAY--</option>";
                 })
                 .catch(err => console.error("Error loading regions:", err));
         }
@@ -608,9 +588,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="POST">
         <h3>Account Info</h3>
-        <label for="username">Username</label>
-        <input type="text" name="username" id="username" value="<?= $tourist["username"] ?? "" ?>">
-        <p class="error"><?= $errors["username"] ?? "" ?></p>
+        <label for="user_username">user_username</label>
+        <input type="text" name="user_username" id="user_username" value="<?= $tourist["user_username"] ?? "" ?>">
+        <p class="error"><?= $errors["user_username"] ?? "" ?></p>
 
         <label for="password">Password</label>
         <input type="password" name="password" id="password">
@@ -822,13 +802,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p class="error"><?= $errors["barangay_name"] ?? "" ?></p>
         </div>
 
-        <label for="address_houseno"> House/Building Number</label>
-        <input type="text" name="address_houseno" id="address_houseno" value="<?= $tourist["address_houseno"] ?? "" ?>">
-        <p class="error"><?= $errors["address_houseno"] ?? "" ?></p>
-
         <label for="address_street"> Street </label>
         <input type="text" name="address_street" id="address_street" value="<?= $tourist["address_street"] ?? "" ?>">
         <p class="error"><?= $errors["address_street"] ?? "" ?></p>
+
+        <label for="address_houseno"> House No</label>
+        <input type="text" name="address_houseno" id="address_houseno" value="<?= $tourist["address_houseno"] ?? "" ?>">
+        <p class="error"><?= $errors["address_houseno"] ?? "" ?></p>
 
         <button type="submit">Register</button>
     </form>

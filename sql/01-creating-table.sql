@@ -204,18 +204,24 @@ CREATE TABLE Guide_Languages(
 --  SCHEDULE SYSTEM TABLES
 -- ==============================
 
-CREATE TABLE Pricing(
+CREATE TABLE Pricing (
     pricing_ID INT AUTO_INCREMENT PRIMARY KEY,
     pricing_currency VARCHAR(10) NOT NULL,
-    pricing_based DECIMAL(10,2) NOT NULL,
+    pricing_foradult DECIMAL(10,2) NOT NULL,
+    pricing_forchild DECIMAL(10,2),
+    pricing_foryoungadult DECIMAL(10,2),
+    pricing_forsenior DECIMAL(10,2),
+    pricing_forpwd DECIMAL(10,2),
+    include_meal BOOLEAN DEFAULT FALSE,
+    pricing_mealfee DECIMAL(10,2) DEFAULT 0.00,
+    transport_fee DECIMAL(10,2) DEFAULT 0.00,
     pricing_discount DECIMAL(10,2) NOT NULL
 );
+
 
 CREATE TABLE Number_Of_People(
     numberofpeople_ID INT AUTO_INCREMENT PRIMARY KEY,
     pricing_ID INT,
-    numberofpeople_adult INT NOT NULL,
-    numberofpeople_children INT NOT NULL,
     numberofpeople_maximum INT NOT NULL,
     numberofpeople_based VARCHAR(50) NOT NULL,
     FOREIGN KEY (pricing_ID) REFERENCES Pricing(pricing_ID)
@@ -256,13 +262,18 @@ CREATE TABLE Tour_Package(
 );
 
 --  Tour Package Spots (Many-to-Many Relationship)
-CREATE TABLE Tour_Package_Spots(
-    tourpackage_ID INT,
-    spots_ID INT,
-    PRIMARY KEY (tourpackage_ID, spots_ID),
+CREATE TABLE Tour_Package_Spots (
+    packagespot_ID INT AUTO_INCREMENT PRIMARY KEY, 
+    tourpackage_ID INT NOT NULL,
+    spots_ID INT NULL,
+    packagespot_activityname VARCHAR(255) NULL,
+    packagespot_starttime TIME NULL,
+    packagespot_endtime TIME NULL,
+    packagespot_day INT NOT NULL,
     FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID) ON DELETE CASCADE,
-    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID) ON DELETE CASCADE
+    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID) ON DELETE SET NULL
 );
+
 
 CREATE TABLE Request_Package(
     request_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -334,16 +345,39 @@ CREATE TABLE Method_Category(
     methodcategory_is_active BOOLEAN DEFAULT TRUE
 );
 
+
 CREATE TABLE Method (
     method_ID INT AUTO_INCREMENT PRIMARY KEY,
     methodcategory_ID INT,
-    method_account_name VARCHAR(100),                -- e.g., 'Juan Dela Cruz'
-    method_account_number VARCHAR(50),               -- e.g., GCash number, bank account number, or PayPal email
-    method_qr_code VARCHAR(255),                     -- Optional: store path or link to QR image
+
+    -- Payment / Card Info
+    method_amount DECIMAL(10,2) DEFAULT NULL,
+    method_currency VARCHAR(10) DEFAULT NULL,
+    method_cardnumber VARCHAR(20) DEFAULT NULL,
+    method_expmonth VARCHAR(2) DEFAULT NULL,
+    method_expyear VARCHAR(4) DEFAULT NULL,
+    method_cvc VARCHAR(4) DEFAULT NULL,
+
+    -- Billing Info
+    method_name VARCHAR(100) NOT NULL,
+    method_email VARCHAR(100) NOT NULL,
+    method_line1 VARCHAR(150) DEFAULT NULL,
+    method_city VARCHAR(100) DEFAULT NULL,
+    method_postalcode VARCHAR(20) DEFAULT NULL,
+    method_country VARCHAR(10) DEFAULT NULL,
+
+    -- Status / Timestamps
     method_status ENUM('Active', 'Inactive') DEFAULT 'Active',
-    method_created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    FOREIGN KEY (methodcategory_ID) REFERENCE Method_Category(methodcategory_ID)
+    method_created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    phone_ID INT,
+    FOREIGN KEY (phone_ID) REFERENCES Phone_Number (phone_ID),
+    -- Foreign Key
+    CONSTRAINT fk_method_category FOREIGN KEY (methodcategory_ID)
+        REFERENCES Method_Category(methodcategory_ID)
 );
+
+
 
 
 CREATE TABLE Payment_Transaction(

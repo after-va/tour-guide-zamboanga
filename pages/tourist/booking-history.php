@@ -28,7 +28,6 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     <nav>
         <a href="dashboard.php">Dashboard</a> |
         <a href="booking.php">My Bookings</a> |
-        <a href="tour-packages.php">View Tour Packages</a> |
         <a href="schedules.php">Schedules</a> |
         <a href="logout.php">Logout</a>
     </nav>

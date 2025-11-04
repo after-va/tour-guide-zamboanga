@@ -19,6 +19,7 @@ $guideObj = new Guide();
 // Get all tour packages with their related information
 $packages = $tourManager->viewAllPackages();
 
+
 // Get all guides for reference
 $guides = $guideObj->viewAllGuide();
 $guidesById = [];
@@ -39,7 +40,7 @@ foreach ($guides as $guide) {
     <nav>
         <a href="dashboard.php">Dashboard</a> |
         <a href="booking.php">My Bookings</a> |
-        <a href="tour-packages.php">View Tour Packages</a> |
+        
         <a href="schedules.php">Schedules</a> |
         <a href="logout.php">Logout</a>
     </nav>
@@ -97,7 +98,7 @@ foreach ($guides as $guide) {
             <td><?= htmlspecialchars($schedule['schedule_days']); ?></td>
             <td><?= htmlspecialchars($people['numberofpeople_maximum']); ?></td>
             <td><?= htmlspecialchars($people['numberofpeople_based']); ?></td>
-            <td><?= htmlspecialchars($pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_based'], 2)); ?></td>
+            <td><?= htmlspecialchars($pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2)); ?></td>
             <td><?= htmlspecialchars($pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2)); ?></td>
             <td><?= htmlspecialchars(implode(', ', $spotNames)); ?></td>
             <td>

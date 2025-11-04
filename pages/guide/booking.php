@@ -1,19 +1,23 @@
 <?php
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');
     exit;
+} else if ($_SESSION['user']['account_status'] == 'Suspended'){
+    header('Location: account-suspension.php');
+    exit;
+} else if ($_SESSION['user']['account_status'] == 'Pending'){
+    header('Location: account-pending.php');
 }
-
+require_once "../../classes/guide.php";
 require_once "../../classes/booking.php";
-require_once "../../classes/tourist.php";
 
-$tourist_ID = $_SESSION['user']['account_ID'];
-$touristObj = new Tourist();
 $bookingObj = new Booking();
+$guideObj = new Guide();
 
+$guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 
-$bookings = $bookingObj->viewBookingByTourist($tourist_ID);
+$bookings = $bookingObj->getBookingByGuideID($guide_ID);
 ?>
 <!DOCTYPE html>
 <html>
@@ -27,9 +31,11 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     
     <nav>
         <a href="dashboard.php">Dashboard</a> |
-        <a href="booking.php">My Bookings</a> |
-        
+        <a href="booking.php">Bookings</a> |
+        <a href="tour-packages.php">Tour Packages</a> |
         <a href="schedules.php">Schedules</a> |
+        <a href="payments.php">Payments</a> |
+        <a href="account-change.php">Change to Tourist</a>
         <a href="logout.php">Logout</a>
     </nav>
     
@@ -53,7 +59,7 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     
     <p><a href="tour-packages-browse.php">Browse Tour Packages</a></p>
     <p><a href="booking-history.php">View Booking History</a></p>
-
+    <p><?= $guide_ID ?></p>
     <?php if (!empty($bookings)): ?>
         <table border = 1>
             <tr>
@@ -61,7 +67,7 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
                 <th>Package Name</th>
                 <th>Description</th>
                 <th>Schedule Days</th>
-                <th>Tour Guide</th>
+                <th>Tourist </th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Status</th>
@@ -70,30 +76,31 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
             </tr>
 
             <?php $no = 1; foreach ($bookings as $i => $booking){ 
-                    if($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval' || $booking['booking_status'] == 'Approved'){?>
+                    if($booking['booking_status'] == 'Pending for Payment' || $booking['booking_status'] == 'Pending for Approval'|| $booking['booking_status'] == 'Approved' ){?>
                 <tr>
                     <td><?= $no++;?></td>
                     <td><?= htmlspecialchars($booking['tourpackage_name']) ?></td>
                     <td><?= htmlspecialchars($booking['tourpackage_desc']) ?></td>
                     <td><?= htmlspecialchars($booking['schedule_days']) ?> days</td>
-                    <td><?= htmlspecialchars($booking['guide_name']) ?></td>
+                    <td><?= htmlspecialchars($booking['tourist_name']) ?></td>
                     <td><?= htmlspecialchars($booking['booking_start_date']) ?></td>
                     <td><?= htmlspecialchars($booking['booking_end_date']) ?></td>
                     <td><?= htmlspecialchars($booking['booking_status']) ?></td>
                     <td><?= htmlspecialchars($booking['tour_spots'] ?? '—') ?></td>
                     <?php if ($booking['booking_status'] =='Pending for Payment'){ ?>
                     <td>
-                        <a href="payment-form.php?id=<?= $booking['booking_ID'] ?>">Proceed to Payment</a> |
-                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
-                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
+                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?? '' ?>">View Details</a>
                     </td>
-                    <?php }else if ($booking['booking_status'] =='Pending for Approval' || $booking['booking_status'] =='In Progress' || $booking['booking_status'] == 'Approved'  ){ ?>
-                    <td>                                                                    
-                        <a href="booking-cancel.php?id=<?= $booking['booking_ID'] ?>" onclick="return confirm('Are you sure you want to cancel this booking?')">Cancel</a> |
-                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?>">View</a>
+                    <?php }else if ($booking['booking_status'] =='Pending for Approval'){ ?>
+                    <td>
+                        <a href="booking-approve.php?id=<?= $booking['booking_ID'] ?? '' ?>" onclick="return confirm('Are you sure you want to Approve this booking?')">Approve</a> |
+                        <a href="booking-view.php?id=<?= $booking['booking_ID'] ?? '' ?>">Reject</a>
+                    </td>
+                    <?php } else { ?>
+                    <td>
+
                     </td>
                     <?php } ?>
-                    
                 </tr>
                 
             <?php }} ?>

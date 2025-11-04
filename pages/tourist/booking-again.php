@@ -10,39 +10,52 @@ require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 require_once "../../classes/booking.php";
 
-// Initialize all required objects early
+$tourist_ID = $_SESSION['user']['account_ID'];
+
 $tourManager = new TourManager();
 $guideObj = new Guide();
 $bookingObj = new Booking();
 $touristObj = new Tourist();
 
-$tourist_ID = $_SESSION['user']['account_ID'];
-
-// Get parameters safely
-$oldBookingID = isset($_GET['id']) ? intval($_GET['id']) : 0; // old booking ID
-$tourpackage_ID = isset($_GET['ref']) ? intval($_GET['ref']) : 0; // tour package ID
-
 $errors = [];
 $rebookData = null;
-// well
-// Load previous booking details (only if valid and owned by this user)
+
+// ✅ Check for rebooking
+$oldBookingID = isset($_GET['id']) ? intval($_GET['id']) : 0; // old booking ID
+$tourpackage_ID = isset($_GET['ref']) ? intval($_GET['ref']) : 0; // target tour package
+
 if ($oldBookingID > 0) {
     $rebookData = $bookingObj->getBookingDetailsByBooking($oldBookingID);
-    if (!$rebookData || !isset($rebookData['tourist_ID']) || $rebookData['tourist_ID'] != $tourist_ID || $rebookData['booking_status'] !== 'Cancelled') {
-        
 
+    // ✅ Validate rebook ownership & status
+    if (
+        !$rebookData ||
+        $rebookData['tourist_ID'] != $tourist_ID ||
+        $rebookData['booking_status'] !== 'Cancelled'
+    ) {
+        $_SESSION['error'] = "Invalid or unauthorized booking to rebook.";
+        header("Location: tour-packages.php");
+        exit();
+    }
+
+    // ✅ If no ?ref provided, use the same package as before
+    if ($tourpackage_ID <= 0) {
+        $tourpackage_ID = $rebookData['tourpackage_ID'];
     }
 }
 
-// Validate tour package
-$package = $tourManager->getTourPackageById($tourpackage_ID);
+// ✅ Load tour package data
+$package = $tourManager->getTourPackageDetailsByID($tourpackage_ID);
+
 if (!$package) {
     $_SESSION['error'] = "Tour package not found.";
     header("Location: tour-packages.php");
     exit();
 }
 
-// Get guide name
+$spots = $tourManager->getSpotsByPackage($tourpackage_ID);
+
+// ✅ Get guide name
 $guides = $guideObj->viewAllGuide();
 $guideName = "";
 foreach ($guides as $guide) {
@@ -50,24 +63,63 @@ foreach ($guides as $guide) {
         $guideName = $guide['guide_name'];
         break;
     }
-}
+} // ✅ FIXED: closed missing bracket properly
 
-// Get tour spots
-$spots = $tourManager->getSpotsByPackage($tourpackage_ID);
-
-// Handle form submission
+// ✅ Handle form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $errors = []; // always initialize as array
+
+    // Initialize variables
+    $is_selfIncluded = (isset($_POST['is_selfIncluded']) && $_POST['is_selfIncluded'] === 'yes') ? 1 : 0;
     $companion_names = $_POST['companion_name'] ?? [];
     $companion_categories = $_POST['companion_category'] ?? [];
-    $companions_count = is_array($companion_names) ? count($companion_names) : 0;
 
-    $min_people = intval($package['numberofpeople_based']);
-    $max_people = intval($package['numberofpeople_maximum']);
+    if (!is_array($companion_names)) $companion_names = [];
+    if (!is_array($companion_categories)) $companion_categories = [];
 
+    $companions_count = count($companion_names);
+
+    $min_people = (int)$package['numberofpeople_based'];
+    $max_people = (int)$package['numberofpeople_maximum'];
+    $total_people = $is_selfIncluded + $companions_count;
+
+    // Validate total people against min/max
+    if ($total_people < $min_people) {
+        $errors[] = "You must have at least {$min_people} person(s) in total (including yourself if selected).";
+    }
+    if ($total_people > $max_people) {
+        $errors[] = "You can only have up to {$max_people} people (including yourself).";
+    }
+
+    // Special case: max = 1
+    if ($max_people === 1) {
+        if ($is_selfIncluded && $companions_count > 0) {
+            $errors[] = "Only one person is allowed for this package — remove companions.";
+        }
+        if (!$is_selfIncluded && $companions_count === 0) {
+            $errors[] = "One companion is required if you do not include yourself.";
+        }
+    }
+
+    // Booking dates
     $booking_start_date = $_POST['booking_start_date'] ?? '';
     $booking_end_date = $_POST['booking_end_date'] ?? '';
 
-    // ✅ Validate dates
+    $bookings = $bookingObj->existingBookingsInGuide($package['guide_ID']);
+    echo "<pre>";
+    print_r($bookings);
+    echo "</pre>";
+    foreach ($bookings as $b) {
+        if (
+            strtotime($booking_start_date) <= strtotime($b['booking_end_date']) &&
+            strtotime($b['booking_start_date']) <= strtotime($booking_end_date)
+        ) {
+            $errors[] = "The guide is already booked during this period.";
+            break;
+        }
+    }
+
     if (empty($booking_start_date) || empty($booking_end_date)) {
         $errors[] = "Please select both a start and end date.";
     } elseif ($booking_start_date > $booking_end_date) {
@@ -76,46 +128,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Start date cannot be in the past.";
     }
 
-    // ✅ Validate companions
-    if (empty($companion_names)) {
-        $errors[] = "Please add at least one companion.";
-    }
-
-    if ($companions_count < $min_people) {
-        $errors[] = "You must add at least {$min_people} companions.";
-    }
-
-    if ($companions_count > $max_people) {
-        $errors[] = "You can only add up to {$max_people} companions.";
-    }
-
-    // ✅ Proceed if no errors
+    // ✅ Only add companions if there are companion names
     if (empty($errors)) {
-        $booking_ID = $bookingObj->addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date);
+        $booking_ID = $bookingObj->addBookingForTourist(
+            $tourist_ID,
+            $tourpackage_ID,
+            $booking_start_date,
+            $booking_end_date,
+            $is_selfIncluded
+        );
 
-        if ($booking_ID) {
+        if ($booking_ID && $companions_count > 0) {
             foreach ($companion_names as $index => $name) {
-                $category_ID = $companion_categories[$index];
-                $bookingObj->addCompanionToBooking($booking_ID, $name, $category_ID);
+                $category_ID = $companion_categories[$index] ?? null;
+                if ($name && $category_ID) {
+                    $bookingObj->addCompanionToBooking($booking_ID, $name, $category_ID);
+                }
             }
-
-            $_SESSION['success'] = "Booking re-created successfully. Proceeding to payment.";
-            header("Location: payment.php?id=" . $booking_ID);
-            exit();
-        } else {
-            $errors[] = "Failed to create booking. Please try again.";
         }
+
+        $_SESSION['success'] = "Booking successful. Proceeding to payment.";
+        header("Location: payment-form.php?id=" . $booking_ID);
+        exit();
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rebook Tour Package</title>
+    <title>Book Tour Package</title>
 </head>
 <body>
     <div class="container">
-        <h1>Rebook Tour Package</h1>
+        <h1>Book Tour Package</h1>
 
         <?php if (!empty($errors)): ?>
             <div style="color:red;">
@@ -125,15 +170,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
         <?php endif; ?>
 
-        <?php if ($rebookData){?>
-            <div style="background:#f8f9fa; padding:10px; border-radius:8px;">
-                <p>⚠️ You are rebooking your cancelled trip from 
-                   <strong><?= htmlspecialchars($rebookData['booking_start_date']) ?></strong> 
-                   to <strong><?= htmlspecialchars($rebookData['booking_end_date']) ?></strong>.
-                </p>
-            </div>
-        <?php } ?>
-
         <div class="package-details">
             <h3>Package Information</h3>
             <p><strong>Package Name:</strong> <?= htmlspecialchars($package['tourpackage_name']); ?></p>
@@ -142,7 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p><strong>Schedule Days:</strong> <?= htmlspecialchars($package['schedule_days']); ?> days</p>
             <p><strong>Maximum People:</strong> <?= htmlspecialchars($package['numberofpeople_maximum']); ?></p>
             <p><strong>Minimum People:</strong> <?= htmlspecialchars($package['numberofpeople_based']); ?></p>
-            <p><strong>Base Amount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_based'], 2)); ?></p>
+            <p><strong>Base Amount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_foradult'], 2)); ?></p>
             <p><strong>Discount:</strong> <?= htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_discount'], 2)); ?></p>
 
             <?php if (!empty($spots)): ?>
@@ -157,47 +193,63 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <?php endif; ?>
         </div>
 
+        <?php if ($rebookData): ?>
+            <div style="background:#e8f7ff; padding:10px; border-left:4px solid #007bff;">
+                <strong>Rebooking:</strong> This form is pre-filled from your cancelled booking #<?= htmlspecialchars($oldBookingID) ?>.
+            </div>
+        <?php endif; ?>
+
         <form action="" method="post">
             <h2>Booking Dates</h2>
-            <?php $bookingdate =[];
-                if($rebookData){
-                    $bookingdate = $bookingObj->getBookingDateByOldBooking($oldBookingID);
-                }
-                if (!empty($bookingdate)){
-                ?>
             <label for="booking_start_date">Start Date:</label>
-            <input type="date" name="booking_start_date" id="booking_start_date" 
-                value="<?= htmlspecialchars($bookingdate['booking_start'] ?? '') ?>" required>
+            <input type="date" name="booking_start_date" id="booking_start_date"
+                   value="<?= htmlspecialchars($rebookData['booking_start_date'] ?? '') ?>" required>
 
             <label for="booking_end_date">End Date:</label>
-            <input type="date" name="booking_end_date" id="booking_end_date" 
-                value="<?= htmlspecialchars($bookingdate['booking_end'] ?? '') ?>" readonly required>
-            <?php }?>    
+            <input type="date" name="booking_end_date" id="booking_end_date"
+                   value="<?= htmlspecialchars($rebookData['booking_end_date'] ?? '') ?>" readonly required>
+
+            <div id="overlapWarning" style="color:red; display:none;">
+                ⚠️ The selected dates overlap with another booking for this guide.
+            </div>
+
             <h2>Companions</h2>
+            <p>Are you including yourself in the booking?</p>
+            <label>
+                <input type="radio" name="is_selfIncluded" value="yes"
+                    <?= isset($rebookData['is_selfIncluded']) && $rebookData['is_selfIncluded'] ? 'checked' : '' ?> required>
+                Yes
+            </label>
+            <label>
+                <input type="radio" name="is_selfIncluded" value="no"
+                    <?= isset($rebookData['is_selfIncluded']) && !$rebookData['is_selfIncluded'] ? 'checked' : '' ?> required>
+                No
+            </label>
+
             <div id="inputContainer">
-                <?php 
-                $companions = [];
-                if ($rebookData) {
-                    $companions = $bookingObj->getCompanionsByBooking($oldBookingID);
+                <?php
+                $oldCompanions = [];
+                if (!empty($rebookData)) {
+                    $oldCompanions = $bookingObj->getCompanionsByBooking($oldBookingID);
                 }
 
-                if (!empty($companions)) {
-                    foreach ($companions as $c) { ?>
+                if (!empty($oldCompanions)) {
+                    foreach ($oldCompanions as $comp) { ?>
                         <div>
-                            <input type="text" name="companion_name[]" value="<?= htmlspecialchars($c['companion_name']) ?>" required>
+                            <input type="text" name="companion_name[]" value="<?= htmlspecialchars($comp['companion_name']) ?>" placeholder="Name" required>
                             <select name="companion_category[]" required>
                                 <option value="">-- SELECT CATEGORY ---</option>
-                                <?php 
-                                foreach ($bookingObj->getAllCompanionCategories() as $cat) {
-                                    $selected = $c['companion_category_ID'] == $cat['companion_category_ID'] ? 'selected' : '';
-                                    echo "<option value='{$cat['companion_category_ID']}' $selected>{$cat['companion_category_name']}</option>";
-                                }
-                                ?>
+                                <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
+                                    <option value="<?= $c['companion_category_ID'] ?>" <?= $comp['companion_category_ID'] == $c['companion_category_ID'] ? 'selected' : '' ?>>
+                                        <?= $c['companion_category_name'] ?>
+                                    </option>
+                                <?php } ?>
                             </select>
-                            <button type="button" onclick="this.parentNode.remove()">Remove</button>
+                            <button type="button" onclick="this.parentNode.remove();">Remove</button>
                         </div>
-                    <?php } 
+                    <?php }
                 } else { ?>
+                    <!-- Default empty companion field if no rebook data -->
                     <div>
                         <input type="text" name="companion_name[]" placeholder="Name" required>
                         <select name="companion_category[]" required>
@@ -210,39 +262,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <?php } ?>
             </div>
 
-            <button type="button" onclick="addInput()">Add Companion</button><br><br>
+            <button type="button" onclick="addInput()">Add Companion</button>
+            <br><br>
+
             <input type="submit" value="Proceed to Payment">
         </form>
 
         <a href="tour-packages-browse.php">← Back to Tour Packages</a>
     </div>
 
-    <script>
-        function addInput() {
-            const container = document.getElementById('inputContainer');
-            const div = document.createElement('div');
-            div.innerHTML = `
-                <input type="text" name="companion_name[]" placeholder="Name" required>
-                <select name="companion_category[]" required>
-                    <option value="">-- SELECT CATEGORY ---</option>
-                    <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                        <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
-                    <?php } ?>
-                </select>
-                <button type="button" onclick="this.parentNode.remove()">Remove</button>
-            `;
-            container.appendChild(div);
-        }
+<script>
+const guideID = <?= intval($package['guide_ID']); ?>;
+const startDateInput = document.getElementById('booking_start_date');
+const endDateInput = document.getElementById('booking_end_date');
+const overlapWarning = document.getElementById('overlapWarning');
 
-        const scheduleDays = <?= intval($package['schedule_days']); ?>;
+async function checkOverlap() {
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
 
-        document.getElementById('booking_start_date').addEventListener('change', function () {
-            const startDate = new Date(this.value);
-            if (isNaN(startDate.getTime())) return;
-            startDate.setDate(startDate.getDate() + scheduleDays - 1);
-            const formatted = startDate.toISOString().split('T')[0];
-            document.getElementById('booking_end_date').value = formatted;
+    if (!startDate || !endDate) return;
+
+    try {
+        const response = await fetch('booking-overlap.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                guide_ID: guideID,
+                start_date: startDate,
+                end_date: endDate
+            })
         });
-    </script>
+
+        const result = await response.json();
+        console.log("Overlap response:", result);
+
+        if (result.overlap) {
+            overlapWarning.style.display = 'block';
+        } else {
+            overlapWarning.style.display = 'none';
+        }
+    } catch (error) {
+        console.error("Error checking overlap:", error);
+    }
+}
+
+startDateInput.addEventListener('change', checkOverlap);
+endDateInput.addEventListener('change', checkOverlap);
+
+</script>
 </body>
 </html>

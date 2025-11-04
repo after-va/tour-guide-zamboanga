@@ -3,6 +3,11 @@ session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');
     exit;
+} else if ($_SESSION['user']['account_status'] == 'Suspended'){
+    header('Location: account-suspension.php');
+    exit;
+} else if ($_SESSION['user']['account_status'] == 'Pending'){
+    header('Location: account-pending.php');
 }
 
 require_once "../../classes/guide.php";
@@ -22,10 +27,11 @@ $packages = $guideObj->viewPackageByGuideID($guide_ID);
     
     <nav>
         <a href="dashboard.php">Dashboard</a> |
-        <a href="bookings.php">Bookings</a> |
+        <a href="booking.php">Bookings</a> |
         <a href="tour-packages.php">Tour Packages</a> |
         <a href="schedules.php">Schedules</a> |
         <a href="payments.php">Payments</a> |
+        <a href="account-change.php">Change to Tourist</a>
         <a href="logout.php">Logout</a>
     </nav>
     
@@ -82,7 +88,7 @@ $packages = $guideObj->viewPackageByGuideID($guide_ID);
             <td><?= $schedule['schedule_days']; ?></td>
             <td><?= $people['numberofpeople_maximum']; ?></td>
             <td><?= $people['numberofpeople_based']; ?></td>
-            <td><?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_based'], 2); ?></td>
+            <td><?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2); ?></td>
             <td><?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2); ?></td>
             <td><?= implode(', ', $spotNames); ?></td>
             <td>
