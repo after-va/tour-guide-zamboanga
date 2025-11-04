@@ -5,45 +5,55 @@
 }
 
 @media (max-width: 296px) {
-    .navbar-brand {
+    header .navbar-brand {
         font-size: .8rem !important; 
     }
 
-    .navbar-toggler {
+    header .navbar-toggler {
         width: 42px;
         height: 30px;
     }
 
-    .navbar-toggler-icon{
+    header .navbar-toggler-icon{
         width: 15px !important;
         height: 15px !important;
         vertical-align: baseline !important;
     }
 
-    .navbar-nav {
+    header .navbar-nav {
         font-size: .8rem !important;
     }
 
-    .navbar-collapse .btn {
+    header .navbar-collapse .btn {
         font-size: .8rem !important;
     }
 }
 
 
 @media (max-width: 992px) {/* Smooth collapse animation */
-    .navbar-collapse {
+    header .navbar-collapse {
     transition: height 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
     }
 
-    .collapse:not(.show) {
+    header .collapse:not(.show) {
     display: block;         /* ensures height can animate */
     height: 0;              /* start closed */
     opacity: 0;
     }
 
-    .collapse.show {
+    header .collapse.show {
     height: auto;           /* open naturally */
     opacity: 1;
     }
 }
+header .navbar {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: transparent !important;
+}
+
+header .navbar.scrolled {
+  background-color: rgba(33, 37, 41, 0.95) !important; /* Bootstrap dark tone */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
