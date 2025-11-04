@@ -55,5 +55,6 @@ header .navbar {
 header .navbar.scrolled {
   background-color: rgba(33, 37, 41, 0.95) !important; /* Bootstrap dark tone */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
 }
 

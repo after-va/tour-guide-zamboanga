@@ -33,3 +33,5 @@ INSERT INTO Languages (language_name) VALUES
 ('Filipino'),
 ('Chavacano');
 
+INSERT INTO Tour_Package_Spots ('spots_ID','spotsimage_PATH') VALUES 
+('','');

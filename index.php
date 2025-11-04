@@ -1,3 +1,12 @@
+<?php 
+session_start();
+
+require_once "classes/tour-manager.php";
+
+$tourmanagerObj = new TourManager();
+
+$tourspots = $tourmanagerObj->getAllSpots();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,16 +92,18 @@
         </section>
 
         <section id = "tour-spots">
-            <div>
-                <div class="card" style="width: 18rem;">
-                    <img src="..." class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn btn-primary">Go somewhere</a>
+            <?php foreach ($tourspots as $tour){ ?>
+                <div class = "card-section">
+                    <div class="card" style="">
+                        <img src="..." class="card-img-top" alt="<?= $tour['spots_name']; ?>">
+                        <div class="card-body">
+                            <h5 class="card-title"><?= $tour['spots_name']; ?></h5>
+                            <p class="card-text"><?= $tour['spots_description'];?></p>
+                            <a href="#" class="btn btn-primary">Book a tour</a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php } ?>
         </section>
 
         <section id = "marketing">

@@ -11,6 +11,18 @@ trait TourSpotsTrait {
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getOneImageFromTourPackages($spots_ID){
+        $sql = "SELECT spotimage_PATH FROM Tour_Spots_Packages WHERE spots_ID = :spots_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':spots_ID', $spots_ID);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+
+
+    }
+
     public function getTourSpotById($spots_ID) {
         $sql = "SELECT * FROM Tour_Spots WHERE spots_ID = :spots_ID";
         $query = $this->connect()->prepare($sql);

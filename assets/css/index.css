@@ -94,3 +94,126 @@
 #hero .slideshow:hover .slide {
   animation-play-state: paused;
 }
+
+
+
+
+/* ------------------------------------------------------------- */
+/* TOUR SPOTS SECTION                                            */
+/* ------------------------------------------------------------- */
+#tour-spots {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  padding: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  
+}
+
+
+#tour-spots .card-section{
+  width: 20rem;
+  height: 20rem;
+  margin: 1rem;
+  margin-top: 0rem;
+
+}
+
+#tour-spots .card-section .card {
+  width: 18rem;
+  height: 100%;
+
+}
+
+#tour-spots .card-section .card img{
+  width: 100%;
+  height: 5rem;
+}
+#tour-spots .card-section .card-body .card-text {
+    /* Set a max height so the text doesn't push the button down */
+    max-height: 5.4em; /* Adjust this value based on your font-size and line-height */
+    overflow: hidden;
+
+    /* The magic for multi-line ellipsis */
+    display: -webkit-box;
+    line-clamp: 3; /* Standard property for compatibility */
+    -webkit-line-clamp: 3; /* Limit to 3 lines - adjust this number */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis; /* Fallback for browsers that don't support -webkit-line-clamp */
+    white-space: normal;
+}
+    
+#tour-spots .card-section .card-body .card-title {
+    /* Set a max height so the text doesn't push the button down */
+    max-height: 5.4em; /* Adjust this value based on your font-size and line-height */
+    overflow: hidden;
+
+    /* The magic for multi-line ellipsis */
+    display: -webkit-box;
+    line-clamp: 1; /* Standard property for compatibility */
+    -webkit-line-clamp: 1; /* Limit to 1 line - adjust this number */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis; /* Fallback for browsers that don't support -webkit-line-clamp */
+    white-space: normal;
+} 
+
+@media (max-width: 992px){
+  #tour-spots {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    padding: 1.2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+  
+  }
+
+
+  #tour-spots .card-section{
+    width: 15rem;
+    height: 15rem;
+    margin: .8rem;
+    margin-top: 0rem;
+
+  }
+
+  #tour-spots .card-section .card {
+    width: 15rem;
+    height: 100%;
+
+  }
+
+  #tour-spots .card-section .card img{
+    width: 100%;
+    height: 3rem;
+  }
+  #tour-spots .card-section .card-body .card-text {
+      max-height: 4em;
+      overflow: hidden;
+
+      display: -webkit-box;
+      line-clamp: 2; 
+      -webkit-line-clamp: 2; 
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis;
+      white-space: normal;
+  }
+      
+  #tour-spots .card-section .card-body .card-title {
+      /* Set a max height so the text doesn't push the button down */
+      max-height: 4em; /* Adjust this value based on your font-size and line-height */
+      overflow: hidden;
+
+      /* The magic for multi-line ellipsis */
+      display: -webkit-box;
+      line-clamp: 1; /* Standard property for compatibility */
+      -webkit-line-clamp: 1; /* Limit to 1 line - adjust this number */
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis; /* Fallback for browsers that don't support -webkit-line-clamp */
+      white-space: normal;
+  } 
+
+}
