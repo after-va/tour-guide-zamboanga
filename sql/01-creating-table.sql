@@ -250,6 +250,14 @@ CREATE TABLE Tour_Spots(
 );
 
 
+CREATE TABLE Tour_Spots_Images(
+    spotsimage_ID INT AUTO_INCREMENT PRIMARY KEY,
+    spotsimage_PATH VARCHAR(500) NOT NULL,
+    spots_ID INT,
+    FOREIGN KEY (spots_ID) REFERENCES Tour_Spots(spots_ID)
+);
+
+
 --  Tour Packages
 CREATE TABLE Tour_Package(
     tourpackage_ID INT AUTO_INCREMENT PRIMARY KEY,

@@ -206,6 +206,12 @@ Table Tour_Spots {
   spots_googlelink varchar(500)
 }
 
+TABLE Tour_Spots_Images(
+    spotsimage_ID int [pk, increment]
+    spotsimage_PATH varchar(225) [not null]
+    spots_ID int
+);
+
 Table Tour_Package {
   tourpackage_ID int [pk, increment]
   tourpackage_name varchar(225) [not null]
@@ -385,7 +391,7 @@ Ref: Schedule.schedule_ID - Tour_Package.schedule_ID
 Ref: Tour_Package.tourpackage_ID <> Tour_Package_Spots.tourpackage_ID
 Ref: Tour_Spots.spots_ID <> Tour_Package_Spots.spots_ID
 Ref: Tour_Package.tourpackage_ID < Request_Package.tourpackage_ID
-
+Ref: Tour_Spots_Images.spots_ID < Tour_Spots.spots_ID
 
 Ref: Account_Info.account_ID < Booking.tourist_ID
 Ref: Tour_Package.tourpackage_ID < Booking.tourpackage_ID
