@@ -77,8 +77,8 @@ $tourspots = $tourmanagerObj->getAllSpots();
                 <div class="container">
                 <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
                     <div class="col-lg-8 text-center">
-                    <h2>It's more Happy in Zamboanga!</h2>
-                    <!-- <p>Connect with the Locals</p> -->
+                    <h2>Want to travel?</h2>
+                    <p>And save time and effort to have a guide</p>
                     <a href="login.php" class="btn-get-started">Connect with a Local Guide Now!</a>
                     </div>
                 </div>
