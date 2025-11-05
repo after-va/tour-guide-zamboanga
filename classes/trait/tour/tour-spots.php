@@ -111,12 +111,23 @@ trait TourSpotsTrait {
     }
 
     public function getCategoryandImage(){
-        $sql = "SELECT * FROM tour_spots JOIN ";
+        $sql = "SELECT ts.spots_category, GROUP_CONCAT(tsi.spotsimage_PATH SEPARATOR ',') AS images FROM tour_spots ts JOIN tour_spots_images tsi ON ts.spots_ID = tsi.spots_ID GROUP BY ts.spots_category ORDER BY `images` ASC ";
         $db = $this->connect();
         $query = $db->prepare($sql);
         $query->execute();
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
+
+    }
+
+    public function getImageByCategory($spots_category){
+        $sql = "SELECT tsi.spotsimage_PATH FROM tour_spots ts JOIN tour_spots_images tsi ON ts.spots_ID = tsi.spots_ID GROUP BY ts.spots_category WHERE ts.spots_category = :spots_category LIMIT 1 ORDER BY tsi.spotsimage_PATH DESC";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':spots_category', $spots_category);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
 
     }
 }

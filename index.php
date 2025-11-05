@@ -6,7 +6,7 @@ require_once "classes/tour-manager.php";
 $tourmanagerObj = new TourManager();
 
 $tourspots = $tourmanagerObj->getAllSpots();
-$tourcategory = $tour
+$tourcategory = $tourmanagerObj->getCategoryandImage();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -123,32 +123,35 @@ $tourcategory = $tour
         </section>
 
         <section id="category">
-            <div class = "container">
+            <div class="container">
                 <h2> Find your tour by interest</h2>
                 <br>
-                <div class = "card-tile-section">
-                    <div class="col-xs-12 col-sm-4">
-                        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('https://i0.wp.com/handluggageonly.co.uk/wp-content/uploads/2016/03/Positano-Weather.jpg?w=1600&ssl=1');">
-                            <div class="card-category">City</div>
-                            <div class="card-description">
-                                <h2>Home</h2>
-                                <p>Lovely house</p>
+                
+                <div class="row card-tile-section">
+                    <?php 
+                    // 1. Ensure $tourcategory is an array and contains multiple categories
+                    if (is_array($tourcategory) && count($tourcategory) > 0) {
+                        // Loop through each category result
+                        foreach ($tourcategory as $t) { 
+                            // Get the first image path from the comma-separated list
+                            // Note: You must retrieve the "images" column from your query result
+                            $image_paths = explode(',', $t['images']);
+                            $first_image = trim($image_paths[0]);
+                    ?>
+                        <div class="col-xs-12 col-sm-4">
+                            <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('<?= $first_image; ?>');">
+                                <div class="card-description">
+                                    <h2><?= $t['spots_category']; ?></h2>
+                                </div>
+                                <a class="card-link" href="#" ></a>
                             </div>
-                            <img class="card-user avatar avatar-large" src="https://github.com/lewagon/bootstrap-challenges/blob/master/11-Airbnb-search-form/images/anne.jpg?raw=true">
-                            <a class="card-link" href="#" ></a>
                         </div>
-                    </div>
-                    <div class="col-xs-12 col-sm-4">
-                        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('https://i0.wp.com/handluggageonly.co.uk/wp-content/uploads/2016/03/Positano-Weather.jpg?w=1600&ssl=1');">
-                            <div class="card-category">City</div>
-                            <div class="card-description">
-                                <h2>Home</h2>
-                                <p>Lovely house</p>
-                            </div>
-                            <img class="card-user avatar avatar-large" src="https://github.com/lewagon/bootstrap-challenges/blob/master/11-Airbnb-search-form/images/anne.jpg?raw=true">
-                            <a class="card-link" href="#" ></a>
-                        </div>
-                    </div>
+                    <?php 
+                        } 
+                    } else {
+                        echo '<p>No tour categories found.</p>';
+                    }
+                    ?>
                 </div>
             </div>
         </section>
