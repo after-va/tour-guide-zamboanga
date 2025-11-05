@@ -138,12 +138,17 @@
 /* ------------------------------------------------------------- */
 #tour-spots {
   display: flex;
-  width: 100vw;
+  width: 100%;
   padding: 1.5rem;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+#tour-spots::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }
 
 
@@ -200,7 +205,7 @@
 @media (max-width: 992px){
   #tour-spots {
     display: flex;
-    width: 100vw;
+    width: 100%;
     padding: 1.2rem;
     overflow-x: auto;
     overflow-y: hidden;
@@ -259,117 +264,79 @@
 
 }
 
-/* ------------------------------------------------------------- */
-/* CATEGORY SECTION                                              */
-/* ------------------------------------------------------------- */
 
-/* --- SECTION CONTAINER STYLES --- */
+/* ------------------------------------------------------------- */
+/* CATEGORY SECTION - FULLY FIXED STYLES */
+/* ------------------------------------------------------------- */
 #category {
-  display: contents;
-  text-align: center;
+    padding-bottom: 40px;
+}
+
+#category .container-fluid {
+    width: 100%;
+    /* Keep padding for space around the content */
+    padding: 2rem 3rem; 
+    box-sizing: border-box; 
 }
 
 #category h2 {
-  margin-bottom: 1rem;
-  text-align: start; /* Space below the main heading */
+    margin-bottom: 1rem;
+    text-align: start;
 }
 
-#category .container {
-  display: inline-block;
-  padding: 2rem 3rem; 
-  
+/* --- TILE ROW FIX: Horizontal Flexbox and Scrolling --- */
+#category .card-tile-section {
+    /* 1. Use Flexbox to align items horizontally */
+    display: flex;
+    /* CRITICAL: Prevent the tiles from wrapping to the next line */
+    flex-wrap: nowrap; 
+    
+    /* 2. Enable horizontal scrolling and hide vertical overflow */
+    overflow-x: scroll;
+    overflow-y: hidden;
+    
+    /* 3. Implement Scroll Snapping */
+    scroll-snap-type: x mandatory; 
+    
+    /* 4. Scrollbar Hiding */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    
+    /* Remove the 'gap' property used for the grid */
+    gap: 0; 
 }
 
-/* --- COLUMN AND CARD STYLES --- */
-#category .col-xs-12.col-sm-4 {
-  /* Mimicking a Bootstrap column structure */
-  padding: 0 15px; /* Spacing between columns */
-  margin-bottom: 30px; /* Space below each column */
-  width: 33.33%; /* Adjust this based on your full Bootstrap setup, 33.33% is for sm-4 */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+/* Scrollbar Hiding for Webkit */
+#category .card-tile-section::-webkit-scrollbar {
+    display: none;
 }
 
-#category .container .card-section{
-  display: grid;
-
+/* --- TILE STYLES (The Children) --- */
+/* Target the wrapper for the card (formerly .category-tile or .col-sm-4) */
+.category-tile {
+    /* CRITICAL: Prevents tiles from shrinking and forces them off-screen */
+    flex-shrink: 0; 
+    /* Defines the width of each visible tile (e.g., 3 tiles shown on desktop) */
+    width: 33.333%; 
+    
+    /* Defines the snapping point */
+    scroll-snap-align: start; 
+    
+    /* Add horizontal spacing between tiles */
+    padding: 0 10px; 
+    margin-bottom: 0; 
 }
 
-/* --- THE CARD STYLES --- */
+/* --- THE CARD STYLES (Minor tweaks) --- */
 #category .card {
-  height: 300px; /* Set a fixed height for the card */
-  display: flex; /* Enable flexbox for content inside the card */
-  flex-direction: column; /* Stack items vertically */
-  justify-content: space-between; /* Push category to top and description/avatar to bottom */
-  align-items: flex-start;
-  border-radius: 6px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  overflow: hidden; /* Important to contain the image and link properly */
-  position: relative; /* Essential for positioning the link overlay */
-
-  /* The background style from your HTML */
+  display: flex; 
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 300px;
+  width: 100%; 
   background-size: cover !important;
   background-position: center !important;
-  color: white; /* Text color should be light for the dark background gradient */
-  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  color: white; /* Text color */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4); /* Text shadow */
   padding: 20px;
 }
-
-/* --- CARD CONTENT STYLES --- */
-#category .card-category {
-  /* Category label at the top */
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-#category .card-description {
-  /* Description at the bottom */
-  flex-grow: 1; /* Allows the description to take up the remaining space */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* Push content to the bottom of the available space */
-}
-
-#category .card-description h2 {
-  font-size: 24px;
-  margin: 0;
-}
-
-#category .card-description p {
-  font-size: 16px;
-  margin-top: 5px;
-}
-
-#category .card-user.avatar.avatar-large {
-  /* Avatar image style */
-  position: absolute; /* Position relative to the card */
-  bottom: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid white; /* Optional: adds a white border */
-}
-
-#category .card-link {
-  /* Full-size link overlay */
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 1; /* Ensures the link is clickable over the image/text */
-}
-
-#category .card:hover .card-link {
-  /* Optional: Hover effect on the card */
-  /* You can add a subtle transformation or shadow change here */
-  cursor: pointer;
-  opacity: 0.9;
-}
-
-
-/* background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('https://i0.wp.com/handluggageonly.co.uk/wp-content/uploads/2016/03/Positano-Weather.jpg?w=1600&ssl=1') */

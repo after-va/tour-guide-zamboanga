@@ -123,29 +123,24 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
         </section>
 
         <section id="category">
-            <div class="container">
+            <div class="container-fluid">
                 <h2> Find your tour by interest</h2>
                 <br>
-                
-                <div class="row card-tile-section">
+                <div class="card-tile-section"> 
                     <?php 
-                    // 1. Ensure $tourcategory is an array and contains multiple categories
                     if (is_array($tourcategory) && count($tourcategory) > 0) {
-                        // Loop through each category result
                         foreach ($tourcategory as $t) { 
-                            // Get the first image path from the comma-separated list
-                            // Note: You must retrieve the "images" column from your query result
                             $image_paths = explode(',', $t['images']);
                             $first_image = trim($image_paths[0]);
                     ?>
-                        <div class="col-xs-12 col-sm-4">
-                            <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('<?= $first_image; ?>');">
-                                <div class="card-description">
-                                    <h2><?= $t['spots_category']; ?></h2>
+                            <div class="category-tile"> 
+                                <div class="card" style="background: linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.75)), url('<?= $first_image; ?>');">
+                                    <div class="card-description">
+                                        <h2><?= $t['spots_category']; ?></h2>
+                                    </div>
+                                    <a class="card-link" href="#" ></a>
                                 </div>
-                                <a class="card-link" href="#" ></a>
                             </div>
-                        </div>
                     <?php 
                         } 
                     } else {
@@ -155,7 +150,6 @@ $tourcategory = $tourmanagerObj->getCategoryandImage();
                 </div>
             </div>
         </section>
-
         <section id = "tourpackages">
 
         </section>
