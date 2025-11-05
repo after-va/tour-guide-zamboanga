@@ -14,6 +14,7 @@
   height: 100vh;
   overflow: hidden;
   color: #fff;
+  
 }
 
 /* Slideshow container sits behind content */
@@ -99,6 +100,34 @@
 /* Optional: pause animation on hover (desktop) */
 #hero .slideshow:hover .slide {
   animation-play-state: paused;
+}
+
+#hero .cointainer {
+  gap: 1rem;
+}
+
+#hero .search-container {
+    position: relative;
+}
+
+#hero .search-input {
+    height: 50px;
+    border-radius: 30px;
+    padding-left: 35px;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#hero .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+#hero .info .cointainer {
+  gap: 1rem;
 }
 
 
@@ -228,4 +257,116 @@
       white-space: normal;
   } 
 
+}
+
+/* ------------------------------------------------------------- */
+/* CATEGORY SECTION                                              */
+/* ------------------------------------------------------------- */
+
+/* --- SECTION CONTAINER STYLES --- */
+#category {
+  display: contents;
+  text-align: center;
+}
+
+#category h2 {
+  margin-bottom: 1rem;
+  text-align: start; /* Space below the main heading */
+}
+
+#category .container {
+  display: inline-block;
+  padding: 2rem 3rem; 
+  
+}
+
+/* --- COLUMN AND CARD STYLES --- */
+#category .col-xs-12.col-sm-4 {
+  /* Mimicking a Bootstrap column structure */
+  padding: 0 15px; /* Spacing between columns */
+  margin-bottom: 30px; /* Space below each column */
+  width: 33.33%; /* Adjust this based on your full Bootstrap setup, 33.33% is for sm-4 */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+#category .container .card-section{
+  display: grid;
+
+}
+
+/* --- THE CARD STYLES --- */
+#category .card {
+  height: 300px; /* Set a fixed height for the card */
+  display: flex; /* Enable flexbox for content inside the card */
+  flex-direction: column; /* Stack items vertically */
+  justify-content: space-between; /* Push category to top and description/avatar to bottom */
+  align-items: flex-start;
+  border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  overflow: hidden; /* Important to contain the image and link properly */
+  position: relative; /* Essential for positioning the link overlay */
+
+  /* The background style from your HTML */
+  background-size: cover !important;
+  background-position: center !important;
+  color: white; /* Text color should be light for the dark background gradient */
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  padding: 20px;
+}
+
+/* --- CARD CONTENT STYLES --- */
+#category .card-category {
+  /* Category label at the top */
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+#category .card-description {
+  /* Description at the bottom */
+  flex-grow: 1; /* Allows the description to take up the remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Push content to the bottom of the available space */
+}
+
+#category .card-description h2 {
+  font-size: 24px;
+  margin: 0;
+}
+
+#category .card-description p {
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+#category .card-user.avatar.avatar-large {
+  /* Avatar image style */
+  position: absolute; /* Position relative to the card */
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid white; /* Optional: adds a white border */
+}
+
+#category .card-link {
+  /* Full-size link overlay */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1; /* Ensures the link is clickable over the image/text */
+}
+
+#category .card:hover .card-link {
+  /* Optional: Hover effect on the card */
+  /* You can add a subtle transformation or shadow change here */
+  cursor: pointer;
+  opacity: 0.9;
 }

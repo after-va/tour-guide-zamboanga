@@ -6,6 +6,7 @@ require_once "classes/tour-manager.php";
 $tourmanagerObj = new TourManager();
 
 $tourspots = $tourmanagerObj->getAllSpots();
+$tourcategory = $tour
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,7 +36,7 @@ $tourspots = $tourmanagerObj->getAllSpots();
 
     <!-- ✅ Bootstrap 5.3.3 (CSS) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     
 </head>
 <body>
@@ -77,11 +78,21 @@ $tourspots = $tourmanagerObj->getAllSpots();
                 <div class="container">
                 <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
                     <div class="col-lg-8 text-center">
-                    <h2>Want to travel?</h2>
+                    <h2>Want to travel in Zamboanga?</h2>
                     <p>And save time and effort to have a guide</p>
-                    <a href="login.php" class="btn-get-started">Connect with a Local Guide Now!</a>
+                    <!-- <a href="login.php" class="btn-get-started">Connect with a Local Guide Now!</a> -->
                     </div>
                 </div>
+                <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="search-container">
+                                    <input type="text" class="form-control search-input" placeholder="Search...">
+                                    <i class="fas fa-search search-icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -107,11 +118,39 @@ $tourspots = $tourmanagerObj->getAllSpots();
         </section>
 
         <section id = "marketing">
+            
 
         </section>
 
-        <section id = "category">
-
+        <section id="category">
+            <div class = "container">
+                <h2> Find your tour by interest</h2>
+                <br>
+                <div class = "card-tile-section">
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('https://i0.wp.com/handluggageonly.co.uk/wp-content/uploads/2016/03/Positano-Weather.jpg?w=1600&ssl=1');">
+                            <div class="card-category">City</div>
+                            <div class="card-description">
+                                <h2>Home</h2>
+                                <p>Lovely house</p>
+                            </div>
+                            <img class="card-user avatar avatar-large" src="https://github.com/lewagon/bootstrap-challenges/blob/master/11-Airbnb-search-form/images/anne.jpg?raw=true">
+                            <a class="card-link" href="#" ></a>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-4">
+                        <div class="card" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.2)), url('https://i0.wp.com/handluggageonly.co.uk/wp-content/uploads/2016/03/Positano-Weather.jpg?w=1600&ssl=1');">
+                            <div class="card-category">City</div>
+                            <div class="card-description">
+                                <h2>Home</h2>
+                                <p>Lovely house</p>
+                            </div>
+                            <img class="card-user avatar avatar-large" src="https://github.com/lewagon/bootstrap-challenges/blob/master/11-Airbnb-search-form/images/anne.jpg?raw=true">
+                            <a class="card-link" href="#" ></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section id = "tourpackages">
@@ -159,6 +198,11 @@ $tourspots = $tourmanagerObj->getAllSpots();
 
     <!-- ✅ Bootstrap JS (includes Popper.js for dropdowns/collapse) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+
+    

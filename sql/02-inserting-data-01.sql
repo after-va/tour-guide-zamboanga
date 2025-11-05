@@ -33,5 +33,8 @@ INSERT INTO Languages (language_name) VALUES
 ('Filipino'),
 ('Chavacano');
 
-INSERT INTO Tour_Package_Spots ('spots_ID','spotsimage_PATH') VALUES 
-('','');
+INSERT INTO Tour_Spots_Image (spots_ID,spotsimage_PATH) VALUES 
+('1','assets/tour-spots/great-santa-cruz-island/1.jpg'),
+('1','assets/tour-spots/great-santa-cruz-island/2.jpg'),
+('1','assets/tour-spots/great-santa-cruz-island/3.jpg'),
+;

@@ -19,8 +19,6 @@ trait TourSpotsTrait {
         $query->execute();
 
         return $query->fetch(PDO::FETCH_ASSOC);
-
-
     }
 
     public function getTourSpotById($spots_ID) {
@@ -112,4 +110,13 @@ trait TourSpotsTrait {
         }
     }
 
+    public function getCategoryandImage(){
+        $sql = "SELECT * FROM tour_spots JOIN ";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+
+    }
 }
