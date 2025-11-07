@@ -97,7 +97,7 @@ button:focus {
 .card2 {
   width: 50%;
   background-image: 
-    linear-gradient(to top, #2136384b, #e5a23e2c), url('../../img/tour-spots/great-santa-cruz-island/15.jpg') !important;
+    linear-gradient(to top, #21363896, #e5a23ece), url('../../img/tour-spots/great-santa-cruz-island/1.jpg') !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -159,4 +159,8 @@ button:focus {
     margin-top: 50px !important;
     margin-bottom: 50px !important;
   }
+}
+
+.mb-51 {
+  margin-bottom: 1rem !important;
 }

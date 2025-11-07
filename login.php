@@ -87,9 +87,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 </div> -->
                             </div>
                         </div>
-                        <div class="bottom text-center mb-5">
-                            <p href="#" class="sm-text mx-auto mb-3">Don't have an account?<button class="btn btn-white ml-2">Create new</button></p>
+                        <div class="bottom text-center mb-51">
+                            <p class="sm-text mx-auto mb-3">
+                                Don't have an account?
+                                <a href="registration/tourist-registration.php" class="btn btn-white ml-2">Create new</a>
+                            </p>
                         </div>
+
+                        <div class="bottom1 text-center mb-51">
+                            <p class="sm-text mx-auto mb-3">
+                                Want to be a Local Guide?
+                                <a href="registration/guide-registration.php" class="btn btn-white ml-2">Register Now</a>
+                            </p>
+                        </div>
+
                     </div>
                     <div class="card card2" style = "">
                         <div class="my-auto mx-md-5 px-md-5 right">
