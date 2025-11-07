@@ -238,7 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Tourist Registration</title>
-    
+    <link rel="stylesheet" href="../assets/css/public-pages/tourist-registration.css">
     
     <script>
         // Define functions in head to ensure they're available when HTML loads
@@ -399,7 +399,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </script>
 </head>
 <body>
-    <div style="background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+    <div class = "test-registration">
         <h2>Tourist Registration</h2>
         <div style="margin: 15px 0;">
             <a href="?test_register=1" class="test-button" 
@@ -422,7 +422,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="POST">
         <h3>Account Info</h3>
-        <label for="username">username</label>
+        <label for="username">Username</label>
         <input type="text" name="username" id="username" value="<?= $tourist["username"] ?? "" ?>">
         <p class="error"><?= $errors["username"] ?? "" ?></p>
 
