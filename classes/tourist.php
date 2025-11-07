@@ -33,7 +33,7 @@ class Tourist extends Database {
 
         try {
             error_log("Calling addUser from addTourist");
-            $login_ID = $this->addUser(
+            $user_ID = $this->addUser(
                 $name_first, 
                 $name_second, 
                 $name_middle, 
@@ -57,9 +57,9 @@ class Tourist extends Database {
                 $db
             );
 
-            error_log("addUser returned login_ID: " . ($login_ID ?: 'false'));
+            error_log("addUser returned user_ID: " . ($user_ID ?: 'false'));
 
-            if (!$login_ID) {
+            if (!$user_ID) {
                 $error = $this->getLastError() ?: "Failed to create user account";
                 error_log("addUser failed: " . $error);
                 $db->rollBack();
@@ -68,13 +68,11 @@ class Tourist extends Database {
             }
 
             $role_ID = 3; // Tourist role_ID is 3
-            $created_at = date('Y-m-d H:i:s');
 
-            $sql = "INSERT INTO Account_Role (login_ID, role_ID, created_at) VALUES (:login_ID, :role_ID, :created_at)";
+            $sql = "INSERT INTO Account_Info (user_ID, role_ID) VALUES (:user_ID, :role_ID)";
             $query = $db->prepare($sql);
-            $query->bindParam(":login_ID", $login_ID, PDO::PARAM_INT);
+            $query->bindParam(":user_ID", $user_ID, PDO::PARAM_INT);
             $query->bindParam(":role_ID", $role_ID, PDO::PARAM_INT);
-            $query->bindParam(":created_at", $created_at);
 
             $result = $query->execute();
             

@@ -2,10 +2,10 @@
 
 trait UserTrait {
     
-    public function checkUsernameExists($username, $db) {
-        $sql = "SELECT COUNT(*) AS total FROM User_Login WHERE username = :username";
+    public function checkUsernameExists($user_username, $db) {
+        $sql = "SELECT COUNT(*) AS total FROM User_Login WHERE user_username = :user_username";
         $query = $db->prepare($sql);
-        $query->bindParam(":username", $username);
+        $query->bindParam(":user_username", $user_username);
         
         if ($query->execute()) {
             $record = $query->fetch();
@@ -20,7 +20,7 @@ trait UserTrait {
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
         $person_nationality, $person_gender, $person_dateofbirth, 
-        $username, $password,
+        $user_username, $user_password,
         $db
     ) {
 
@@ -37,13 +37,12 @@ trait UserTrait {
                 return false;
             }
 
-            $sql = "INSERT INTO User_Login (person_ID, username, password_hash) 
-                    VALUES (:person_ID, :username, :password_hash)";
+            $sql = "INSERT INTO User_Login (person_ID, user_username, user_password) 
+                    VALUES (:person_ID, :user_username, :user_password)";
             $query = $db->prepare($sql);
-            $password_hash = password_hash($password, PASSWORD_BCRYPT);
             $query->bindParam(":person_ID", $person_ID);
-            $query->bindParam(":username", $username);
-            $query->bindParam(":password_hash", $password_hash);
+            $query->bindParam(":user_username", $user_username);
+            $query->bindParam(":user_password", $user_password);
 
             if ($query->execute()) {
                 return $db->lastInsertId();

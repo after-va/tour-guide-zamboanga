@@ -40,12 +40,13 @@ function testRegistration($touristObj) {
         'person_nationality' => 'Filipino',
         'person_gender' => 'Male',
         'person_dateofbirth' => '1990-01-01',
-        'user_username' => 'testuser' . time(), // Unique user_username
+        'username' => 'testuser' . time(), // Unique username
         'password' => 'Test@1234'
     ];
     
     // Log test data
     error_log("Test Data: " . print_r($testData, true));
+    
     
     // Call addTourist directly
     try {
@@ -69,7 +70,7 @@ function testRegistration($touristObj) {
             $testData['person_nationality'],
             $testData['person_gender'],
             $testData['person_dateofbirth'],
-            $testData['user_username'],
+            $testData['username'],
             $testData['password']
         );
         
@@ -115,9 +116,8 @@ try {
                                     // $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
                                     // $contactinfo_email,
                                     // $person_nationality, $person_gender, $person_dateofbirth,
-                                    // $user_username, $password)
+                                    // $username, $password)
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Check if database is available
     if (!empty($dbError)) {
         $errors["general"] = $dbError;
     } else {
@@ -136,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         "country_ID", "emergency_name", "emergency_country_ID",
         "emergency_phonenumber", "emergency_relationship", "contactinfo_email",
         "person_nationality", "person_gender", "person_dateofbirth",
-        "user_username", "password"
+        "username", "password"
     ]; // Removed phone_number from required fields
 
     foreach ($required as $field) {
@@ -189,95 +189,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Proceed if no errors
+    // Proceed if no errors
     if (empty($errors)) {
-        // Handle non-Philippines addresses by converting text to IDs
-        $barangay_ID = null;
-        
-        if ($tourist["address_country_ID"] == "161") {
-            // Philippines - use existing barangay_ID
-            $barangay_ID = $tourist["barangay_ID"];
-        } else {
-            // Other countries - create/get IDs from text inputs
-            $db = $touristObj->connect();
-            
-            // Get or create Region
-            $region_ID = $touristObj->addgetRegion($tourist["region_name"], $tourist["address_country_ID"], $db);
-            
-            // Get or create Province
-            $province_ID = $touristObj->addgetProvince($tourist["province_name"], $region_ID, $db);
-            
-            // Get or create City
-            $city_ID = $touristObj->addgetCity($tourist["city_name"], $province_ID, $db);
-            
-            // Get or create Barangay
-            $barangay_ID = $touristObj->addgetBarangay($tourist["barangay_name"], $city_ID, $db);
-        }
-
         try {
-            error_log("Calling addTourist with data: " . print_r([
-                'name_first' => $tourist["name_first"],
-                'name_last' => $tourist["name_last"],
-                'user_username' => $tourist["user_username"]
-                // Add other fields as needed for debugging
-            ], true));
-
-            $results = $touristObj->addTourist(
-                $tourist["name_first"], 
-                $tourist["name_second"] ?? null, 
-                $tourist["name_middle"] ?? null, 
-                $tourist["name_last"], 
-                $tourist["name_suffix"] ?? null,
-                $tourist["address_houseno"], 
-                $tourist["address_street"], 
-                $barangay_ID,
-                $tourist["country_ID"], 
-                $tourist["phone_number"] ?? null,
-                $tourist["emergency_name"], 
-                $tourist["emergency_country_ID"], 
-                $tourist["emergency_phonenumber"], 
-                $tourist["emergency_relationship"],
-                $tourist["contactinfo_email"],
-                $tourist["person_nationality"], 
-                $tourist["person_gender"], 
-                $tourist["person_dateofbirth"], 
-                $tourist["user_username"], 
-                $tourist["password"]
+            $result = $touristObj->addTourist(
+                $tourist['name_first'] ?? '',
+                $tourist['name_second'] ?? '',
+                $tourist['name_middle'] ?? '',
+                $tourist['name_last'] ?? '',
+                $tourist['name_suffix'] ?? '',
+                $tourist['address_houseno'] ?? '',
+                $tourist['address_street'] ?? '',
+                $tourist['barangay_ID'] ?? '',
+                $tourist['country_ID'] ?? '',
+                $tourist['phone_number'] ?? '',
+                $tourist['emergency_name'] ?? '',
+                $tourist['emergency_country_ID'] ?? '',
+                $tourist['emergency_phonenumber'] ?? '',
+                $tourist['emergency_relationship'] ?? '',
+                $tourist['contactinfo_email'] ?? '',
+                $tourist['person_nationality'] ?? '',
+                $tourist['person_gender'] ?? '',
+                $tourist['person_dateofbirth'] ?? '',
+                $tourist['username'] ?? '',
+                $tourist['password'] ?? ''
             );
-            
-            error_log("addTourist result: " . ($results ? 'true' : 'false'));
-            if (!$results) {
-                error_log("addTourist error: " . $touristObj->getLastError());
-            }
-        } catch (Exception $e) {
-            error_log("Error in addTourist: " . $e->getMessage());
-            $errors["general"] = "An error occurred during registration. Please try again.";
-        }
 
-
-        if($results){
-            header("Location: tourist-registration.php?success=1");
-            $tourist = [];
-            exit;
-        } else {
-            // Log the actual error for debugging
-            $errorDetails = $touristObj->getLastError();
-            error_log("Registration failed: " . print_r($errorDetails, true));
-        
-            // More specific error message
-            if (strpos(strtolower($errorDetails), 'duplicate entry') !== false) {
-                if (strpos(strtolower($errorDetails), 'user_username') !== false) {
-                    $errors["user_username"] = "This user_username is already taken. Please choose another one.";
-                } elseif (strpos(strtolower($errorDetails), 'email') !== false) {
-                    $errors["contactinfo_email"] = "This email is already registered. Please use a different email or try to log in.";
-                } else {
-                    $errors["general"] = "This information is already registered. Please check your details and try again.";
-                }
+            if ($result) {
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+                exit();
             } else {
-                $errors["general"] = "Failed to save data. Please check your information and try again. " . 
-                                     "If the problem persists, please contact support.";
+                $errors["general"] = "Registration failed: " . $touristObj->getLastError();
             }
+
+        } catch (Exception $e) {
+            $errors["general"] = "System error: " . $e->getMessage();
         }
     }
+
         
 }}
 
@@ -289,122 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Tourist Registration</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        form { 
-            max-width: 600px; 
-            margin: 20px auto; 
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .form-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        .form-section h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-        label { 
-            display: block;
-            font-weight: bold;
-            margin: 10px 0 5px;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="date"],
-        input[type="tel"],
-        select { 
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus {
-            border-color: #4a90e2;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-        .error { 
-            color: #e74c3c; 
-            font-size: 0.85em;
-            margin-top: -5px;
-            margin-bottom: 10px;
-        }
-        .success { 
-            color: #27ae60; 
-            font-weight: bold; 
-            margin: 15px 0;
-            padding: 12px;
-            background-color: #e8f5e9; 
-            border-radius: 5px;
-            border-left: 4px solid #27ae60;
-        }
-        .error-message {
-            color: #e74c3c;
-            background-color: #fde8e8;
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            border-left: 4px solid #e74c3c;
-        }
-        .test-button {
-            display: inline-block;
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .test-button:hover {
-            background-color: #218838;
-            color: white;
-        }
-        button[type="submit"] {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-        button[type="submit"]:hover {
-            background-color: #2980b9;
-        }
-        .required:after {
-            content: " *";
-            color: #e74c3c;
-        }
-        @media (max-width: 768px) {
-            form {
-                margin: 10px;
-                padding: 10px;
-            }
-            .form-section {
-                padding: 10px;
-            }
-        }
-    </style>
+    
     
     <script>
         // Define functions in head to ensure they're available when HTML loads
@@ -588,9 +422,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <form method="POST">
         <h3>Account Info</h3>
-        <label for="user_username">user_username</label>
-        <input type="text" name="user_username" id="user_username" value="<?= $tourist["user_username"] ?? "" ?>">
-        <p class="error"><?= $errors["user_username"] ?? "" ?></p>
+        <label for="username">username</label>
+        <input type="text" name="username" id="username" value="<?= $tourist["username"] ?? "" ?>">
+        <p class="error"><?= $errors["username"] ?? "" ?></p>
 
         <label for="password">Password</label>
         <input type="password" name="password" id="password">
