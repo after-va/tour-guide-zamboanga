@@ -236,100 +236,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }    // Proceed if no errors
     if (empty($errors)) {
         // Handle non-Philippines addresses by converting text to IDs
-        $barangay_ID = null;
-        
-        if ($guide["address_country_ID"] == "161") {
-            // Philippines - use existing barangay_ID
-            $barangay_ID = $guide["barangay_ID"];
-        } else {
-            // Other countries - create/get IDs from text inputs
-            $db = $guideObj->connect();
-            
-            // Get or create Region
-            $region_ID = $guideObj->addgetRegion($guide["region_name"], $guide["address_country_ID"], $db);
-            
-            // Get or create Province
-            $province_ID = $guideObj->addgetProvince($guide["province_name"], $region_ID, $db);
-            
-            // Get or create City
-            $city_ID = $guideObj->addgetCity($guide["city_name"], $province_ID, $db);
-            
-            // Get or create Barangay
-            $barangay_ID = $guideObj->addgetBarangay($guide["barangay_name"], $city_ID, $db);
-        }
-
         try {
-            error_log("Calling addguide with data: " . print_r([
-                'name_first' => $guide["name_first"],
-                'name_last' => $guide["name_last"],
-                'username' => $guide["username"]
-                // Add other fields as needed for debugging
-            ], true));
-
-            $results = $guideObj->addguide(
-                $guide["name_first"], 
-                $guide["name_second"] ?? null, 
-                $guide["name_middle"] ?? null, 
-                $guide["name_last"], 
-                $guide["name_suffix"] ?? null,
-                $guide["address_houseno"], 
-                $guide["address_street"], 
-                $barangay_ID,
-                $guide["country_ID"], 
-                $guide["phone_number"] ?? null,
-                $guide["emergency_name"], 
-                $guide["emergency_country_ID"], 
-                $guide["emergency_phonenumber"], 
-                $guide["emergency_relationship"],
-                $guide["contactinfo_email"],
-                $guide["person_nationality"], 
-                $guide["person_gender"], 
-                $guide["person_dateofbirth"], 
-                $guide["username"], 
-                $guide["password"],
-                $guide["guide_license"],
-                $guide["guide_type"] ?? null,
-                date('Y-m-d'), // issue_date set to current date
-                null, // expiry_date
-                'DOT Zamboanga' // issuing_authority
+            $result = $touristObj->addTourist(
+                $tourist['name_first'] ?? '',
+                $tourist['name_second'] ?? '',
+                $tourist['name_middle'] ?? '',
+                $tourist['name_last'] ?? '',
+                $tourist['name_suffix'] ?? '',
+                $tourist['address_houseno'] ?? '',
+                $tourist['address_street'] ?? '',
+                $tourist['barangay_ID'] ?? '',
+                $tourist['country_ID'] ?? '',
+                $tourist['phone_number'] ?? '',
+                $tourist['emergency_name'] ?? '',
+                $tourist['emergency_country_ID'] ?? '',
+                $tourist['emergency_phonenumber'] ?? '',
+                $tourist['emergency_relationship'] ?? '',
+                $tourist['contactinfo_email'] ?? '',
+                $tourist['person_nationality'] ?? '',
+                $tourist['person_gender'] ?? '',
+                $tourist['person_dateofbirth'] ?? '',
+                $tourist['username'] ?? '',
+                $tourist['password'] ?? ''
             );
-            
-            error_log("addguide result: " . ($results ? 'true' : 'false'));
-            if (!$results) {
-                error_log("addguide error: " . $guideObj->getLastError());
-            }
-        } catch (Exception $e) {
-            error_log("Error in addguide: " . $e->getMessage());
-            $errors["general"] = "An error occurred during registration. Please try again.";
-        }
 
-
-        if($results){
-            // Store the assigned license in session so we can display it after redirect
-            if (!empty($guide['guide_license'])) {
-                $_SESSION['assigned_license'] = $guide['guide_license'];
-            }
-            header("Location: guide-registration.php?success=1");
-            $guide = [];
-            exit;
-        } else {
-            // Log the actual error for debugging
-            $errorDetails = $guideObj->getLastError();
-            error_log("Registration failed: " . print_r($errorDetails, true));
-        
-            // More specific error message
-            if (strpos(strtolower($errorDetails), 'duplicate entry') !== false) {
-                if (strpos(strtolower($errorDetails), 'username') !== false) {
-                    $errors["username"] = "This username is already taken. Please choose another one.";
-                } elseif (strpos(strtolower($errorDetails), 'email') !== false) {
-                    $errors["contactinfo_email"] = "This email is already registered. Please use a different email or try to log in.";
-                } else {
-                    $errors["general"] = "This information is already registered. Please check your details and try again.";
-                }
+            if ($result) {
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+                exit();
             } else {
-                $errors["general"] = "Failed to save data. Please check your information and try again. " . 
-                                     "If the problem persists, please contact support.";
+                $errors["general"] = "Registration failed: " . $touristObj->getLastError();
             }
+
+        } catch (Exception $e) {
+            $errors["general"] = "System error: " . $e->getMessage();
         }
     }
 }}
@@ -342,161 +281,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>guide Registration</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            line-height: 1.6;
-            color: #333;
-        }
-        form { 
-            max-width: 600px; 
-            margin: 20px auto; 
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .form-section {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        .form-section h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-        label { 
-            display: block;
-            font-weight: bold;
-            margin: 10px 0 5px;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="date"],
-        input[type="tel"],
-        select { 
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus {
-            border-color: #4a90e2;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-        .error { 
-            color: #e74c3c; 
-            font-size: 0.85em;
-            margin-top: -5px;
-            margin-bottom: 10px;
-        }
-        .success { 
-            color: #27ae60; 
-            font-weight: bold; 
-            margin: 15px 0;
-            padding: 12px;
-            background-color: #e8f5e9; 
-            border-radius: 5px;
-            border-left: 4px solid #27ae60;
-        }
-        .error-message {
-            color: #e74c3c;
-            background-color: #fde8e8;
-            padding: 10px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            border-left: 4px solid #e74c3c;
-        }
-        .test-button {
-            display: inline-block;
-            background-color: #28a745;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .test-button:hover {
-            background-color: #218838;
-            color: white;
-        }
-        button[type="submit"] {
-            background-color: #3498db;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            transition: background-color 0.3s;
-        }
-        button[type="submit"]:hover {
-            background-color: #2980b9;
-        }
-        .required:after {
-            content: " *";
-            color: #e74c3c;
-        }
-        .checkbox-group {
-            margin: 10px 0;
-        }
-        
-        .checkbox-group label {
-            display: inline-block;
-            margin-right: 20px;
-            font-weight: normal;
-        }
-        
-        textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: inherit;
-            resize: vertical;
-        }
-        
-        textarea:focus {
-            border-color: #4a90e2;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-        
-        .guide-info-section {
-            background: #f8f9fa;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
-        }
-        
-        @media (max-width: 768px) {
-            form {
-                margin: 10px;
-                padding: 15px;
-            }
-            .form-section {
-                padding: 10px;
-            }
-            .checkbox-group label {
-                display: block;
-                margin-bottom: 10px;
-            }
-        }
-    </style>
+    
     
     <script>
         // Define functions in head to ensure they're available when HTML loads
