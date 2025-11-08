@@ -149,7 +149,7 @@ div.section-header {
 }
 
 .test-registration {
-    background: #f8f9fa; 
+    color: var(--white); 
     width: 50rem;
     padding: 15px; 
     margin-bottom: 20px; 
