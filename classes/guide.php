@@ -29,16 +29,27 @@ class Guide extends Database {
             $db->beginTransaction();
 
             try{
-                $person_ID = $this->addgetPerson($name_first, $name_second, $name_middle, $name_last, $name_suffix, $houseno, $street, $barangay, $country_ID, $phone_number, $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $person_nationality, $person_gender, $person_dateofbirth, $db);
-                $user_ID = $this->addgetUserLogin($person_ID, $user_username, $user_password, $db);
-                $role_ID = 2;
+                $user_ID = $this->addUser($name_first, $name_second, $name_middle, $name_last, $name_suffix,
+                $houseno, $street, $barangay, 
+                $country_ID, $phone_number, 
+                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
+                $contactinfo_email, $person_nationality, $person_gender, $person_dateofbirth, 
+                $username, $password, $db);
 
-                if (!$person_ID || !$user_ID) {
+
+                if (!$user_ID) {
                     $db->rollBack();
                     return false;
                 }
 
-                $accountlogin_ID = $this->addgetAccountLogin($user_ID, $role_ID, $db);
+                $account_ID = $this->addAccountGuide($user_ID, $db);
+
+                if (!$account_ID) {
+                    $db->rollBack();
+                    return false;
+                }
+
+                $guide_ID = $this->addGuide_ID($account_ID, $db);
 
                 if (!$accountlogin_ID) {
                     $db->rollBack();
@@ -57,6 +68,9 @@ class Guide extends Database {
 
     }
 
+    public function addGuide_ID($account_ID, $db){
+
+    }
     public function viewAllGuide(){
         $sql = "SELECT 
                     g.guide_ID,

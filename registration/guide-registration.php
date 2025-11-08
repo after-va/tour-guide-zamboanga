@@ -227,49 +227,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         // Validate license number format (you can adjust this based on your requirements)
-        if (empty($guide["guide_license"]) || !preg_match("/^[A-Z0-9-]+$/", $guide["guide_license"])) {
-            $errors["guide_license"] = "Please enter a valid license number (uppercase letters, numbers, and hyphens only).";
-        }
+        // if (empty($guide["guide_license"]) || !preg_match("/^[A-Z0-9-]+$/", $guide["guide_license"])) {
+        //     $errors["guide_license"] = "Please enter a valid license number (uppercase letters, numbers, and hyphens only).";
+        // }
         
         if (!empty($guide["guide_type"]) && !in_array($guide["guide_type"], ['Local', 'Regional', 'National'])) {
             $errors["guide_type"] = "Please select a valid guide type.";
         }    // Proceed if no errors
     if (empty($errors)) {
         // Handle non-Philippines addresses by converting text to IDs
-        try {
-            $result = $touristObj->addTourist(
-                $tourist['name_first'] ?? '',
-                $tourist['name_second'] ?? '',
-                $tourist['name_middle'] ?? '',
-                $tourist['name_last'] ?? '',
-                $tourist['name_suffix'] ?? '',
-                $tourist['address_houseno'] ?? '',
-                $tourist['address_street'] ?? '',
-                $tourist['barangay_ID'] ?? '',
-                $tourist['country_ID'] ?? '',
-                $tourist['phone_number'] ?? '',
-                $tourist['emergency_name'] ?? '',
-                $tourist['emergency_country_ID'] ?? '',
-                $tourist['emergency_phonenumber'] ?? '',
-                $tourist['emergency_relationship'] ?? '',
-                $tourist['contactinfo_email'] ?? '',
-                $tourist['person_nationality'] ?? '',
-                $tourist['person_gender'] ?? '',
-                $tourist['person_dateofbirth'] ?? '',
-                $tourist['username'] ?? '',
-                $tourist['password'] ?? ''
-            );
-
-            if ($result) {
-                header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
-                exit();
-            } else {
-                $errors["general"] = "Registration failed: " . $touristObj->getLastError();
-            }
-
-        } catch (Exception $e) {
-            $errors["general"] = "System error: " . $e->getMessage();
-        }
+        
     }
 }}
 
@@ -281,7 +248,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <title>guide Registration</title>
-    
+    <link rel="stylesheet" href="../assets/css/public-pages/guide-registration.css">
     
     <script>
         // Define functions in head to ensure they're available when HTML loads
@@ -442,7 +409,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </script>
 </head>
 <body>
-    <div style="background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 5px;">
+    <div style="">
         <h2>guide Registration</h2>
         <div style="margin: 15px 0;">
             <a href="?test_register=1" class="test-button" 

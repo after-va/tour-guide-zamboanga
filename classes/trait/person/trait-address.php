@@ -45,6 +45,13 @@ trait AddressTrait {
         }
     }
 
+    public function fetchCountries(){
+        $sql = "SELECT country_ID, country_name, country_codenumber FROM Country ORDER BY country_name";
+        $q = $this->connect()->prepare($sql);
+        $q->execute();
+        return $q->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function fetchRegion($country_ID = null){
         if ($country_ID === null) {
             $sql = "SELECT * FROM Region";

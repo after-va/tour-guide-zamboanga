@@ -51,11 +51,7 @@ class Tourist extends Database {
                 $contactinfo_email,
                 $person_nationality, 
                 $person_gender, 
-                $person_dateofbirth, 
-                $username, 
-                $password,
-                $db
-            );
+                $person_dateofbirth, $username, $password, $db);
 
             error_log("addUser returned user_ID: " . ($user_ID ?: 'false'));
 
