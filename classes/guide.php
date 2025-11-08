@@ -16,61 +16,7 @@ class Guide extends Database {
     use TourSpotsTrait;
     use TourPackageSpot;
 
-    public function addgetGuide($name_first, $name_second, $name_middle, $name_last, $name_suffix,
-        $houseno, $street, $barangay, $country_ID, $phone_number, $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $person_nationality, $person_gender, $person_dateofbirth, $user_username, $user_password){
-        
-            $db = $this->connect();
-            if (!$db) {
-                $this->setLastError("Database connection failed");
-                error_log("Database connection failed in addTourist");
-                return false;
-            }
 
-            $db->beginTransaction();
-
-            try{
-                $user_ID = $this->addUser($name_first, $name_second, $name_middle, $name_last, $name_suffix,
-                $houseno, $street, $barangay, 
-                $country_ID, $phone_number, 
-                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
-                $contactinfo_email, $person_nationality, $person_gender, $person_dateofbirth, 
-                $username, $password, $db);
-
-
-                if (!$user_ID) {
-                    $db->rollBack();
-                    return false;
-                }
-
-                $account_ID = $this->addAccountGuide($user_ID, $db);
-
-                if (!$account_ID) {
-                    $db->rollBack();
-                    return false;
-                }
-
-                $guide_ID = $this->addGuide_ID($account_ID, $db);
-
-                if (!$accountlogin_ID) {
-                    $db->rollBack();
-                    return false;
-                } else {
-                    $db->commit();
-                    return true;
-                }
-
-            } catch (PDOException $e) {
-            $db->rollBack();
-            error_log("Tourist Registration Error: " . $e->getMessage()); 
-            return false;
-        }
-
-
-    }
-
-    public function addGuide_ID($account_ID, $db){
-
-    }
     public function viewAllGuide(){
         $sql = "SELECT 
                     g.guide_ID,

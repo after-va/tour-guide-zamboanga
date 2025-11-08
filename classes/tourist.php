@@ -14,91 +14,10 @@ class Tourist extends Database {
     
     private $lastError = "";
 
-    public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
-        $houseno, $street, $barangay,
-        $country_ID, $phone_number,
-        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-        $contactinfo_email,
-        $person_nationality, $person_gender, $person_dateofbirth, 
-        $username, $password) {
     
-        $db = $this->connect();
-        if (!$db) {
-            $this->setLastError("Database connection failed");
-            error_log("Database connection failed in addTourist");
-            return false;
-        }
-
-        $db->beginTransaction();
-
-        try {
-            error_log("Calling addUser from addTourist");
-            $user_ID = $this->addUser(
-                $name_first, 
-                $name_second, 
-                $name_middle, 
-                $name_last, 
-                $name_suffix,
-                $houseno, 
-                $street, 
-                $barangay,
-                $country_ID, 
-                $phone_number,
-                $emergency_name, 
-                $emergency_country_ID, 
-                $emergency_phonenumber, 
-                $emergency_relationship,
-                $contactinfo_email,
-                $person_nationality, 
-                $person_gender, 
-                $person_dateofbirth, $username, $password, $db);
-
-            error_log("addUser returned user_ID: " . ($user_ID ?: 'false'));
-
-            if (!$user_ID) {
-                $error = $this->getLastError() ?: "Failed to create user account";
-                error_log("addUser failed: " . $error);
-                $db->rollBack();
-                $this->setLastError($error);
-                return false;
-            }
-
-            $role_ID = 3; // Tourist role_ID is 3
-
-            $sql = "INSERT INTO Account_Info (user_ID, role_ID) VALUES (:user_ID, :role_ID)";
-            $query = $db->prepare($sql);
-            $query->bindParam(":user_ID", $user_ID, PDO::PARAM_INT);
-            $query->bindParam(":role_ID", $role_ID, PDO::PARAM_INT);
-
-            $result = $query->execute();
-            
-            if ($result) {
-                $db->commit();
-                error_log("Tourist registration successful for user: " . $username);
-                return true; 
-            } else {
-                $errorInfo = $query->errorInfo();
-                $error = "Database error: " . ($errorInfo[2] ?? 'Unknown error');
-                error_log("Failed to add role: " . $error);
-                $db->rollBack();
-                $this->setLastError($error);
-                return false;
-            }
-        } catch (PDOException $e) {
-            $db->rollBack();
-            $this->setLastError($e->getMessage());
-            error_log("Tourist Registration Error: " . $e->getMessage()); 
-            return false;
-        }
-    }
    
 
-    public function fetchCountries(){
-        $sql = "SELECT country_ID, country_name, country_codenumber FROM Country ORDER BY country_name";
-        $q = $this->connect()->prepare($sql);
-        $q->execute();
-        return $q->fetchAll(PDO::FETCH_ASSOC);
-    }
+    
     
     public function getLastError() {
         return $this->lastError;

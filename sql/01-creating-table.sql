@@ -169,12 +169,12 @@ CREATE TABLE Admin(
 
 CREATE TABLE Guide_License(
     lisence_ID INT AUTO_INCREMENT PRIMARY KEY,
-    lisence_number VARCHAR(100) NOT NULL UNIQUE,
-    lisence_created_date DATE NOT NULL,
-    lisence_issued_date DATE NOT NULL,
-    lisence_issued_by VARCHAR(225) NOT NULL,
-    lisence_expiry_date DATE NOT NULL,
-    lisence_verification_status VARCHAR(50) NOT NULL,
+    lisence_number VARCHAR(100) NOT NULL UNIQUE, -- create a function for this 
+    lisence_created_date CURRENT_TIMESTAMP, -- created a time current timestamp
+    lisence_issued_date DATE, -- this one if an admin accepted it 
+    lisence_issued_by VARCHAR(225), -- an admin
+    lisence_expiry_date DATE, 
+    lisence_verification_status VARCHAR(50) NOT NULL, -- Pendin when guide was created 
     lisence_status VARCHAR(50) NOT NULL
 );
 

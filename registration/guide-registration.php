@@ -1,245 +1,87 @@
 <?php
-// Enable error reporting for debugging
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+require_once "../classes/registration.php";
 
-// Include required files
-require_once "../classes/guide.php";
-
-// Start session to store assigned license for display after redirect
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-$guideObj = new Guide();
+$registrationObj = new Registration();
 $guide = [];
 $errors = [];
 $success = "";
-$dbError = "";
 
-// Function to test registration with sample data
-function testRegistration($guideObj) {
-    error_log("=== STARTING TEST REGISTRATION ===");
-    
-    // Sample test data
-    $testData = [
-        'name_first' => 'Test',
-        'name_last' => 'Guide',
-        'name_middle' => 'Middle',
-        'name_second' => '',
-        'name_suffix' => '',
-        'address_houseno' => '123',
-        'address_street' => 'Test Street',
-        'address_country_ID' => '161', // Philippines
-        'region_ID' => '1',
-        'province_ID' => '1',
-        'city_ID' => '1',
-        'barangay_ID' => '1',
-        'country_ID' => '161',
-        'phone_number' => '09123456789',
-        'emergency_name' => 'Emergency Contact',
-        'emergency_country_ID' => '161',
-        'emergency_phonenumber' => '09123456780',
-        'emergency_relationship' => 'Friend',
-        'contactinfo_email' => 'testguide' . time() . '@example.com', // Unique email
-        'person_nationality' => 'Filipino',
-        'person_gender' => 'Male',
-        'person_dateofbirth' => '1990-01-01',
-        'username' => 'testguide' . time(), // Unique username
-        'password' => 'Test@1234',
-        // Guide-specific fields
-        'guide_license' => 'TG-' . rand(1000, 9999) . '-ZC',
-        'guide_experience' => '5',
-        'languages' => ['English', 'Filipino', 'Chavacano'],
-        'specializations' => ['Historical', 'Cultural'],
-        'bio' => 'Professional tour guide with 5 years of experience in historical and cultural tours around Zamboanga City. Fluent in English, Filipino, and Chavacano.',
-        'certifications' => 'DOT Accredited Tour Guide (2020)\nFirst Aid Certified (2023)'
-    ];
-    
-    // Log test data
-    error_log("Test Data: " . print_r($testData, true));
-    
-    // Call addguide directly
-    try {
-        error_log("Calling addguide with test data");
-        $result = $guideObj->addguide(
-            $testData['name_first'],
-            $testData['name_second'],
-            $testData['name_middle'],
-            $testData['name_last'],
-            $testData['name_suffix'],
-            $testData['address_houseno'],
-            $testData['address_street'],
-            $testData['barangay_ID'],
-            $testData['country_ID'],
-            $testData['phone_number'],
-            $testData['emergency_name'],
-            $testData['emergency_country_ID'],
-            $testData['emergency_phonenumber'],
-            $testData['emergency_relationship'],
-            $testData['contactinfo_email'],
-            $testData['person_nationality'],
-            $testData['person_gender'],
-            $testData['person_dateofbirth'],
-            $testData['username'],
-                $testData['password'],
-                // License and metadata (addGuide requires license_number as the next required parameter)
-                $testData['guide_license'],
-                null, // license_type
-                date('Y-m-d'), // issue_date
-                null, // expiry_date
-                'DOT Zamboanga' // issuing_authority
-            );
-        
-        if ($result) {
-            error_log("Test registration SUCCESSFUL!");
-            return "Test registration successful! Check error log for details.";
-        } else {
-            $error = $guideObj->getLastError();
-            error_log("Test registration FAILED: " . $error);
-            return "Test registration failed: " . $error;
-        }
-    } catch (Exception $e) {
-        $error = $e->getMessage();
-        error_log("Test registration EXCEPTION: " . $error);
-        return "Test registration exception: " . $error;
-    }
-}
-
-
-// Check if test registration was requested
-if (isset($_GET['test_register'])) {
-    $guideObj = new Guide();
-    $testResult = testRegistration($guideObj);
-    die($testResult);
-}
-
-// Initialize guide object
-try {
-    $guideObj = new Guide();
-    
-    // Test database connection
-    $db = $guideObj->connect();
-    if (!$db) {
-        $dbError = "Database connection failed. Please try again later.";
-        error_log("Database connection error: " . $guideObj->getLastError());
-    }
-} catch (Exception $e) {
-    $dbError = "System error. Please try again later.";
-    error_log("guide object initialization error: " . $e->getMessage());
-}
-// Process POST request
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Check if database is available
-    if (!empty($dbError)) {
-        $errors["general"] = $dbError;
-    } else {
-        // Sanitize inputs
-        $guide = array_map(function($value) {
-            return is_string($value) ? trim(htmlspecialchars($value)) : $value;
-        }, $_POST);
+    $guide = array_map(fn($v) => is_string($v) ? trim(htmlspecialchars($v)) : $v, $_POST);
+    error_log("POST Data: " . print_r($guide, true));
 
-        // Debug: Log POST data
-        error_log("POST Data: " . print_r($guide, true));
+    $required = [
+        "name_first", "name_last",
+        "address_houseno", "address_street", "barangay_ID", "country_ID",
+        "emergency_name", "emergency_country_ID", "emergency_phonenumber", "emergency_relationship",
+        "contactinfo_email", "person_nationality", "person_gender", "person_dateofbirth",
+        "username", "password", "languages"
+    ];
 
-        // Auto-generate a license number (override any user input). The system will assign a random unique license.
-        $generated = $guideObj->generateLicenseNumber();
-        if ($generated === false) {
-            $errors['guide_license'] = 'Failed to generate license number. Please try again later.';
-        } else {
-            $guide['guide_license'] = $generated;
-        }
-
-        // === Validation ===
-        $required = [
-            "name_first", "name_last", 
-            "address_houseno", "address_street", "address_country_ID", 
-            "country_ID", "emergency_name", "emergency_country_ID",
-            "emergency_phonenumber", "emergency_relationship", "contactinfo_email",
-            "person_nationality", "person_gender", "person_dateofbirth",
-            "username", "password",
-            // Guide-specific required fields
-            "guide_license", "guide_experience", "languages", "specializations", "bio"
-        ]; // Removed phone_number from required fields
-        
     foreach ($required as $field) {
         if (empty($guide[$field])) {
             $errors[$field] = ucfirst(str_replace("_", " ", $field)) . " is required.";
         }
     }
 
-    // Additional validation based on country
-    if (!empty($guide["address_country_ID"])) {
-        if ($guide["address_country_ID"] == "161") {
-            // Philippines - require dropdown IDs
-            $required = [
-                "region_ID", "province_ID", "city_ID", "barangay_ID"
-            ];
-        } else {
-            // Other countries - require text inputs
-            $required = [
-                "region_name", "province_name", "city_name", "barangay_name"
-            ];
-        }
-
-        foreach ($required as $field) {
-            if (empty($guide[$field])) {
-                $errors[$field] = ucfirst(str_replace("_", " ", $field)) . " is required.";
-            }
-        }
+    if (!empty($guide["contactinfo_email"]) && !filter_var($guide["contactinfo_email"], FILTER_VALIDATE_EMAIL)) {
+        $errors["contactinfo_email"] = "Invalid email format.";
     }
 
-
-    // Validate phone numbers - make phone number optional
     if (!empty($guide["phone_number"]) && strlen($guide["phone_number"]) < 10) {
         $errors["phone_number"] = "Phone Number must be at least 10 digits.";
     }
+
     if (!empty($guide["emergency_phonenumber"]) && strlen($guide["emergency_phonenumber"]) < 10) {
         $errors["emergency_phonenumber"] = "Emergency Phone must be at least 10 digits.";
     }
-    
-    // Remove phone_number from required fields if empty
-    if (empty($guide["phone_number"])) {
-        $key = array_search("phone_number", $required);
-        if ($key !== false) {
-            unset($required[$key]);
-        }
+
+    if (empty($guide["languages"]) || !is_array($guide["languages"])) {
+        $errors["languages"] = "Please select at least one language.";
     }
 
-        // Validate email
-        if (!empty($guide["contactinfo_email"]) && !filter_var($guide["contactinfo_email"], FILTER_VALIDATE_EMAIL)) {
-            $errors["contactinfo_email"] = "Invalid email format.";
-        }
-
-        // Guide-specific validations
-        if (empty($guide["languages"]) || !is_array($guide["languages"]) || count($guide["languages"]) < 1) {
-            $errors["languages"] = "Please select at least one language.";
-        }
-
-        if (empty($guide["specializations"]) || !is_array($guide["specializations"]) || count($guide["specializations"]) < 1) {
-            $errors["specializations"] = "Please select at least one area of expertise.";
-        }
-
-        if (!empty($guide["guide_experience"]) && (!is_numeric($guide["guide_experience"]) || $guide["guide_experience"] < 0)) {
-            $errors["guide_experience"] = "Please enter a valid number of years.";
-        }
-
-        if (empty($guide["bio"]) || strlen($guide["bio"]) < 50) {
-            $errors["bio"] = "Please provide a bio of at least 50 characters.";
-        }
-
-        // Validate license number format (you can adjust this based on your requirements)
-        // if (empty($guide["guide_license"]) || !preg_match("/^[A-Z0-9-]+$/", $guide["guide_license"])) {
-        //     $errors["guide_license"] = "Please enter a valid license number (uppercase letters, numbers, and hyphens only).";
-        // }
-        
-        if (!empty($guide["guide_type"]) && !in_array($guide["guide_type"], ['Local', 'Regional', 'National'])) {
-            $errors["guide_type"] = "Please select a valid guide type.";
-        }    // Proceed if no errors
     if (empty($errors)) {
-        // Handle non-Philippines addresses by converting text to IDs
-        
-    }
-}}
+        try {
+            $result = $registrationObj->addgetGuide(
+                $guide["languages"],
+                $guide["name_first"],
+                $guide["name_second"] ?? "",
+                $guide["name_middle"] ?? "",
+                $guide["name_last"],
+                $guide["name_suffix"] ?? "",
+                $guide["address_houseno"],
+                $guide["address_street"],
+                $guide["barangay_ID"],
+                $guide["country_ID"],
+                $guide["phone_number"] ?? "",
+                $guide["emergency_name"],
+                $guide["emergency_country_ID"],
+                $guide["emergency_phonenumber"],
+                $guide["emergency_relationship"],
+                $guide["contactinfo_email"],
+                $guide["person_nationality"],
+                $guide["person_gender"],
+                $guide["person_dateofbirth"],
+                $guide["username"],
+                $guide["password"]
+            );
 
+            if ($result) {
+                $_SESSION['assigned_license'] = $registrationObj->getAssignedLicense();
+                header("Location: ?success=1");
+                exit;
+            } else {
+                $errors["general"] = $registrationObj->getLastError() ?: "Failed to register guide.";
+            }
+        } catch (Exception $e) {
+            $errors["general"] = "System error: " . $e->getMessage();
+        }
+    }
+}
 ?>
 
 
@@ -247,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>guide Registration</title>
+    <title>Guide Registration</title>
     <link rel="stylesheet" href="../assets/css/public-pages/guide-registration.css">
     
     <script>
@@ -409,17 +251,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </script>
 </head>
 <body>
-    <div style="">
-        <h2>guide Registration</h2>
-        <div style="margin: 15px 0;">
-            <a href="?test_register=1" class="test-button" 
-               onclick="return confirm('This will create a test registration. Continue?')">
-                Run Test Registration
-            </a>
-            <small style="display: block; margin-top: 5px; color: #666;">
-                This will create a test registration with sample data to help identify issues.
-            </small>
-        </div>
+    <div class = "title">
+        <h2>Guide Registration</h2>
     </div>
 
     <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
@@ -488,76 +321,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <p class="error"><?= $errors["person_dateofbirth"] ?? "" ?></p>
 
         <h3>Guide Information</h3>
-        <!-- Tour Guide License Number is auto-generated and not editable by the applicant -->
-        <label for="guide_type">Guide Type</label>
-        <select name="guide_type" id="guide_type">
-            <option value="">Select Guide Type</option>
-            <option value="Local" <?= ($guide["guide_type"] ?? "") === "Local" ? "selected" : "" ?>>Local Guide</option>
-            <option value="Regional" <?= ($guide["guide_type"] ?? "") === "Regional" ? "selected" : "" ?>>Regional Guide</option>
-            <option value="National" <?= ($guide["guide_type"] ?? "") === "National" ? "selected" : "" ?>>National Guide</option>
-        </select>
-        <p class="error"><?= $errors["guide_type"] ?? "" ?></p>
-
-        <label for="guide_experience">Years of Experience</label>
-        <input type="number" name="guide_experience" id="guide_experience" min="0" step="1" value="<?= $guide["guide_experience"] ?? "" ?>">
-        <p class="error"><?= $errors["guide_experience"] ?? "" ?></p>
 
         <label>Languages Spoken</label>
         <div class="checkbox-group">
+            <?php foreach ($registrationObj->getLanguages() as $r){ ?>
             <label>
-                <input type="checkbox" name="languages[]" value="English" <?= isset($guide["languages"]) && in_array("English", $guide["languages"]) ? 'checked' : '' ?>>
-                English
+                <input type="checkbox" name="languages[]" value="<?= $r['languages_ID']?>" <?= isset($guide["languages"]) && $r['languages_ID'] ? 'checked' : '' ?>>
+                <?= $r['languages_name'] ?>
             </label>
-            <label>
-                <input type="checkbox" name="languages[]" value="Filipino" <?= isset($guide["languages"]) && in_array("Filipino", $guide["languages"]) ? 'checked' : '' ?>>
-                Filipino
-            </label>
-            <label>
-                <input type="checkbox" name="languages[]" value="Chavacano" <?= isset($guide["languages"]) && in_array("Chavacano", $guide["languages"]) ? 'checked' : '' ?>>
-                Chavacano
-            </label>
-            <label>
-                <input type="checkbox" name="languages[]" value="Other" <?= isset($guide["languages"]) && in_array("Other", $guide["languages"]) ? 'checked' : '' ?>>
-                Other
-            </label>
+            <?php }?>
         </div>
         <p class="error"><?= $errors["languages"] ?? "" ?></p>
 
-        <label for="specializations">Areas of Expertise (Select all that apply)</label>
-        <div class="checkbox-group">
-            <label>
-                <input type="checkbox" name="specializations[]" value="Historical" <?= isset($guide["specializations"]) && in_array("Historical", $guide["specializations"]) ? 'checked' : '' ?>>
-                Historical Sites
-            </label>
-            <label>
-                <input type="checkbox" name="specializations[]" value="Cultural" <?= isset($guide["specializations"]) && in_array("Cultural", $guide["specializations"]) ? 'checked' : '' ?>>
-                Cultural Tours
-            </label>
-            <label>
-                <input type="checkbox" name="specializations[]" value="Nature" <?= isset($guide["specializations"]) && in_array("Nature", $guide["specializations"]) ? 'checked' : '' ?>>
-                Nature & Adventure
-            </label>
-            <label>
-                <input type="checkbox" name="specializations[]" value="Food" <?= isset($guide["specializations"]) && in_array("Food", $guide["specializations"]) ? 'checked' : '' ?>>
-                Food & Culinary
-            </label>
-        </div>
-        <p class="error"><?= $errors["specializations"] ?? "" ?></p>
-
-        <label for="certifications">Certifications/Training (Optional)</label>
-        <textarea name="certifications" id="certifications" rows="3" placeholder="List any relevant certifications or training programs"><?= $guide["certifications"] ?? "" ?></textarea>
-        <p class="error"><?= $errors["certifications"] ?? "" ?></p>
-
-        <label for="bio">Brief Bio</label>
-        <textarea name="bio" id="bio" rows="4" placeholder="Introduce yourself and describe your experience as a tour guide"><?= $guide["bio"] ?? "" ?></textarea>
-        <p class="error"><?= $errors["bio"] ?? "" ?></p>
-
+        
         <h3>Phone Number</h3>
             <label for="country_ID"> Country Code </label>
             <select name="country_ID" id="country_ID">
                 <option value="">--SELECT COUNTRY CODE--</option>
 
-                <?php foreach ($guideObj->fetchCountryCode() as $country_code){ 
+                <?php foreach ($registrationObj->fetchCountryCode() as $country_code){ 
                     $temp = $country_code["country_ID"];
                 ?>
                 <option value="<?= $temp ?>" <?= ($temp == ($guide["country_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["country_name"] ?> <?= $country_code["country_codenumber"]?> </option> 
@@ -583,7 +365,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <label for="emergency_country_ID"> Country Code </label>
         <select name="emergency_country_ID" id="emergency_country_ID">
             <option value="">--SELECT COUNTRY CODE--</option>
-            <?php foreach ($guideObj->fetchCountryCode() as $country_code){ 
+            <?php foreach ($registrationObj->fetchCountryCode() as $country_code){ 
                 $temp = $country_code["country_ID"];
             ?>
             <option value="<?= $temp ?>" <?= ($temp == ($guide["emergency_country_ID"] ?? "")) ? "selected" : "" ?>> <?= $country_code["country_name"] ?> <?= $country_code["country_codenumber"]?> </option>    
@@ -604,7 +386,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <select name="address_country_ID" id="address_country_ID" onchange="toggleAddressFields(this.value)">
             <option value="">--SELECT COUNTRY--</option>
             <?php 
-            foreach ($guideObj->fetchCountry() as $country){ 
+            foreach ($registrationObj->fetchCountry() as $country){ 
                 // Debug: Print Philippines ID to HTML comment
                 if (stripos($country["country_name"], "Philippines") !== false) {
                     echo "<!-- Philippines country_ID: " . $country["country_ID"] . " -->";
@@ -624,7 +406,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <select name="region_ID" id="region_ID" onchange="loadProvinces(this.value)" disabled>
                 <option value="">--SELECT REGION--</option>
                 <?php 
-                $regions = $guideObj->fetchRegion();
+                $regions = $registrationObj->fetchRegion();
                 if ($regions && is_array($regions)) {
                     foreach ($regions as $region){ ?>
                         <option value="<?= $region["region_ID"] ?>" 
@@ -649,7 +431,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <option value="">--SELECT PROVINCE--</option>
                 <?php 
                 $selectedRegion = $guide["region_ID"] ?? "";
-                $provinces = $guideObj->fetchProvince($selectedRegion);
+                $provinces = $registrationObj->fetchProvince($selectedRegion);
                 if ($provinces && is_array($provinces)) {
                     foreach ($provinces as $province){ ?>
                         <option value="<?= $province["province_ID"] ?>" 
@@ -674,7 +456,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <option value="">--SELECT CITY--</option>
                 <?php
                 $selectedProvince = $guide["province_ID"] ?? "";
-                $cities = $guideObj->fetchCity($selectedProvince);
+                $cities = $registrationObj->fetchCity($selectedProvince);
                 if ($cities && is_array($cities)) {
                     foreach ($cities as $city){ ?>
                         <option value="<?= $city["city_ID"] ?>" 
@@ -699,7 +481,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <option value="">--SELECT BARANGAY--</option>
                 <?php
                 $selectedCity = $guide["city_ID"] ?? "";
-                $barangays = $guideObj->fetchBarangay($selectedCity);
+                $barangays = $registrationObj->fetchBarangay($selectedCity);
                 if ($barangays && is_array($barangays)) {
                     foreach ($barangays as $barangay){ ?>
                         <option value="<?= $barangay["barangay_ID"] ?>" 

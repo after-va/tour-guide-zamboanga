@@ -220,4 +220,13 @@ trait PersonTrait {
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function getLanguages(){
+        $sql = "SELECT * FROM Languages";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetchAll();
+    }
+
 }

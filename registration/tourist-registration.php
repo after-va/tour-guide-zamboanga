@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 // Include required files
-require_once "../classes/tourist.php";
+require_once "../classes/registration.php";
 
 // Initialize variables
 $tourist = [];
@@ -91,14 +91,14 @@ function testRegistration($touristObj) {
 
 // Check if test registration was requested
 if (isset($_GET['test_register'])) {
-    $touristObj = new Tourist();
+    $touristObj = new Registration();
     $testResult = testRegistration($touristObj);
     die($testResult);
 }
 
 // Initialize Tourist object
 try {
-    $touristObj = new Tourist();
+    $touristObj = new Registration();
     
     // Test database connection
     $db = $touristObj->connect();

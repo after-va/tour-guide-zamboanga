@@ -168,3 +168,7 @@ div.section-header {
     font-size: 1.1rem;
   }
 }
+
+.title h2{
+  color: var(--white) !important;
+}
