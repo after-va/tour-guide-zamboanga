@@ -6,6 +6,7 @@ session_start();
 require_once "config/database.php";
 require_once "classes/auth.php";
 
+
 $authObj = new Auth();
 $auth = [];
 $error = '';
@@ -30,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             header('Location: pages/guide/dashboard.php');
             exit();
         } else {
-            header('Location: pages/tourist/dashboard.php');
+            header('Location: pages/tourist/index.php');
             exit();
         }
 

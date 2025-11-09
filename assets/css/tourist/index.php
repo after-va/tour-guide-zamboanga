@@ -26,7 +26,7 @@ $packages = $packageObj->viewAllPackages(); // adjust method name if needed
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tourismo Zamboanga</title>
+    <title>Home</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -62,6 +62,40 @@ $packages = $packageObj->viewAllPackages(); // adjust method name if needed
         </div>
     </div>
 </nav>
+
+<!-- Packages Section -->
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h2 class="section-title"><i class="fas fa-map-marked-alt me-2"></i>Available Tour Packages</h2>
+        <p class="text-muted">Discover exciting destinations and plan your next adventure with ease.</p>
+    </div>
+
+    <div class="row g-4">
+        <?php if (!empty($packages)) : ?>
+            <?php foreach ($packages as $pkg): ?>
+                <div class="col-md-4 col-lg-3">
+                    <div class="card package-card h-100">
+                        <img src="<?php echo htmlspecialchars($pkg['image_path']); ?>" alt="Package Image">
+                        <div class="card-body">
+                            <h5 class="package-title"><?php echo htmlspecialchars($pkg['package_name']); ?></h5>
+                            <p class="package-location"><i class="fas fa-location-dot me-1"></i> 
+                                <?php echo htmlspecialchars($pkg['location']); ?>
+                            </p>
+                            <p class="package-price">₱<?php echo number_format($pkg['price'], 2); ?></p>
+                            <a href="booking.php?package_ID=<?php echo $pkg['package_ID']; ?>" class="btn btn-book w-100 mt-2">
+                                <i class="fas fa-calendar-plus me-1"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="col-12 text-center text-muted">
+                <i class="fas fa-info-circle me-2"></i>No packages available at the moment.
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
