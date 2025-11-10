@@ -6,6 +6,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 }
 
 require_once "../../classes/booking.php";
+require_once "../../classes/activity-log.php";
+
+$activityObj = new ActivityLogs();
 
 if (isset($_GET['id']) && isset($_GET['type'])) {
     $booking_ID = intval($_GET['id']);
@@ -23,6 +26,7 @@ if (isset($_GET['id']) && isset($_GET['type'])) {
     }
 
     if ($result) {
+        $action = $activityObj->touristCancelBooking($booking_ID, $account_ID);
         $_SESSION['success'] = "Booking cancelled without refund.";
     } else {
         $_SESSION['error'] = "Failed to cancel booking.";

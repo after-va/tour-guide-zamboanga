@@ -2,10 +2,11 @@
 
 require_once __DIR__ . "/../config/database.php";
 require_once "trait/account/account-logs.php";
+require_once "trait/tour/tour-logs.php";
 
 class ActivityLogs extends Database {
 
-    use AccountLogs;
+    use AccountLogs, TourLogs;
 
     
 

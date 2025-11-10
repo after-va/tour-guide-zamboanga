@@ -6,10 +6,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 }
 
 require_once "../../classes/booking.php";
+require_once "../../classes/activity-log.php";
+
+$activityObj = new ActivityLogs();
 
 if (isset($_GET['id']) && isset($_SESSION['user'])) {
     $booking_ID = intval($_GET['id']);
-    $account_ID = $_SESSION['user']['account_ID']; // tourist account ID
+    $account_ID = $_SESSION['user']['account_ID'];
 
     $bookingObj = new Booking();
     $booking = $bookingObj->getBookingDetailsByBooking($booking_ID);
@@ -53,6 +56,7 @@ if (isset($_GET['id']) && isset($_SESSION['user'])) {
     }
 
     if ($results) {
+        $action = $activityObj->touristCancelBooking($booking_ID, $account_ID);
         $_SESSION['success'] = "Booking successfully cancelled.";
     } else {
         $_SESSION['error'] = "Failed to cancel booking.";
