@@ -8,13 +8,18 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $
 require_once "../../classes/tour-manager.php";
 require_once "../../classes/guide.php";
 require_once "../../classes/admin.php";
+require_once "../../classes/booking.php";
 
 $tourPackageObj = new TourManager();
 $guideObj = new Guide();
 $adminObj = new Admin();
+$bookingObj = new Booking();
 
 $totalAccount = $adminObj->countAccount();
 $countspots = $tourPackageObj->countSpots();
+$countPackage = $tourPackageObj->countPackages();
+$countBookings = $bookingObj->countBookings();
+
 
 ?>
 
@@ -228,7 +233,7 @@ $countspots = $tourPackageObj->countSpots();
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo px-3">
-            <span>TourGuide PH</span>
+            <span>Tourismo Zamboanga</span>
         </div>
         <nav class="nav flex-column px-2">
             <a class="nav-link active" href="dashboard.php">
@@ -312,14 +317,14 @@ $countspots = $tourPackageObj->countSpots();
             <div class="col-md-3 col-6">
                 <div class="stats-card">
                     <div class="stats-icon"><i class="bi bi-box-seam"></i></div>
-                    <div class="stats-value">89</div>
+                    <div class="stats-value"><?=$countPackage['packages']?></div>
                     <div class="stats-label">Tour Packages</div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stats-card">
                     <div class="stats-icon"><i class="bi bi-calendar-check"></i></div>
-                    <div class="stats-value">24</div>
+                    <div class="stats-value"><?= $countBookings['countbookings'];?></div>
                     <div class="stats-label">Pending Bookings</div>
                 </div>
             </div>
@@ -329,7 +334,7 @@ $countspots = $tourPackageObj->countSpots();
         <div class="quick-links">
             <h5 class="mb-3">Quick Actions</h5>
             <div class="d-flex flex-wrap gap-3">
-                <a href="add-tour-spots.php" class="btn btn-primary">
+                <a href="tour-spots-add.php" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Add New Spot
                 </a>
                 <a href="manage-users.php" class="btn btn-outline-info">
@@ -338,9 +343,9 @@ $countspots = $tourPackageObj->countSpots();
                 <a href="reports.php" class="btn btn-outline-success">
                     <i class="bi bi-download"></i> Export Reports
                 </a>
-                <a href="settings.php" class="btn btn-outline-secondary">
+                <!-- <a href="settings.php" class="btn btn-outline-secondary">
                     <i class="bi bi-sliders"></i> System Settings
-                </a>
+                </a> -->
             </div>
         </div>
 
@@ -349,7 +354,7 @@ $countspots = $tourPackageObj->countSpots();
             <div class="card-custom p-4">
                 <h5 class="mb-3">Recent Activity</h5>
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <!-- <li class="list-group-item d-flex justify-content-between align-items-center">
                         New spot added: <strong>Boracay Beach</strong>
                         <small class="text-muted">2 hours ago</small>
                     </li>
@@ -360,7 +365,7 @@ $countspots = $tourPackageObj->countSpots();
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         Booking #1001 approved
                         <small class="text-muted">1 day ago</small>
-                    </li>
+                    </li> -->
                 </ul>
             </div>
         </div>

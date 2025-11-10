@@ -187,7 +187,6 @@ class Booking extends Database{
         }
     }
 
-
     public function cancelBookingIfPendingForPayment($booking_ID, $account_ID){
         $booking_ID = (int)$booking_ID;
         $account_ID = (int)$account_ID;
@@ -419,6 +418,15 @@ class Booking extends Database{
         $query = $db->prepare($sql);
         $query->bindParam(':booking_ID', $booking_ID);
         $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function countBookings(){
+        $sql = "SELECT COUNT(*) AS countbookings FROM booking WHERE booking_status IN ('Pending for Payment','Pending for Approval')";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
         return $query->fetch(PDO::FETCH_ASSOC);
     }
     // public function viewBookingByBookingID($tourist_ID){

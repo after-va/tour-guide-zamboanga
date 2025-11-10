@@ -6,6 +6,6 @@ require_once "trait/account/account-login.php";
 
 
 class Admin extends Database {
-    use AccountLoginTrait;
+    use AccountLoginTrait; 
 
 }

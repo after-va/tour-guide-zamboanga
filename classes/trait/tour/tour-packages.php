@@ -78,7 +78,6 @@ trait TourPackagesTrait {
         }
     }
 
-
     public function getTourPackageByID($tourpackage_ID){
         $sql = "SELECT * FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
         $db = $this->connect();
@@ -196,6 +195,14 @@ trait TourPackagesTrait {
 
     }
 
+    public function countPackages(){
+        $sql = "SELECT COUNT(*) AS packages FROM tour_package WHERE tourpackage_status = 'Active'";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
 
 
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
