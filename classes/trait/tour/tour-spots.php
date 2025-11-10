@@ -120,6 +120,15 @@ trait TourSpotsTrait {
 
     }
 
+    public function getTourSpotsCategory(){
+        $sql = "SELECT spots_category FROM tour_spots GROUP BY spots_category";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getImageByCategory($spots_category){
         $sql = "SELECT tsi.spotsimage_PATH FROM tour_spots ts JOIN tour_spots_images tsi ON ts.spots_ID = tsi.spots_ID GROUP BY ts.spots_category WHERE ts.spots_category = :spots_category LIMIT 1 ORDER BY tsi.spotsimage_PATH DESC";
         $db = $this->connect();
