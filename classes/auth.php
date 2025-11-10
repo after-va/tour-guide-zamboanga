@@ -8,24 +8,20 @@ class Auth extends Database {
 
     
     public function login($username, $password) {
-        $sql = "
-            SELECT 
+        $sql = "SELECT 
                 ul.user_ID, 
                 ul.user_password, 
                 r.role_name,
                 r.role_ID, 
                 ai.account_status,
                 ai.account_ID
-            FROM
-                User_Login ul
-            JOIN 
-                Account_Info ai ON ul.user_ID = ai.user_ID
-            JOIN 
-                Role r ON ai.role_ID = r.role_ID
-            WHERE 
-                ul.user_username = :username 
-            LIMIT 1
-        ";
+            FROM User_Login ul
+            LEFT JOIN Account_Info ai ON ul.user_ID = ai.user_ID
+            LEFT JOIN Role r ON ai.role_ID = r.role_ID
+            LEFT JOIN activity_log al ON ai.account_ID = al.account_ID
+            WHERE ul.user_username = :username 
+            ORDER BY `al`.`activity_timestamp` DESC
+            LIMIT 1";
         
         try {
             $pdo = $this->connect();

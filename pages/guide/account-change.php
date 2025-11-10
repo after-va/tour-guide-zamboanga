@@ -10,16 +10,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide'
     header('Location: account-pending.php');
 }
 require_once "../../classes/guide.php";
+require_once "../../classes/activity-log.php";
 
+$activityObj = new ActivityLogs();
 $guideObj = new Guide();
 
+
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
-// user_ID" => $user['user_ID'],
-//                         "user_username" => $username,
-//                         "role_name" => $user['role_name'],
-//                         "role_ID" => $user['role_ID'],
-//                         "account_status" => $user['account_status'],
-//                         "account_ID" => $user['account_ID']
 
 if (isset($_SESSION['user']) || $_SESSION['user']['role_name'] == 'Tour Guide'){
     $result = $guideObj->changeAccountToTourist($_SESSION['user']['user_ID']);
@@ -29,9 +26,8 @@ if (isset($_SESSION['user']) || $_SESSION['user']['role_name'] == 'Tour Guide'){
         $_SESSION["account_ID"] = $account_ID ; 
         $_SESSION["role_ID"] = 3;
         $_SESSION['user']['role_name'] = 'Tourist';
-        header('Location: ../tourist/dashboard.php');
-
-    
+        $activity = $activityObj->guideChangeToTourist($guide_ID, $account_ID);
+        header('Location: ../tourist/index.php');
     }
 
 
