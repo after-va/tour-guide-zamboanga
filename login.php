@@ -5,8 +5,9 @@ ob_start();
 session_start();
 require_once "config/database.php";
 require_once "classes/auth.php";
+require_once "classes/activity-log.php";
 
-
+$activityObj = new ActivityLogs();
 $authObj = new Auth();
 $auth = [];
 $error = '';
@@ -25,12 +26,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $role = $user["role_ID"];
 
         if ($role == 1) {
+            $action = $activityObj->loginActivity($user["account_ID"]);
             header('Location: pages/admin/dashboard.php');
             exit();
         } elseif ($role == 2) {
+            $action = $activityObj->loginActivity($user["account_ID"]);
             header('Location: pages/guide/dashboard.php');
             exit();
         } else {
+            $action = $activityObj->loginActivity($user["account_ID"]);
             header('Location: pages/tourist/index.php');
             exit();
         }
