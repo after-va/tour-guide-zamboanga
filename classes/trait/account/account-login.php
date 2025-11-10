@@ -35,6 +35,14 @@ trait AccountLoginTrait {
         }
     }
 
+    public function countAccount(){
+        $sql = "SELECT COUNT(*) AS accounts FROM account_info WHERE role_ID IN (2,3)";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
 
 
 

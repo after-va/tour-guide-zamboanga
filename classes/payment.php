@@ -1,7 +1,7 @@
 <?php
-// ... existing code ...
+require_once __DIR__ . "/../config/database.php";
 
-class Payment {
+class Payment extends Database {
     private $db;
     private $paymongo;
 

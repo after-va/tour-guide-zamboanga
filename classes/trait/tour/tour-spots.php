@@ -139,4 +139,14 @@ trait TourSpotsTrait {
         return $query->fetch(PDO::FETCH_ASSOC);
 
     }
+
+    public function countSpots(){
+        $sql = "SELECT COUNT(*) AS countspots FROM tour_spots ";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+
 }
