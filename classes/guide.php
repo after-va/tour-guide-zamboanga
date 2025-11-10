@@ -319,4 +319,35 @@ class Guide extends Database {
         }
     }
 
+    public function getTotalEarnings($guide_ID) {
+        $sql = "SELECT COALESCE(SUM(pi.paymentinfo_total_amount), 0) AS total_earnings
+            FROM booking b
+            JOIN payment_info pi ON pi.booking_ID = b.booking_ID
+            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            WHERE tp.guide_ID = :guide_ID
+            AND b.booking_status IN ('Approved', 'Completed')";
+
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->execute([':guide_ID' => $guide_ID]);
+            return (float) $query->fetchColumn();
+        } catch (Exception $e) {
+            error_log("getTotalEarnings Error: " . $e->getMessage());
+            return 0.0;
+        }
+    }
+
+    public function guideRating($guide_ID){
+        $sql = "SELECT * FROM guide g JOIN account_info ai ON g.account_ID = ai.account_ID";
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->execute([':guide_ID' => $guide_ID]);
+            return $query->fetchAll();
+        } catch (Exception $e) {
+            error_log("guideRating Error: " . $e->getMessage());
+            return 0.0;
+        }
+    }
 }

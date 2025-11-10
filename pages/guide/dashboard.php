@@ -28,6 +28,9 @@ $tourManagerObj = new TourManager();
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $activebookings = $bookingObj->getActiveBookingCount($guide_ID);
 $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID);
+$totalEarnings = $guideObj->getTotalEarnings($guide_ID);
+$totalRatings = $guideObj->guideRating($guide_ID);
+
 ?>
 
 <!DOCTYPE html>
@@ -144,8 +147,8 @@ $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID)
                             <i class="bi bi-currency-dollar"></i>
                         </div>
                         <div>
-                            <h6 class="mb-0 text-muted">Earnings (Month)</h6>
-                            <h3 class="mb-0 fw-bold text-accent">₱45,200</h3>
+                            <h6 class="mb-0 text-muted">Earnings</h6>
+                            <h3 class="mb-0 fw-bold text-accent">₱ <?= number_format($totalEarnings, 2) ?></h3>
                         </div>
                     </div>
                 </div>
@@ -159,7 +162,7 @@ $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID)
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted">Rating</h6>
-                            <h3 class="mb-0 fw-bold" style="color: #27ae60;">4.8</h3>
+                            <h3 class="mb-0 fw-bold" style="color: #27ae60;"><?= number_format($totalRatings, 1) ?></h3>
                         </div>
                     </div>
                 </div>
@@ -172,7 +175,7 @@ $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID)
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <!-- <li class="list-group-item d-flex justify-content-between align-items-center">
                             New booking from <strong>Maria Santos</strong>
                             <small class="text-muted">2 hours ago</small>
                         </li>
@@ -183,7 +186,7 @@ $totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID)
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Payment received: <strong>₱8,500</strong>
                             <small class="text-muted">1 day ago</small>
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
             </div>
