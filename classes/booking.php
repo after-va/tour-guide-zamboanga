@@ -429,6 +429,15 @@ class Booking extends Database{
 
         return $query->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function countAllBookings(){
+      $sql = "SELECT COUNT(*) AS countallbookings FROM booking";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetch(PDO::FETCH_ASSOC);  
+    }
     // public function viewBookingByBookingID($tourist_ID){
     //     $sql = "SELECT * FROM Booking WHERE booking_ID = :booking_ID";
     //     $db = $this->connect();
