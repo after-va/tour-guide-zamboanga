@@ -25,28 +25,59 @@ trait TourPackagesTrait {
     }
 
     public function updateTourPackages($tourpackage_ID, $guide_ID, $name, $desc, $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db) {
-        
-        $result = $this->updateSchedule($schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based, $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult, $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db);
+        try {
+            // ✅ STEP 1: Update Schedule
+            $result = $this->updateSchedule(
+                $schedule_ID, $days, $numberofpeople_ID, $numberofpeople_maximum, $numberofpeople_based,
+                $pricing_ID, $currency, $forAdult, $forChild, $forYoungAdult,
+                $forSenior, $forPWD, $includeMeal, $mealFee, $transportFee, $discount, $db
+            );
 
-        if (!$result) {
-                return false;
+            if (!$result) {
+                throw new Exception("Failed to update schedule for package ID: $tourpackage_ID");
+            }
+
+            // ✅ STEP 2: Update Number of People
+            $sqlPeople = "UPDATE Number_Of_People
+                        SET pricing_ID = :pricing_ID,
+                            numberofpeople_maximum = :max,
+                            numberofpeople_based = :based
+                        WHERE numberofpeople_ID = :numberofpeople_ID";
+
+            $stmtPeople = $db->prepare($sqlPeople);
+            $stmtPeople->execute([
+                ':pricing_ID' => $pricing_ID,
+                ':max'        => $numberofpeople_maximum,
+                ':based'      => $numberofpeople_based,
+                ':numberofpeople_ID' => $numberofpeople_ID
+            ]);
+
+            // ✅ STEP 3: Update Main Tour_Packages Table
+            $sqlPackage = "UPDATE Tour_Package
+                        SET guide_ID = :guide_ID,
+                            tourpackage_name = :name,
+                            tourpackage_desc = :desc,
+                            schedule_ID = :schedule_ID
+                        WHERE tourpackage_ID = :tourpackage_ID";
+
+            $stmtPackage = $db->prepare($sqlPackage);
+            $stmtPackage->execute([
+                ':guide_ID'           => $guide_ID,
+                ':name'               => $name,
+                ':desc'               => $desc,
+                ':schedule_ID'        => $schedule_ID,
+                ':tourpackage_ID'     => $tourpackage_ID
+            ]);
+
+            // ✅ All succeeded
+            return true;
+
+        } catch (Exception $e) {
+            error_log("[updateTourPackages] Error: " . $e->getMessage());
+            return false;
         }
-
-        $sql = "UPDATE Number_Of_People
-                SET pricing_ID = :pricing_ID,
-                    numberofpeople_maximum = :max,
-                    numberofpeople_based = :based
-                WHERE numberofpeople_ID = :numberofpeople_ID;";
-            $query = $db->prepare($sql);
-            $query->bindParam(':numberofpeople_ID', $numberofpeople_ID);
-            $query->bindParam(':max', $numberofpeople_maximum);
-            $query->bindParam(':based', $numberofpeople_based);
-            
-            return $query->execute();
-
-
-        
     }
+
 
     public function getTourPackageByID($tourpackage_ID){
         $sql = "SELECT * FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
