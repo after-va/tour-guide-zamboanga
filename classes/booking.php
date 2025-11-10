@@ -278,38 +278,38 @@ class Booking extends Database{
     }
 
     public function updateBookingStatus_Approved($booking_ID) {
-    try {
-        $sql = "UPDATE Booking 
-                SET booking_status = 'Approved' 
-                WHERE booking_ID = :booking_ID";
+        try {
+            $sql = "UPDATE Booking 
+                    SET booking_status = 'Approved' 
+                    WHERE booking_ID = :booking_ID";
 
-        $db = $this->connect();
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        $query = $db->prepare($sql);
-        $query->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
-        $query->execute();
+            $db = $this->connect();
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $query = $db->prepare($sql);
+            $query->bindParam(':booking_ID', $booking_ID, PDO::PARAM_INT);
+            $query->execute();
 
-        if ($query->rowCount() > 0) {
-            // Success
-            error_log("✅ Booking ID {$booking_ID} successfully updated to 'Approved'.");
-            return true;
-        } else {
-            // No rows affected (booking ID might not exist)
-            error_log("⚠️ No rows updated. Booking ID {$booking_ID} may not exist or is already 'Approved'.");
+            if ($query->rowCount() > 0) {
+                // Success
+                error_log("✅ Booking ID {$booking_ID} successfully updated to 'Approved'.");
+                return true;
+            } else {
+                // No rows affected (booking ID might not exist)
+                error_log("⚠️ No rows updated. Booking ID {$booking_ID} may not exist or is already 'Approved'.");
+                return false;
+            }
+
+        } catch (PDOException $e) {
+            // Log the detailed error message
+            error_log("❌ Database error while updating booking status for ID {$booking_ID}: " . $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            // Catch any unexpected errors
+            error_log("❌ General error in updateBookingStatus_Approved(): " . $e->getMessage());
             return false;
         }
-
-    } catch (PDOException $e) {
-        // Log the detailed error message
-        error_log("❌ Database error while updating booking status for ID {$booking_ID}: " . $e->getMessage());
-        return false;
-    } catch (Exception $e) {
-        // Catch any unexpected errors
-        error_log("❌ General error in updateBookingStatus_Approved(): " . $e->getMessage());
-        return false;
     }
-}
 
     public function existingBookingsInGuide($guide_ID){
         $db = $this->connect();
@@ -325,14 +325,6 @@ class Booking extends Database{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    
-    // public function getBookingDetailsByBookingID($booking_ID){
-        
-
-
-    // }
-
-
     public function cancelBookingNoRefund($booking_ID, $tourist_ID) {
         $db = $this->connect();
         $sql = "UPDATE booking 
@@ -345,6 +337,26 @@ class Booking extends Database{
         return $stmt->execute();
     }
 
+    public function getActiveBookingCount($guide_ID) {
+        $sql = "SELECT COUNT(*) AS active_count
+            FROM booking b 
+            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID 
+            WHERE tp.guide_ID = :guide_ID 
+            AND b.booking_status IN ('Pending for Payment', 'Pending for Approval', 'Approved')";
+
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+            $query->execute();
+
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+            return $result['active_count'] ?? 0;
+        } catch (Exception $e) {
+            error_log("getActiveBookingCount Error: " . $e->getMessage());
+            return 0;
+        }
+    }
     
     
     // public function viewBookingByBookingID($tourist_ID){

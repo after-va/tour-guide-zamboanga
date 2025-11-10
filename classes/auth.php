@@ -12,13 +12,22 @@ class Auth extends Database {
                 ul.user_ID, 
                 ul.user_password, 
                 r.role_name,
+                CONCAT_WS(' ',
+                    n.name_first,
+                    n.name_second,
+                    n.name_middle,
+                    n.name_last,
+                    n.name_suffix
+                ) AS full_name,
                 r.role_ID, 
                 ai.account_status,
                 ai.account_ID
             FROM User_Login ul
-            LEFT JOIN Account_Info ai ON ul.user_ID = ai.user_ID
-            LEFT JOIN Role r ON ai.role_ID = r.role_ID
-            LEFT JOIN activity_log al ON ai.account_ID = al.account_ID
+            JOIN Account_Info ai ON ul.user_ID = ai.user_ID
+            JOIN Role r ON ai.role_ID = r.role_ID
+            JOIN activity_log al ON ai.account_ID = al.account_ID
+            JOIN person p ON ul.person_ID = p.person_ID
+            JOIN name_info n ON p.name_ID = n.name_ID
             WHERE ul.user_username = :username 
             ORDER BY `al`.`activity_timestamp` DESC
             LIMIT 1";
