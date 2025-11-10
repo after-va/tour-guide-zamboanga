@@ -95,6 +95,7 @@ class Auth extends Database {
             JOIN Role r ON a.role_ID = r.role_ID
             LEFT JOIN Admin ad ON a.account_ID = ad.account_ID
             LEFT JOIN Guide g ON a.account_ID = g.account_ID
+            WHERE r.role_ID != 1
             ORDER BY full_name
             ";
         

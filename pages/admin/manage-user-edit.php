@@ -1,25 +1,99 @@
 <?php
 session_start();
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $_SESSION['user']['account_status'] == 'Suspended') {
+    header('Location: ../../index.php');
+    exit;
+}
+
 require_once "../../config/database.php";
 
 // Get user ID from URL
 $user_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
+if ($user_id <= 0) {
+    $_SESSION['error'] = "Invalid user ID.";
+    header("Location: manage-users.php");
+    exit;
+}
+
 // Database connection
 $db = new Database();
 $pdo = $db->connect();
 
+// Fetch user data
+$stmt = $pdo->prepare("
+    SELECT u.user_ID, u.user_username, a.role_ID, a.account_status,
+           ni.name_first, ni.name_last
+    FROM account_info a
+    JOIN user_login u ON u.user_ID = a.user_ID
+    JOIN person p ON u.person_ID = p.person_ID
+    JOIN name_info ni ON p.name_ID = ni.name_ID
+    WHERE u.user_ID = ?
+");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    $_SESSION['error'] = "User not found.";
+    header("Location: manage-users.php");
+    exit;
+}
+
+// Fetch roles
+$roles = $pdo->query("SELECT role_ID, role_name FROM role")->fetchAll(PDO::FETCH_ASSOC);
+
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get form data
     $firstname = trim($_POST['firstname']);
-    $lastname = trim($_POST['lastname']);
-    $username = trim($_POST['username']);
-    $role_id = intval($_POST['role_id']);
-    $status = trim($_POST['status']);
-    $password = trim($_POST['password']);
-    
-   
+    $lastname  = trim($_POST['lastname']);
+    $username  = trim($_POST['username']);
+    $role_id   = intval($_POST['role_id']);
+    $status    = trim($_POST['status']);
+    $password  = trim($_POST['password']);
+
+    // Validation
+    $errors = [];
+    if (empty($firstname)) $errors[] = "First name is required.";
+    if (empty($lastname)) $errors[] = "Last name is required.";
+    if (empty($username)) $errors[] = "Username is required.";
+    if (!in_array($status, ['Active', 'Inactive'])) $errors[] = "Invalid status.";
+
+    // Update user
+    if (empty($errors)) {
+        try {
+            $pdo->beginTransaction();
+
+            // Update person
+            $stmt = $pdo->prepare("UPDATE person SET person_firstname = ?, person_lastname = ? WHERE person_ID = (SELECT person_ID FROM users WHERE user_ID = ?)");
+            $stmt->execute([$firstname, $lastname, $user_id]);
+
+            // Update user
+            $sql = "UPDATE users SET user_username = ?, role_ID = ?, account_status = ? WHERE user_ID = ?";
+            $params = [$username, $role_id, $status, $user_id];
+
+            if (!empty($password)) {
+                $hashed = password_hash($password, PASSWORD_DEFAULT);
+                $sql = "UPDATE users SET user_username = ?, role_ID = ?, account_status = ?, user_password = ? WHERE user_ID = ?";
+                $params = [$username, $role_id, $status, $hashed, $_id];
+            }
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+
+            $pdo->commit();
+            $_SESSION['success'] = "User updated successfully.";
+            header("Location: manage-users.php");
+            exit;
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $errors[] = "Update failed. Please try again.";
+        }
+    }
+
+    if (!empty($errors)) {
+        $_SESSION['error'] = implode("<br>", $errors);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,73 +101,323 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User</title>
-    <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../../assets/css/custom.css">
+    <title>Edit User | TourGuide PH Admin</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --primary-color: #ffffff;
+            --secondary-color: #213638;
+            --accent: #E5A13E;
+            --secondary-accent: #CFE7E5;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 260px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding-top: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.85rem 1.5rem;
+            border-radius: 0;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(229, 161, 62, 0.15);
+            color: var(--accent);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar .nav-text {
+            white-space: nowrap;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .header-card {
+            background: var(--primary-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(33, 54, 56, 0.08);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(207, 231, 229, 0.3);
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .clock {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .form-card {
+            background: var(--primary-color);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid rgba(207, 231, 229, 0.4);
+            padding: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .alert-custom {
+            border-radius: 12px;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .nav-text,
+            .sidebar .logo span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <?php include_once "../includes/admin-header.php"; ?>
-    
-    <div class="container mt-4">
-        <h2>Edit User</h2>
-        
-        <div class="card">
-            <div class="card-body">
-                <form method="POST">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="firstname" class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="firstname" name="firstname" 
-                                value="<?php echo htmlspecialchars($user['person_firstname']); ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="lastname" class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lastname" name="lastname" 
-                                value="<?php echo htmlspecialchars($user['person_lastname']); ?>" required>
-                        </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo px-3">
+            <span>TourGuide PH</span>
+        </div>
+        <nav class="nav flex-column px-2">
+            <a class="nav-link" href="dashboard.php">
+                <i class="bi bi-speedometer2"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a class="nav-link" href="add-tour-spots.php">
+                <i class="bi bi-geo-alt"></i>
+                <span class="nav-text">Manage Spots</span>
+            </a>
+            <a class="nav-link active" href="manage-users.php">
+                <i class="bi bi-people"></i>
+                <span class="nav-text">Manage Users</span>
+            </a>
+            <a class="nav-link" href="reports.php">
+                <i class="bi bi-graph-up"></i>
+                <span class="nav-text">Reports</span>
+            </a>
+            <a class="nav-link" href="settings.php">
+                <i class="bi bi-gear"></i>
+                <span class="nav-text">Settings</span>
+            </a>
+            <hr class="bg-white opacity-25 my-3">
+            <a class="nav-link text-danger" href="../logout.php"
+               onclick="return confirm('Logout now? Your last activity will be recorded.');">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div>
+                <h3 class="mb-1 fw-bold">Edit User</h3>
+                <p class="text-muted mb-0">Update user information, role, and account status.</p>
+            </div>
+            <div class="text-md-end">
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
+                    <span class="badge bg-success status-badge">
+                        <i class="bi bi-shield-check"></i> Admin
+                    </span>
+                    <div class="clock" id="liveClock"></div>
+                </div>
+                <small class="text-muted d-block mt-1">Philippine Standard Time (PST)</small>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="manage-users.php" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Users
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert-custom alert-success p-3">
+                <?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert-custom alert-error p-3">
+                <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Edit Form -->
+        <div class="form-card">
+            <form method="POST" novalidate>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" name="firstname" class="form-control" 
+                               value="<?= htmlspecialchars($user['person_firstname']) ?>" required>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" 
-                            value="<?php echo htmlspecialchars($user['user_username']); ?>" required>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" name="lastname" class="form-control" 
+                               value="<?= htmlspecialchars($user['person_lastname']) ?>" required>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password">
-                        <div class="form-text">Leave blank to keep current password</div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Username <span class="text-danger">*</span></label>
+                        <input type="text" name="username" class="form-control" 
+                               value="<?= htmlspecialchars($user['user_username']) ?>" required>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="role_id" class="form-label">Role</label>
-                        <select class="form-select" id="role_id" name="role_id" required>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
+                        <div class="form-text">Only fill if you want to change the password.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Role <span class="text-danger">*</span></label>
+                        <select name="role_id" class="form-select" required>
                             <?php foreach ($roles as $role): ?>
-                                <option value="<?php echo $role['role_ID']; ?>" 
-                                    <?php echo ($user['role_ID'] == $role['role_ID']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($role['role_name']); ?>
+                                <option value="<?= $role['role_ID'] ?>" 
+                                    <?= ($user['role_ID'] == $role['role_ID']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($role['role_name']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Account Status</label>
-                        <select class="form-select" id="status" name="status" required>
-                            <option value="Active" <?php echo ($user['account_status'] == 'Active') ? 'selected' : ''; ?>>Active</option>
-                            <option value="Inactive" <?php echo ($user['account_status'] == 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Account Status <span class="text-danger">*</span></label>
+                        <select name="status" class="form-select" required>
+                            <option value="Active" <?= ($user['account_status'] == 'Active') ? 'selected' : '' ?>>Active</option>
+                            <option value="Inactive" <?= ($user['account_status'] == 'Inactive') ? 'selected' : '' ?>>Inactive</option>
                         </select>
                     </div>
-                    
-                    <div class="mb-3">
-                        <button type="submit" class="btn btn-primary">Update User</button>
-                        <a href="manage-users.php" class="btn btn-secondary">Cancel</a>
-                    </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Update User
+                    </button>
+                    <a href="manage-users.php" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
         </div>
-    </div>
-    
-    <script src="../../assets/js/bootstrap.bundle.min.js"></script>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Live Clock -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US', options);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
 </body>
 </html>
