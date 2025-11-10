@@ -8,6 +8,11 @@
 
 body{
     background-color: var(--muted-color);
+    display: flex;
+}
+
+main {
+ width: 100%;
 }
 
 .aside-tourist {
@@ -67,15 +72,62 @@ body{
     .aside-tourist {
         position: static;
         left: auto;
-        height: auto;
+        height: 37rem;
         margin-top: 5rem;
         margin-left: 1rem;
         width: 15rem;
         transition: none;
+        z-index: 1;
     }
 
     .filter-overlay,
     #filterToggle {
         display: none !important;
     }
+}
+
+/* ==== GRID CONTAINER ==== */
+.main-contents {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    margin-top: 4rem;
+}
+
+/* Responsive Grid */
+@media (min-width: 576px) {
+    .main-contents { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 992px) {
+    .main-contents { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* CARD: Fixed height + full control */
+.main-contents .card {
+    width: 100%;
+    max-width: none !important;
+    margin: 0 !important;
+    height: 28rem !important;                    /* ← YOUR FIXED HEIGHT */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.main-contents .card img {
+    height: 10rem;                    /* Fixed image height */
+    object-fit: cover;
+    width: 100%;
+}
+
+.main-contents .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.main-contents .card-body .btn {
+    margin-top: auto;                 /* Push button to bottom */
 }

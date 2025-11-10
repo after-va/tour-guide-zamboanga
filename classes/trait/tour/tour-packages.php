@@ -107,6 +107,42 @@ trait TourPackagesTrait {
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getTourPackagesRating($tourpackage_ID): ?array{
+        // 1. Make sure table name is correct (you wrote "rating" — is it "ratings"?)
+        $sql = "SELECT 
+                AVG(rating_value) AS avg,
+                COUNT(rating_value) AS total
+                FROM ratings
+                WHERE rating_tourpackage_ID = :tourpackage_ID";
+
+        try {
+            $db = $this->connect(); // make sure this returns a valid PDO instance
+
+            // 2. Enable exceptions for easier debugging
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $query = $db->prepare($sql);
+            $query->bindParam(':tourpackage_ID', $tourpackage_ID, PDO::PARAM_INT);
+            $query->execute();
+
+            $row = $query->fetch(PDO::FETCH_ASSOC);
+
+            // 3. If no ratings → AVG() returns NULL, COUNT() = 0
+            if (!$row || $row['total_ratings'] == 0) {
+                return null;
+            }
+
+            return [
+                'avg'   => round((float)$row['avg_rating'], 1),
+                'count' => (int)$row['total_ratings']
+            ];
+
+        } catch (PDOException $e) {
+            // 4. Log error (never show raw error to user)
+            error_log("Rating Query Failed: " . $e->getMessage());
+            return null;
+        }
+    }
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
     //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
     //     $db = $this->connect();

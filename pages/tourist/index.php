@@ -17,9 +17,10 @@ require_once "../../classes/tour-manager.php";
 
 $tourist_ID = $_SESSION['user']['account_ID'];
 $touristObj = new Tourist();
-$packageObj = new TourManager();
+$TourManagerObj = new TourManager();
 
 $filter = [];
+$packages = $TourManagerObj->viewAllPackages();  
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST'){
     
@@ -31,11 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'){
 }
 
 
+function buildStarList(float $avg, int $count): string
+{
+    $full  = (int)floor($avg);
+    $half  = ($avg - $full) >= 0.5 ? 1 : 0;
+    $empty = 5 - $full - $half;
 
+    $html = str_repeat('<li class="list-inline-item me-0"><i class="fas fa-star text-warning fa-xs"></i></li>', $full);
+    $html .= $half ? '<li class="list-inline-item me-0"><i class="fas fa-star-half-alt text-warning fa-xs"></i></li>' : '';
+    $html .= str_repeat('<li class="list-inline-item me-0"><i class="far fa-star text-warning fa-xs"></i></li>', $empty);
+    $html .= '<li class="list-inline-item"><small class="text-muted">'.number_format($avg,1).' ('.$count.')</small></li>';
+
+    return $html;
+}
 
 // Get available packages
-$packages = $packageObj->viewAllPackages();
-$packageCategory = $packageObj->getTourSpotsCategory(); // adjust method name if needed
+$packages = $TourManagerObj->viewAllPackages();
+$packageCategory = $TourManagerObj->getTourSpotsCategory(); // adjust method name if needed
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,7 +93,7 @@ $packageCategory = $packageObj->getTourSpotsCategory(); // adjust method name if
     class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center" 
     id="filterToggle" 
     aria-label="Open filters"
-    style="width: 3rem; height: 3rem;">
+    style="width: 3rem; height: 3rem; z-index: 1;">
     <i class="bi bi-funnel-fill fs-4"></i>
 </button>
 
@@ -159,65 +172,60 @@ $packageCategory = $packageObj->getTourSpotsCategory(); // adjust method name if
         <button class="btn-filter btn btn-warning w-100 text-white fw-semibold">Apply Filters</button>
     </form>
 </aside>
-<main class = "main-contents">
-<div class="container">
-  <section class="mx-auto my-5" style="max-width: 23rem;">
-      
-    <div class="card">
-      <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
-        <img src="https://mdbootstrap.com/img/Photos/Horizontal/Food/8-col/img (5).jpg" class="img-fluid" />
-        <a href="#!">
-          <div class="mask" style="background-color: rgba(251, 251, 251, 0.15);"></div>
-        </a>
-      </div>
-      <div class="card-body">
-        <h5 class="card-title font-weight-bold"><a>La Sirena restaurant</a></h5>
-        <ul class="list-unstyled list-inline mb-0">
-          <li class="list-inline-item me-0">
-            <i class="fas fa-star text-warning fa-xs"> </i>
-          </li>
-          <li class="list-inline-item me-0">
-            <i class="fas fa-star text-warning fa-xs"></i>
-          </li>
-          <li class="list-inline-item me-0">
-            <i class="fas fa-star text-warning fa-xs"></i>
-          </li>
-          <li class="list-inline-item me-0">
-            <i class="fas fa-star text-warning fa-xs"></i>
-          </li>
-          <li class="list-inline-item">
-            <i class="fas fa-star-half-alt text-warning fa-xs"></i>
-          </li>
-          <li class="list-inline-item">
-            <p class="text-muted">4.5 (413)</p>
-          </li>
-        </ul>
-        <p class="mb-2">$ • American, Restaurant</p>
-        <p class="card-text">
-          Some quick example text to build on the card title and make up the bulk of the
-          card's content.
-        </p>
-        <hr class="my-4" />
-        <p class="lead"><strong>Tonight's availability</strong></p>
-        <ul class="list-unstyled list-inline d-flex justify-content-between">
-          <li class="list-inline-item me-0">
-            <div class="chip me-0">5:30PM</div>
-          </li>
-          <li class="list-inline-item me-0">
-            <div class="chip bg-secondary text-white me-0">7:30PM</div>
-          </li>
-          <li class="list-inline-item me-0">
-            <div class="chip me-0">8:00PM</div>
-          </li>
-          <li class="list-inline-item me-0">
-            <div class="chip me-0">9:00PM</div>
-          </li>
-        </ul>
-        <a href="#!" class="btn btn-link link-secondary p-md-1 mb-0">Button</a>
-      </div>
-    </div>
+<main class="main-contents">
 
+    <?php foreach ($packages as $package): 
+        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
+        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
+        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
+        $spots    = $TourManagerObj->getSpotsByPackage($package['tourpackage_ID']);
+        $spotNames = array_map(fn($s) => $s['spots_name'], $spots);
+        $rating   = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
+        $avg      = $rating['avg']   ?? 0;
+        $count    = $rating['count'] ?? 0;
+    ?>
+        <div class="card h-100 shadow-sm border-0">
+            <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+                <img src="https://mdbootstrap.com/img/Photos/Horizontal/Food/8-col/img (5).jpg" 
+                     class="img-fluid w-100" alt="<?= htmlspecialchars($package['tourpackage_name']) ?>" />
+                <a href="#!"><div class="mask" style="background-color: rgba(251,251,251,0.15);"></div></a>
+            </div>
 
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold">
+                    <a href="#!" class="text-dark text-decoration-none">
+                        <?= htmlspecialchars($package['tourpackage_name']) ?>
+                    </a>
+                </h5>
+
+                <!-- STARS -->
+                <ul class="list-inline mb-2 d-flex align-items-center">
+                    <?= buildStarList($avg, $count) ?>
+                </ul>
+
+                <p class="card-text flex-grow-1">
+                    <?= htmlspecialchars($package['tourpackage_desc']) ?>
+                </p>
+
+                <hr class="my-3">
+
+                <p class="mb-1">
+                    <strong>PAX:</strong> 
+                    <?= $people['numberofpeople_based'] ?>
+                    <?php if ($people['numberofpeople_based'] > 1): ?>
+                        - <?= $people['numberofpeople_maximum'] ?>
+                    <?php endif; ?>
+                </p>
+
+                <p class="mb-2 text-success fw-semibold">
+                    from <?= $pricing['pricing_currency'] ?> <?= number_format($pricing['pricing_foradult'], 2) ?> per adult
+                </p>
+
+                <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID']; ?>" class="btn btn-warning mt-auto w-100">View Details</a>
+            </div>
+        </div>
+
+    <?php endforeach; ?>
 
 </main>
 
