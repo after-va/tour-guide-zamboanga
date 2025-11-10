@@ -3,11 +3,12 @@ session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tour Guide') {
     header('Location: ../../index.php');
     exit;
-} else if ($_SESSION['user']['account_status'] == 'Suspended'){
+} else if ($_SESSION['user']['account_status'] == 'Suspended') {
     header('Location: account-suspension.php');
     exit;
-} else if ($_SESSION['user']['account_status'] == 'Pending'){
+} else if ($_SESSION['user']['account_status'] == 'Pending') {
     header('Location: account-pending.php');
+    exit;
 }
 
 require_once "../../classes/guide.php";
@@ -17,86 +18,376 @@ $guideObj = new Guide();
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $packages = $guideObj->viewPackageByGuideID($guide_ID);
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Manage Tour Packages</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Tour Packages | TourGuide PH</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --primary-color: #ffffff;
+            --secondary-color: #213638;
+            --accent: #E5A13E;
+            --secondary-accent: #CFE7E5;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 260px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding-top: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.85rem 1.5rem;
+            border-radius: 0;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(229, 161, 62, 0.15);
+            color: var(--accent);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar .nav-text {
+            white-space: nowrap;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .header-card {
+            background: var(--primary-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(33, 54, 56, 0.08);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(207, 231, 229, 0.3);
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .clock {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .table-container {
+            background: var(--primary-color);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow: hidden;
+            border: 1px solid rgba(207, 231, 229, 0.4);
+        }
+
+        .table th {
+            background-color: rgba(207, 231, 229, 0.3);
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .btn-sm {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.6rem;
+        }
+
+        .alert-custom {
+            border-radius: 12px;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .text-truncate-150 {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+        }
+
+        .text-truncate-200 {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .nav-text,
+            .sidebar .logo span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            .header-card {
+                padding: 1.25rem;
+            }
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Manage Tour Packages</h1>
-    
-    <nav>
-        <a href="dashboard.php">Dashboard</a> |
-        <a href="booking.php">Bookings</a> |
-        <a href="tour-packages.php">Tour Packages</a> |
-        <a href="schedules.php">Schedules</a> |
-        <a href="payments.php">Payments</a> |
-        <a href="account-change.php">Change to Tourist</a>
-        <a href="logout.php">Logout</a>
-    </nav>
-    
-    <hr>
-    
-    <h2>All Tour Packages</h2>
-    
-    <?php if (isset($_SESSION['success'])): ?>
-        <div class="alert alert-success">
-            <?php 
-                echo $_SESSION['success']; 
-                unset($_SESSION['success']);
-            ?>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo px-3">
+            <span>Tourismo Zamboanga</span>
         </div>
-    <?php endif; ?>
-    
-    <?php if (isset($_SESSION['error'])): ?>
-        <div class="alert alert-error">
-            <?php 
-                echo $_SESSION['error']; 
-                unset($_SESSION['error']);
-            ?>
+        <nav class="nav flex-column px-2">
+            <a class="nav-link" href="dashboard.php">
+                <i class="bi bi-house-door"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a class="nav-link" href="booking.php">
+                <i class="bi bi-calendar-check"></i>
+                <span class="nav-text">Bookings</span>
+            </a>
+            <a class="nav-link active" href="tour-packages.php">
+                <i class="bi bi-box-seam"></i>
+                <span class="nav-text">Tour Packages</span>
+            </a>
+            <a class="nav-link" href="schedules.php">
+                <i class="bi bi-clock-history"></i>
+                <span class="nav-text">Schedules</span>
+            </a>
+            <a class="nav-link" href="payments.php">
+                <i class="bi bi-credit-card"></i>
+                <span class="nav-text">Payments</span>
+            </a>
+            <hr class="bg-white opacity-25 my-3">
+            <a class="nav-link text-warning" href="account-change.php">
+                <i class="bi bi-person-walking"></i>
+                <span class="nav-text">Switch to Tourist</span>
+            </a>
+            <a class="nav-link text-danger" href="logout.php"
+               onclick="return confirm('Logout now? Your last activity will be recorded.');">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div>
+                <h3 class="mb-1 fw-bold">Manage Tour Packages</h3>
+                <p class="text-muted mb-0">Create, edit, and manage your tour offerings.</p>
+            </div>
+            <div class="text-md-end">
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
+                    <span class="badge bg-success status-badge">
+                        <i class="bi bi-check-circle"></i> <?= ucfirst($_SESSION['user']['account_status']) ?>
+                    </span>
+                    <div class="clock" id="liveClock"></div>
+                </div>
+                <small class="text-muted d-block mt-1">Philippine Standard Time (PST)</small>
+            </div>
         </div>
-    <?php endif; ?>
-    
-    <p><a href="tour-packages-add.php">Add New Package</a></p>
-    
-    <table border="1">
-        <tr>
-            <th>No.</th>
-            <th>Package Name</th>
-            <th>Description</th>
-            <th>Schedule Days</th>
-            <th>Max People</th>
-            <th>Min People</th>
-            <th>Base Amount</th>
-            <th>Discount</th>
-            <th>Tour Spots</th>
-            <th>Actions</th>
-        </tr>
-        <?php $no = 1; foreach ($packages as $package){ 
-            $schedule = $guideObj->getScheduleByID($package['schedule_ID']);
-            $people = $guideObj->getPeopleByID($schedule['numberofpeople_ID']);
-            $pricing = $guideObj->getPricingByID($people['pricing_ID']);
-            $spots = $guideObj->getSpotsByPackage($package['tourpackage_ID']);
-            $spotNames = array_map(function($spot) {
-                return $spot['spots_name'];
-            }, $spots);
-        ?>
-        <tr>
-            <td><?= $no++; ?></td>
-            <td><?= $package['tourpackage_name']; ?></td>
-            <td><?= $package['tourpackage_desc']; ?></td>
-            <td><?= $schedule['schedule_days']; ?></td>
-            <td><?= $people['numberofpeople_maximum']; ?></td>
-            <td><?= $people['numberofpeople_based']; ?></td>
-            <td><?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_foradult'], 2); ?></td>
-            <td><?= $pricing['pricing_currency'] . ' ' . number_format($pricing['pricing_discount'], 2); ?></td>
-            <td><?= implode(', ', $spotNames); ?></td>
-            <td>
-                <a href="tour-packages-edit.php?id=<?= $package['tourpackage_ID']; ?>">Edit</a> |
-                <a href="tour-packages-delete.php?id=<?= $package['tourpackage_ID']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
-            </td>
-        </tr>
-        <?php } ?>
-    </table>
+
+        <!-- Alerts -->
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert-custom alert-success p-3">
+                <?= htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert-custom alert-error p-3">
+                <?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Quick Actions -->
+        <div class="d-flex gap-2 mb-4">
+            <a href="tour-packages-add.php" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Add New Package
+            </a>
+        </div>
+
+        <!-- Packages Table -->
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Package Name</th>
+                            <th>Description</th>
+                            <th>Days</th>
+                            <th>Max</th>
+                            <th>Min</th>
+                            <th>Base Price</th>
+                            <th>Discount</th>
+                            <th>Spots</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($packages)): ?>
+                            <?php $no = 1; foreach ($packages as $package): 
+                                $schedule = $guideObj->getScheduleByID($package['schedule_ID']);
+                                $people = $guideObj->getPeopleByID($schedule['numberofpeople_ID']);
+                                $pricing = $guideObj->getPricingByID($people['pricing_ID']);
+                                $spots = $guideObj->getSpotsByPackage($package['tourpackage_ID']);
+                                $spotNames = array_map(fn($spot) => $spot['spots_name'], $spots);
+                            ?>
+                                <tr>
+                                    <td><?= $no++ ?></td>
+                                    <td>
+                                        <strong><?= htmlspecialchars($package['tourpackage_name']) ?></strong>
+                                    </td>
+                                    <td class="text-truncate-200">
+                                        <?= htmlspecialchars($package['tourpackage_desc']) ?>
+                                    </td>
+                                    <td><?= htmlspecialchars($schedule['schedule_days']) ?></td>
+                                    <td><?= htmlspecialchars($people['numberofpeople_maximum']) ?></td>
+                                    <td><?= htmlspecialchars($people['numberofpeople_based']) ?></td>
+                                    <td>₱<?= number_format($pricing['pricing_foradult'], 2) ?></td>
+                                    <td><?= $pricing['pricing_discount'] ?>%</td>
+                                    <td class="text-truncate-150">
+                                        <?= !empty($spotNames) ? htmlspecialchars(implode(', ', $spotNames)) : '—' ?>
+                                    </td>
+                                    <td>
+                                        <a href="tour-packages-edit.php?id=<?= $package['tourpackage_ID'] ?>" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a href="tour-packages-delete.php?id=<?= $package['tourpackage_ID'] ?>" 
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Delete this package? This cannot be undone.')">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-muted">
+                                    <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                                    You haven't created any tour packages yet.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Live Clock (PH Time) -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US', options);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
 </body>
 </html>
