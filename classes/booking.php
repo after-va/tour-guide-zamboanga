@@ -53,8 +53,8 @@ class Booking extends Database{
         JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
         WHERE b.tourist_ID = :tourist_ID
         GROUP BY b.booking_ID
-        ORDER BY ABS(DATEDIFF(b.booking_start_date, CURRENT_TIMESTAMP)) ASC
-    ";
+        ORDER BY ABS(DATEDIFF(b.booking_start_date, CURRENT_TIMESTAMP)) ASC";
+
         $db = $this->connect();
         $query = $db->prepare($sql);
         $query->bindParam(':tourist_ID', $tourist_ID);
@@ -110,7 +110,52 @@ class Booking extends Database{
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
-
+    public function viewBookingByBookingIDForGuide($booking_ID){
+        $sql = "SELECT 
+            b.booking_ID,
+            b.tourist_ID,
+            b.booking_isselfincluded,
+            tp.tourpackage_ID,
+            tp.tourpackage_name,
+            tp.tourpackage_desc,
+            CONCAT(n.name_first, ' ', n.name_last) AS tourist_name,
+            b.booking_start_date,
+            b.booking_end_date,
+            b.booking_status,
+            s.schedule_days,
+            np.numberofpeople_maximum,
+            np.numberofpeople_based,
+            pc.pricing_foradult,
+            pc.pricing_forchild,
+            pc.pricing_foryoungadult,
+            pc.pricing_forsenior,
+            pc.pricing_forpwd,
+            pc.include_meal,
+            pc.pricing_mealfee,
+            pc.transport_fee,
+            pc.pricing_discount,
+            GROUP_CONCAT(ts.spots_name SEPARATOR ', ') AS tour_spots
+        FROM booking b
+        JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+        JOIN schedule s ON tp.schedule_ID = s.schedule_ID
+        JOIN Number_Of_People np ON np.numberofpeople_ID = s.numberofpeople_ID
+        JOIN pricing pc ON pc.pricing_ID = np.pricing_ID
+        JOIN account_info ai ON ai.account_ID = b.tourist_ID
+        JOIN user_login ul ON ai.user_ID = ul.user_ID
+        JOIN person p ON ul.person_ID = p.person_ID
+        JOIN name_info n ON p.name_ID = n.name_ID
+        JOIN tour_package_spots tps ON tp.tourpackage_ID = tps.tourpackage_ID
+        JOIN tour_spots ts ON tps.spots_ID = ts.spots_ID    
+        LEFT JOIN booking_bundle bb ON b.booking_ID = bb.booking_ID
+        WHERE b.booking_ID = :booking_ID
+        GROUP BY b.booking_ID
+        ORDER BY ABS(DATEDIFF(b.booking_start_date, CURRENT_TIMESTAMP)) ASC";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':booking_ID', $booking_ID);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
 
     public function addBookingForTourist($tourist_ID, $tourpackage_ID, $booking_start_date, $booking_end_date, $booking_isselfincluded){
         $db = $this->connect();
@@ -350,7 +395,32 @@ class Booking extends Database{
         }
     }
     
+    public function getCompanions($booking_ID){
+        $sql = "SELECT 
+                C.companion_name,
+                CC.companion_category_name
+            FROM Booking AS B
+            JOIN Booking_Bundle AS BB ON B.booking_ID = BB.booking_ID
+            JOIN Companion AS C ON BB.companion_ID = C.companion_ID
+            JOIN Companion_Category CC ON CC.companion_category_ID = C.companion_category_ID
+            WHERE B.booking_ID = :booking_ID
+            ORDER BY C.companion_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':booking_ID', $booking_ID);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
     
+    public function getDates($booking_ID){
+        $sql = "SELECT booking_start_date, booking_end_date FROM booking 
+            WHERE booking_ID = :booking_ID";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->bindParam(':booking_ID', $booking_ID);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
     // public function viewBookingByBookingID($tourist_ID){
     //     $sql = "SELECT * FROM Booking WHERE booking_ID = :booking_ID";
     //     $db = $this->connect();
