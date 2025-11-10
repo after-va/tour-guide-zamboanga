@@ -257,7 +257,7 @@ $countBookings = $bookingObj->countBookings();
                 <span class="nav-text">Settings</span>
             </a>
             <hr class="bg-white opacity-25 my-3">
-            <a class="nav-link text-danger" href="../logout.php"
+            <a class="nav-link text-danger" href="logout.php"
                onclick="return confirm('Logout now? Your last activity will be recorded.');">
                 <i class="bi bi-box-arrow-right"></i>
                 <span class="nav-text">Logout</span>
