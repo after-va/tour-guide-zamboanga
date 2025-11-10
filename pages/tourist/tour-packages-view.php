@@ -10,6 +10,7 @@ require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 $tourist_ID = $_SESSION['user']['account_ID'];
 $toristObj = new Tourist();
+
 // Validate and get package ID
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     $_SESSION['error'] = "Invalid tour package ID.";
@@ -22,7 +23,7 @@ $tourManager = new TourManager();
 $guideObj = new Guide();
 
 // Get package details
-$package = $tourManager->getTourPackageById($tourpackage_ID);
+$package = $tourManager->getTourPackageDetailsByID($tourpackage_ID);
 
 if (!$package) {
     $_SESSION['error'] = "Tour package not found.";
@@ -32,10 +33,10 @@ if (!$package) {
 
 // Get guide name
 $guides = $guideObj->viewAllGuide();
-$guideName = "";
+$guideName = "N/A";
 foreach ($guides as $guide) {
     if ($guide['guide_ID'] == $package['guide_ID']) {
-        $guideName = $guide['guide_name'];
+        $guideName = htmlspecialchars($guide['guide_name']);
         break;
     }
 }
@@ -44,95 +45,151 @@ foreach ($guides as $guide) {
 $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>View Tour Package - Admin</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #fafafa;
-        }
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 25px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        h1 {
-            margin-bottom: 15px;
-        }
-        .package-details {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-radius: 5px;
-        }
-        .package-details p {
-            margin: 10px 0;
-        }
-        .package-details strong {
-            display: inline-block;
-            width: 180px;
-        }
-        .spots-list {
-            margin-left: 180px;
-            padding-left: 20px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Tour Package</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../../assets/css/tourist/tour-packages-view.css">
+    
 </head>
 <body>
-    <div class="container">
-        <h1>View Tour Package</h1>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <!-- Success/Error Messages -->
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?= htmlspecialchars($_SESSION['error']) ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    <?php unset($_SESSION['error']); ?>
+                <?php endif; ?>
 
-        <div class="package-details">
-            <h3>Package Information</h3>
-            <p><strong>Package Name:</strong> <?php echo htmlspecialchars($package['tourpackage_name']); ?></p>
-            <p><strong>Description:</strong> <?php echo htmlspecialchars($package['tourpackage_desc']); ?></p>
-            <p><strong>Guide:</strong> <?php echo htmlspecialchars($guideName ?: 'N/A'); ?></p>
-            <p><strong>Schedule Days:</strong> <?php echo htmlspecialchars($package['schedule_days']); ?> days</p>
-            <p><strong>Maximum People:</strong> <?php echo htmlspecialchars($package['numberofpeople_maximum']); ?></p>
-            <p><strong>Minimum People:</strong> <?php echo htmlspecialchars($package['numberofpeople_based']); ?></p>
-            <p><strong>Base Amount:</strong> 
-                <?php echo htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_based'], 2)); ?>
-            </p>
-            <p><strong>Discount:</strong> 
-                <?php echo htmlspecialchars($package['pricing_currency'] . ' ' . number_format($package['pricing_discount'], 2)); ?>
-            </p>
+                <div class="card package-card">
+                    <div class="card-header">
+                        <h2 class="mb-0 text-white">
+                            <i class="fas fa-map-marked-alt me-2"></i>
+                            <?= htmlspecialchars($package['tourpackage_name']) ?>
+                        </h2>
+                    </div>
 
-            <?php if (!empty($spots)): ?>
-            <p><strong>Tour Spots:</strong></p>
-            <ul class="spots-list">
-                <?php foreach ($spots as $spot): ?>
-                    <li>
-                        <strong><?php echo htmlspecialchars($spot['spots_name']); ?></strong>
-                        <div style="margin-left: 20px; color: #555;">
-                            <?php echo htmlspecialchars($spot['spots_description']); ?>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <!-- Package Info -->
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Description:</span></p>
+                                <p class="text-muted ms-1"><?= nl2br(htmlspecialchars($package['tourpackage_desc'])) ?></p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Tour Guide:</span></p>
+                                <p class="ms-1">
+                                    <i class="fas fa-user-tie text-primary"></i>
+                                    <strong><?= $guideName ?></strong>
+                                </p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Duration:</span></p>
+                                <p class="ms-1">
+                                    <i class="fas fa-calendar-alt text-info"></i>
+                                    <?= htmlspecialchars($package['schedule_days']) ?> day(s)
+                                </p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Group Size:</span></p>
+                                <p class="ms-1">
+                                    <i class="fas fa-users text-success"></i>
+                                    <?= htmlspecialchars($package['numberofpeople_based']) ?> - <?= htmlspecialchars($package['numberofpeople_maximum']) ?> people
+                                </p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Base Price:</span></p>
+                                <h5 class="ms-1 text-success fw-bold">
+                                    <?= htmlspecialchars($package['pricing_currency']) ?>
+                                    <?= number_format($package['pricing_foradult'], 2) ?>
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="mb-3"><span class="info-label">Discount:</span></p>
+                                <h5 class="ms-1 text-danger fw-bold">
+                                    - <?= htmlspecialchars($package['pricing_currency']) ?>
+                                    <?= number_format($package['pricing_discount'], 2) ?>
+                                </h5>
+                            </div>
                         </div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-            <?php else: ?>
-                <p><em>No associated tour spots.</em></p>
-            <?php endif; ?>
-        </div>
 
-        <a href="tour-packages-browse.php" class="btn btn-secondary">← Back to Tour Packages</a>
+                        <hr class="my-4">
+
+                        <!-- Tour Spots -->
+                        <h5 class="mb-3">
+                            <i class="fas fa-map-marker-alt text-primary"></i> Tour Spots
+                        </h5>
+                        <?php if (!empty($spots)): ?>
+                            <div class="row g-3">
+                                <?php foreach ($spots as $spot): ?>
+                                    <div class="col-12">
+                                        <div class="spot-item">
+                                            <h6 class="mb-1 fw-bold text-dark">
+                                                <?= htmlspecialchars($spot['spots_name']) ?>
+                                            </h6>
+                                            <p class="mb-0 text-muted small">
+                                                <?= nl2br(htmlspecialchars($spot['spots_description'])) ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-muted fst-italic">No tour spots associated with this package.</p>
+                        <?php endif; ?>
+
+                        <div class="d-flex flex-wrap gap-3 mt-5">
+                            <!-- Book Now Button -->
+                            <a href="booking-add.php?id=<?= $package['tourpackage_ID']; ?>" 
+                               class="btn btn-success btn-book text-white">
+                                <i class="fas fa-ticket-alt me-2"></i> Book Now
+                            </a>
+
+                            <!-- Back Button -->
+                            <a href="tour-packages-browse.php" class="btn btn-outline-secondary btn-back">
+                                <i class="fas fa-arrow-left me-2"></i> Back to Packages
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Bootstrap 5 JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Optional: Add loading effect on book button
+            $('.btn-book').on('click', function(e) {
+                const $btn = $(this);
+                const originalText = $btn.html();
+                $btn.html('<i class="fas fa-spinner fa-spin"></i> Processing...').addClass('disabled');
+                
+                // Re-enable after navigation (won't happen if redirect)
+                setTimeout(() => {
+                    $btn.html(originalText).removeClass('disabled');
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 </html>
