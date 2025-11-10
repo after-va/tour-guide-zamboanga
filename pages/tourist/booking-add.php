@@ -9,6 +9,9 @@ require_once "../../classes/tour-manager.php";
 require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 require_once "../../classes/booking.php";
+require_once "../../classes/activity-log.php";
+
+$activityObj = new ActivityLogs();
 
 $tourist_ID = $_SESSION['user']['account_ID'];
 
@@ -126,6 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         $_SESSION['success'] = "Booking successful. Proceeding to payment.";
+        $action = $activityObj->touristBook($booking_ID, $tourist_ID);
         header("Location: payment-form.php?id=" . $booking_ID);
         exit();
     }
