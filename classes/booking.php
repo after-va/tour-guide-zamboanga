@@ -6,15 +6,7 @@ require_once "trait/booking/companion.php";
 
 class Booking extends Database{
     use BookingBundleTrait, CompanionTrait;
-    // tourist_ID	booking_status	booking_created_at	tourpackage_ID	booking_start_date	booking_end_date	
-    // 'Pending for Payment',
-    // 'Pending for Approval',
-    // 'Approved',
-    // 'In Progress',
-    // 'Completed',
-    // 'Cancelled',
-    // 'Refunded',
-    // 'Failed'
+    
     public function getAllCompanionCategories(){
         $sql = "SELECT * FROM `companion_category`";
         $db = $this->connect();

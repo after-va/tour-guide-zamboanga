@@ -143,6 +143,30 @@ trait TourPackagesTrait {
             return null;
         }
     }
+
+    public function getTourPackagesCountByGuide($guide_ID){
+        $sql = "SELECT COUNT(*) AS total_packages
+            FROM tour_package 
+            WHERE guide_ID = :guide_ID 
+            AND tourpackage_status = 'Active'";
+
+        try {
+            $db = $this->connect();
+            $query = $db->prepare($sql);
+            $query->bindParam(':guide_ID', $guide_ID, PDO::PARAM_INT);
+            $query->execute();
+
+            $result = $query->fetch(PDO::FETCH_ASSOC);
+            return $result['total_packages'] ?? 0;
+        } catch (Exception $e) {
+            error_log("getTourPackagesCountByGuide Error: " . $e->getMessage());
+            return 0;
+        }
+
+    }
+
+
+
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
     //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";
     //     $db = $this->connect();

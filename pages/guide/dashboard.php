@@ -19,12 +19,15 @@ if ($_SESSION['user']['account_status'] === 'Pending') {
 
 require_once "../../classes/guide.php";
 require_once "../../classes/booking.php";
+require_once "../../classes/tour-manager.php";
 
 $guideObj = new Guide();
 $bookingObj = new Booking();
+$tourManagerObj = new TourManager();
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
 $activebookings = $bookingObj->getActiveBookingCount($guide_ID);
+$totalofActivePackages = $tourManagerObj->getTourPackagesCountByGuide($guide_ID);
 ?>
 
 <!DOCTYPE html>
@@ -128,7 +131,7 @@ $activebookings = $bookingObj->getActiveBookingCount($guide_ID);
                         </div>
                         <div>
                             <h6 class="mb-0 text-muted">Tour Packages</h6>
-                            <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);">8</h3>
+                            <h3 class="mb-0 fw-bold" style="color: var(--secondary-color);"><?= $totalofActivePackages ?? '' ?></h3>
                         </div>
                     </div>
                 </div>
