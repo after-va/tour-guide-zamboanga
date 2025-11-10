@@ -14,6 +14,9 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/tourist.php";
 require_once "../../classes/payment-manager.php";
 require_once "../../classes/booking.php";
+require_once "../../classes/activity-log.php";
+
+$activityObj = new ActivityLogs();
 
 $tourist_ID = $_SESSION['user']['account_ID'];
 $booking_ID = $_GET['id'] ?? null;
@@ -92,6 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($result) {
         $_SESSION['success'] = "Refund request submitted successfully.";
+        $action = $activityObj->touristRefundBooking($booking_ID, $tourist_ID);
         header("Location: booking.php");
         exit;
     } else {
