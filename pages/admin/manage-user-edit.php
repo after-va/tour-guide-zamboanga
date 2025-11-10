@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User | TourGuide PH Admin</title>
+    <title>Edit User | Tourismo Zamboanga Admin</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
@@ -268,14 +268,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo px-3">
-            <span>TourGuide PH</span>
+            <span>Tourismo Zamboanga</span>
         </div>
         <nav class="nav flex-column px-2">
             <a class="nav-link" href="dashboard.php">
                 <i class="bi bi-speedometer2"></i>
                 <span class="nav-text">Dashboard</span>
             </a>
-            <a class="nav-link" href="add-tour-spots.php">
+            <a class="nav-link" href="tour-spots.php">
                 <i class="bi bi-geo-alt"></i>
                 <span class="nav-text">Manage Spots</span>
             </a>

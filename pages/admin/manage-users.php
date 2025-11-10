@@ -225,7 +225,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <i class="bi bi-speedometer2"></i>
                 <span class="nav-text">Dashboard</span>
             </a>
-            <a class="nav-link" href="add-tour-spots.php">
+            <a class="nav-link" href="tour-spots.php">
                 <i class="bi bi-geo-alt"></i>
                 <span class="nav-text">Manage Spots</span>
             </a>

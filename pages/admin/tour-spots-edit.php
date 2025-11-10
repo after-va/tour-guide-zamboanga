@@ -1,6 +1,9 @@
 <?php
 session_start();
-
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $_SESSION['user']['account_status'] == 'Suspended') {
+    header('Location: ../../index.php');
+    exit;
+}
 
 require_once "../../classes/tour-manager.php";
 
@@ -10,6 +13,7 @@ $spot = null;
 
 // Get spot ID from URL
 if (!isset($_GET['id']) || empty($_GET['id'])) {
+    $_SESSION['error'] = "Invalid spot ID.";
     header("Location: tour-spots.php");
     exit();
 }
@@ -28,12 +32,13 @@ if (!$spot) {
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $spots_name = trim($_POST['spots_name']);
-    $spots_description = trim($_POST['spots_description']);
-    $spots_category = trim($_POST['spots_category']);
-    $spots_address = trim($_POST['spots_address']);
-    $spots_googlelink = trim($_POST['spots_googlelink']);
-    
+    $spots_name        = trim(htmlspecialchars($_POST['spots_name']));
+    $spots_description = trim(htmlspecialchars($_POST['spots_description']));
+    $spots_category    = trim(htmlspecialchars($_POST['spots_category']));
+    $spots_address     = trim(htmlspecialchars($_POST['spots_address']));
+    $spots_googlelink  = trim(htmlspecialchars($_POST['spots_googlelink']));
+
+    // Validation
     if (empty($spots_name)) {
         $error = "Tour spot name is required";
     } elseif (empty($spots_description)) {
@@ -55,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } elseif (strlen($spots_googlelink) > 500) {
             $error = "Google Link is too long (max 500 characters). Current: " . strlen($spots_googlelink);
         } else {
-            $result = $tourSpot->updateTourSpot($spots_ID, $spots_name, $spots_description, $spots_category, $spots_address, $spots_googlelink);
+            $result = $tourSpot->updateTourSpot($spots, $spots_name, $spots_description, $spots_category, $spots_address, $spots_googlelink);
             
             if ($result) {
                 $_SESSION['success'] = "Tour spot updated successfully!";
@@ -66,142 +71,412 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
     }
-    
+
     // Update spot data with posted values for display
-    $spot['spots_name'] = $spots_name;
+    $spot['spots_name']        = $spots_name;
     $spot['spots_description'] = $spots_description;
-    $spot['spots_category'] = $spots_category;
-    $spot['spots_address'] = $spots_address;
-    $spot['spots_googlelink'] = $spots_googlelink;
+    $spot['spots_category']    = $spots_category;
+    $spot['spots_address']     = $spots_address;
+    $spot['spots_googlelink']  = $spots_googlelink;
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Edit Tour Spot - Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Tour Spot | Tourismo Zamboanga Admin</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
     <style>
+        :root {
+            --primary-color: #ffffff;
+            --secondary-color: #213638;
+            --accent: #E5A13E;
+            --secondary-accent: #CFE7E5;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 260px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            padding-top: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .logo {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.85rem 1.5rem;
+            border-radius: 0;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(229, 161, 62, 0.15);
+            color: var(--accent);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar .nav-text {
+            white-space: nowrap;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .header-card {
+            background: var(--primary-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(33, 54, 56, 0.08);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(207, 231, 229, 0.3);
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .clock {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .form-card {
+            background: var(--primary-color);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid rgba(207, 231, 229, 0.4);
+            padding: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 0.2rem rgba(229, 161, 62, 0.25);
+        }
+
         .char-counter {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+            transition: color 0.2s;
         }
-        .char-counter.warning {
-            color: #ff9800;
+
+        .char-counter.warning { color: #ff9800; }
+        .char-counter.error { color: #f44336; }
+
+        .alert-custom {
+            border-radius: 12px;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .char-counter.error {
-            color: #f44336;
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            border: none;
+            border-radius: 12px;
+            padding: 0.65rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background-color: #d18f2c;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            border-radius: 12px;
+            padding: 0.65rem 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar .nav-text,
+            .sidebar .logo span {
+                display: none;
+            }
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            .form-card {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Edit Tour Spot</h1>
-    
-    <nav>
-        <a href="dashboard.php">Dashboard</a> |
-        <a href="bookings.php">Bookings</a> |
-        <a href="users.php">Users</a> |
-        <a href="tour-packages.php">Tour Packages</a> |
-        <a href="tour-spots.php">Tour Spots</a> |
-        <a href="schedules.php">Schedules</a> |
-        <a href="payments.php">Payments</a> |
-        <a href="logout.php">Logout</a>
-    </nav>
-    
-    <div class="container">
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo px-3">
+            <span>Tourismo Zamboanga</span>
+        </div>
+        <nav class="nav flex-column px-2">
+            <a class="nav-link" href="dashboard.php">
+                <i class="bi bi-speedometer2"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a class="nav-link active" href="tour-spots.php">
+                <i class="bi bi-geo-alt"></i>
+                <span class="nav-text">Manage Spots</span>
+            </a>
+            <a class="nav-link" href="manage-users.php">
+                <i class="bi bi-people"></i>
+                <span class="nav-text">Manage Users</span>
+            </a>
+            <a class="nav-link" href="reports.php">
+                <i class="bi bi-graph-up"></i>
+                <span class="nav-text">Reports</span>
+            </a>
+            <a class="nav-link" href="settings.php">
+                <i class="bi bi-gear"></i>
+                <span class="nav-text">Settings</span>
+            </a>
+            <hr class="bg-white opacity-25 my-3">
+            <a class="nav-link text-danger" href="../logout.php"
+               onclick="return confirm('Logout now? Your last activity will be recorded.');">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <div class="header-card d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div>
+                <h3 class="mb-1 fw-bold">Edit Tour Spot</h3>
+                <p class="text-muted mb-0">Update details for <strong><?= htmlspecialchars($spot['spots_name']) ?></strong>.</p>
+            </div>
+            <div class="text-md-end">
+                <div class="d-flex align-items-center gap-3 flex-wrap justify-content-md-end">
+                    <span class="badge bg-success status-badge">
+                        <i class="bi bi-shield-check"></i> Admin
+                    </span>
+                    <div class="clock" id="liveClock"></div>
+                </div>
+                <small class="text-muted d-block mt-1">Philippine Standard Time (PST)</small>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="tour-spots.php" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Tour Spots
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <?php if (!empty($error)): ?>
+            <div class="alert-custom alert-error p-3">
+                <?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
-        
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
-        <?php endif; ?>
-        
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="spots_name">Spot Name <span class="required">*</span></label>
-                <input type="text" id="spots_name" name="spots_name" 
-                       value="<?php echo htmlspecialchars($spot['spots_name']); ?>" 
-                       maxlength="225"
-                       required>
-                <div class="char-counter" id="name-counter">0 / 225 characters</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="spots_description">Description <span class="required">*</span></label>
-                <textarea id="spots_description" name="spots_description" maxlength="225" required><?php echo htmlspecialchars($spot['spots_description']); ?></textarea>
-                <div class="char-counter" id="description-counter">0 / 225 characters</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="spots_category">Category <span class="required">*</span></label>
-                <select id="spots_category" name="spots_category" required>
-                    <option value="">-- Select Category --</option>
-                    <option value="Historical" <?php echo ($spot['spots_category'] == 'Historical') ? 'selected' : ''; ?>>Historical</option>
-                    <option value="Beach" <?php echo ($spot['spots_category'] == 'Beach') ? 'selected' : ''; ?>>Beach</option>
-                    <option value="Nature" <?php echo ($spot['spots_category'] == 'Nature') ? 'selected' : ''; ?>>Nature</option>
-                    <option value="Cultural" <?php echo ($spot['spots_category'] == 'Cultural') ? 'selected' : ''; ?>>Cultural</option>
-                    <option value="Religious" <?php echo ($spot['spots_category'] == 'Religious') ? 'selected' : ''; ?>>Religious</option>
-                    <option value="Adventure" <?php echo ($spot['spots_category'] == 'Adventure') ? 'selected' : ''; ?>>Adventure</option>
-                    <option value="Food & Dining" <?php echo ($spot['spots_category'] == 'Food & Dining') ? 'selected' : ''; ?>>Food & Dining</option>
-                    <option value="Shopping" <?php echo ($spot['spots_category'] == 'Shopping') ? 'selected' : ''; ?>>Shopping</option>
-                    <option value="Entertainment" <?php echo ($spot['spots_category'] == 'Entertainment') ? 'selected' : ''; ?>>Entertainment</option>
-                    <option value="Other" <?php echo ($spot['spots_category'] == 'Other') ? 'selected' : ''; ?>>Other</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="spots_address">Address <span class="required">*</span></label>
-                <input type="text" id="spots_address" name="spots_address" 
-                       value="<?php echo htmlspecialchars($spot['spots_address']); ?>" 
-                       placeholder="e.g., Paseo del Mar, Zamboanga City"
-                       maxlength="225"
-                       required>
-                <div class="char-counter" id="address-counter">0 / 225 characters</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="spots_googlelink">Google Maps Link (Optional)</label>
-                <input type="url" id="spots_googlelink" name="spots_googlelink" 
-                       value="<?php echo htmlspecialchars($spot['spots_googlelink']); ?>" 
-                       placeholder="https://maps.google.com/..."
-                       maxlength="500">
-                <small style="color: #666;">Paste the full Google Maps URL here</small>
-                <div class="char-counter" id="link-counter">0 / 500 characters</div>
-            </div>
-            
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Update Tour Spot</button>
-                <a href="tour-spots.php" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
-    </div>
-    
+
+        <!-- Edit Form -->
+        <div class="form-card">
+            <form method="POST" novalidate>
+                <div class="row g-4">
+
+                    <!-- Spot Name -->
+                    <div class="col-md-6">
+                        <label class="form-label">Spot Name <span class="required">*</span></label>
+                        <input type="text" name="spots_name" class="form-control" 
+                               value="<?= htmlspecialchars($spot['spots_name']) ?>" 
+                               maxlength="225" required>
+                        <div class="char-counter" id="name-counter">0 / 225 characters</div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-6">
+                        <label class="form-label">Category <span class="required">*</span></label>
+                        <select name="spots_category" class="form-select" required>
+                            <option value="">-- Select Category --</option>
+                            <option value="Historical" <?= ($spot['spots_category'] == 'Historical') ? 'selected' : ''; ?>>Historical</option>
+                            <option value="Beach" <?= ($spot['spots_category'] == 'Beach') ? 'selected' : ''; ?>>Beach</option>
+                            <option value="Nature" <?= ($spot['spots_category'] == 'Nature') ? 'selected' : ''; ?>>Nature</option>
+                            <option value="Cultural" <?= ($spot['spots_category'] == 'Cultural') ? 'selected' : ''; ?>>Cultural</option>
+                            <option value="Religious" <?= ($spot['spots_category'] == 'Religious') ? 'selected' : ''; ?>>Religious</option>
+                            <option value="Adventure" <?= ($spot['spots_category'] == 'Adventure') ? 'selected' : ''; ?>>Adventure</option>
+                            <option value="Food & Dining" <?= ($spot['spots_category'] == 'Food & Dining') ? 'selected' : ''; ?>>Food & Dining</option>
+                            <option value="Shopping" <?= ($spot['spots_category'] == 'Shopping') ? 'selected' : ''; ?>>Shopping</option>
+                            <option value="Entertainment" <?= ($spot['spots_category'] == 'Entertainment') ? 'selected' : ''; ?>>Entertainment</option>
+                            <option value="Other" <?= ($spot['spots_category'] == 'Other') ? 'selected' : ''; ?>>Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label">Description <span class="required">*</span></label>
+                        <textarea name="spots_description" class="form-control" rows="4" 
+                                  maxlength="225" required><?= htmlspecialchars($spot['spots_description']) ?></textarea>
+                        <div class="char-counter" id="description-counter">0 / 225 characters</div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="col-md-8">
+                        <label class="form-label">Address <span class="required">*</span></label>
+                        <input type="text" name="spots_address" class="form-control" 
+                               value="<?= htmlspecialchars($spot['spots_address']) ?>" 
+                               placeholder="e.g., Paseo del Mar, Zamboanga City"
+                               maxlength="225" required>
+                        <div class="char-counter" id="address-counter">0 / 225 characters</div>
+                    </div>
+
+                    <!-- Google Maps Link -->
+                    <div class="col-md-4">
+                        <label class="form-label">Google Maps Link (Optional)</label>
+                        <input type="url" name="spots_googlelink" class="form-control" 
+                               value="<?= htmlspecialchars($spot['spots_googlelink']) ?>" 
+                               placeholder="https://maps.google.com/..."
+                               maxlength="500">
+                        <div class="char-counter" id="link-counter">0 / 500 characters</div>
+                    </div>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Update Tour Spot
+                    </button>
+                    <a href="tour-spots.php" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Live Clock (PH Time) -->
     <script>
-        // Character counter function
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                timeZone: 'Asia/Manila',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-US', options);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+
+    <!-- Character Counter -->
+    <script>
         function updateCharCounter(inputId, counterId, maxLength) {
             const input = document.getElementById(inputId);
             const counter = document.getElementById(counterId);
-            
+
             function update() {
                 const length = input.value.length;
                 counter.textContent = length + ' / ' + maxLength + ' characters';
-                
-                // Add warning/error classes
                 counter.classList.remove('warning', 'error');
-                if (length > maxLength * 0.9) {
-                    counter.classList.add('warning');
-                }
-                if (length >= maxLength) {
-                    counter.classList.add('error');
-                }
+                if (length > maxLength * 0.9) counter.classList.add('warning');
+                if (length >= maxLength) counter.classList.add('error');
             }
-            
+
             input.addEventListener('input', update);
             input.addEventListener('keyup', update);
-            update(); // Initial update
+            update();
         }
-        
-        // Initialize character counters
+
         document.addEventListener('DOMContentLoaded', function() {
             updateCharCounter('spots_name', 'name-counter', 225);
             updateCharCounter('spots_description', 'description-counter', 225);
