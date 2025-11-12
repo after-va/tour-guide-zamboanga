@@ -4,6 +4,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $
     header('Location: ../../index.php');
     exit;
 }
+// Print ng booking and itinerary/
+// Email and notification process 
+// email template
+// WMSU 18: Mission Vision Quality THE BSCS Program Objective
+// 
 
 require_once "../../config/database.php";
 require_once "../../classes/auth.php";
@@ -21,7 +26,7 @@ $db = new Database();
 $pdo = $db->connect();
 
 // === Sample Data (Replace with real queries later) ===
-$total_users      = $pdo->query("SELECT COUNT(*) FROM account_info")->fetchColumn();
+$total_users      = $pdo->query("SELECT COUNT(*) FROM account_info WHERE role_ID != 1")->fetchColumn();
 $total_guides     = $pdo->query("SELECT COUNT(*) FROM account_info WHERE role_ID = 2")->fetchColumn();
 $total_tourists   = $pdo->query("SELECT COUNT(*) FROM account_info WHERE role_ID = 3")->fetchColumn();
 $total_packages   = $tourPackageObj->countPackages();
