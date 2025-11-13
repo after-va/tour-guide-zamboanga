@@ -7,10 +7,19 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Admin' || $
 
 require_once "../../config/database.php";
 require_once "../../classes/auth.php";
+require_once "../../classes/admin.php";
 
 // Create a new Auth class instance to manage users
-$auth = new Auth();
-$users = $auth->getAllUsers();
+// $auth = new Auth();
+// $users = $auth->getAllUsers();
+
+$adminObj = new Admin();
+$admin = [];
+$users = [];
+
+$users = $adminObj->addUsersDetails();
+
+
 
 // Check for session messages
 $success_message = $_SESSION['success'] ?? '';
@@ -311,15 +320,44 @@ unset($_SESSION['success'], $_SESSION['error']);
                                     <td><?= htmlspecialchars($u['username']) ?></td>
                                     <td><em>********</em></td>
                                     <td>
-                                        <span class="badge <?= $u['role_ID'] == 1 ? 'bg-danger' : ($u['role_ID'] == 2 ? 'bg-warning' : 'bg-info') ?> badge-role">
-                                            <?= htmlspecialchars($u['role']) ?>
-                                        </span>
+                                        <?php
+                                        // Handle both ", " and "," separators safely
+                                        $role_names  = !empty($u['role_name']) ? preg_split('/,\s*/', $u['role_name']) : [];
+                                        $role_ids    = !empty($u['role_ID']) ? preg_split('/,\s*/', $u['role_ID']) : [];
+                                        $is_Tourist = 0;
+                                        $is_Guide = 0;
+                                        $is_Admin = 0;
+
+                                        // Loop through roles
+                                        foreach ($role_ids as $i => $role_ID) {
+                                            $role_ID = (int)$role_ID;
+                                            $role_name = $role_names[$i] ?? 'Unknown Role';
+
+                                            // Choose color
+                                            $badgeClass = match ($role_ID) {
+                                                1 => 'bg-danger',
+                                                2 => 'bg-warning',
+                                                3 => 'bg-info',
+                                                default => 'bg-secondary',
+                                            };
+
+                                            if ($role_ID == 1){ $is_Admin = 1; } 
+                                            else if ($role_ID == 2){ $is_Guide = 1; }
+                                            else if ($role_ID == 3){ $is_Tourist = 1; }
+                                        ?>
+                                            <span class="badge <?= $badgeClass ?> badge-role">
+                                                <?= htmlspecialchars($role_name) ?>
+                                            </span>
+                                        <?php } ?>
+                                    </td>
+
+
+                                    <td class="text-center">
+                                        
+                                        <?= $is_Tourist == 1 ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-muted"></i>' ?>
                                     </td>
                                     <td class="text-center">
-                                        <?= $u['role_ID'] == 3 ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-muted"></i>' ?>
-                                    </td>
-                                    <td class="text-center">
-                                        <?= $u['role_ID'] == 2 ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-muted"></i>' ?>
+                                        <?= $is_Guide == 1 ? '<i class="bi bi-check-circle text-success"></i>' : '<i class="bi bi-x-circle text-muted"></i>' ?>
                                     </td>
                                     <td>
                                         <span class="badge <?= $u['status'] === 'Active' ? 'bg-success' : 'bg-secondary' ?> badge-status">
