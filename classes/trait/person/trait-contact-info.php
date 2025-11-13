@@ -110,8 +110,8 @@ trait ContactInfoTrait {
 
             if ($contactinfo_count > 1) {
                 echo "ContactInfo {$contactinfo_ID} is shared by {$contactinfo_count} people. Creating new   for this person.\n";
-                $address_ID = $this->addgetAddress($address_ID, $houseno, $street, $barangay, $db);
-                $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+                $address_ID = $this->updateAddressInfo($address_ID, $houseno, $street, $barangay, $db);
+                $phone_ID = $this->updatePhoneNumber($phone_ID, $country_ID, $phone_number, $db);
                 $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
 
             } else {
@@ -129,7 +129,7 @@ trait ContactInfoTrait {
                 $q_insert->bindParam(":middlename", $name_middle);
                 $q_insert->bindParam(":lastname", $name_last);
                 $q_insert->bindParam(":suffix", $name_suffix);
-                
+
                 if ($q_insert->execute()) {
                     return $db->lastInsertId();
                 } else {

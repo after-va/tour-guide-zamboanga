@@ -17,7 +17,6 @@ trait PhoneTrait {
         return false;
     }
     
-
     public function addgetPhoneNumber($country_ID, $phone_number, $db){
         // If phone number is empty, create a placeholder
         if (empty($phone_number)) {
@@ -93,6 +92,49 @@ trait PhoneTrait {
             $query_delete = $db->prepare($sql_delete);
             $query_delete->bindParam(":id", $phone_ID);
             $query_delete->execute();
+        }
+    }
+
+    public function updatePhoneNumber($phone_ID, $country_ID, $phone_number, $db){
+        if (empty($phone_number)) {
+            $phone_number = "PLACEHOLDER-" . uniqid();
+        }
+        
+        try {
+            $sql_count = "SELECT COUNT(DISTINCT phone_ID) AS phone_count
+                FROM Contact_Info WHERE phone_ID = :phone_ID ";
+
+            $q_count = $db->prepare($sql_count);
+            $q_count->execute([':phone_ID' => $phone_ID]);
+            $phone_count = (int) $q_count->fetchColumn();
+
+            if ($phone_count > 1) {
+                echo "Phone {$phone_ID} is shared by {$phone_count} people. Creating new for this person.\n";
+                $address_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+
+            } else {
+                echo "Reusing existing Phone: {$phone_ID} (Linked to {$contact_ID} person).\n";
+                $sql_insert = "UPDATE Phone_Number SET
+                    country_ID = :country_ID,
+                    phone_number = :phone_number
+                    WHERE phone_ID = :phone_ID";
+                $q_insert = $db->prepare($sql_insert);
+                $q_insert->bindParam(":country_ID", $country_ID);
+                $q_insert->bindParam(":phone_number", $phone_number);
+
+                if ($q_insert->execute()) {
+                    return $db->lastInsertId();
+                } else {
+                    return false;
+                }
+                
+            }
+        } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Update Phone number error: " . $e->getMessage());
+            }
+            error_log("Update Phone number error: " . $e->getMessage());
+            return false;
         }
     }
 
