@@ -17,7 +17,7 @@ if ($user_ID <= 0) {
     exit;
 }
 
-$user = $adminObj->getUsersDetails($user_ID);
+$user = $adminObj->getUsersDetailsByID($user_ID);
 
 if (!$user) {
     $_SESSION['error'] = "User not found.";

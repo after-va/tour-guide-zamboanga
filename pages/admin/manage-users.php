@@ -17,7 +17,7 @@ $adminObj = new Admin();
 $admin = [];
 $users = [];
 
-$users = $adminObj->addUsersDetails();
+$users = $adminObj->getAllUsersDetails();
 
 
 

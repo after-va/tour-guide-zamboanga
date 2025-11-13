@@ -33,20 +33,8 @@ class Admin extends Database {
     use MethodTrait, TransactionReferenceTrait, PaymentInfo, PaymentTransaction, PhoneTrait, Refund;
     use PersonTrait, NameInfoTrait, AddressTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait;
 
-    public function addUsersDetails(){
-        $sql = "SELECT u.user_ID, u.user_username AS username, '***' AS password,
-        a.account_status AS status, p.person_ID AS person_ID,
-            GROUP_CONCAT(DISTINCT r.role_name 
-                        ORDER BY r.role_name SEPARATOR ', ') AS role_name,
-            GROUP_CONCAT(DISTINCT a.role_ID ORDER BY a.role_ID) AS role_ID,
-            GROUP_CONCAT(DISTINCT a.account_ID ORDER BY a.account_ID) AS account_ID,
-            CONCAT_WS(' ', ni.name_first, ni.name_last) AS full_name
-            FROM User_Login      AS u
-            LEFT JOIN Account_Info AS a ON a.user_ID = u.user_ID
-            LEFT JOIN Role         AS r ON a.role_ID = r.role_ID
-			JOIN person p ON u.person_ID = p.person_ID
-			JOIN name_info ni ON p.name_ID = ni.name_ID
-            GROUP BY u.user_ID, u.user_username";
+    public function getAllUsersDetails(){
+        $sql = "SELECT * FROM user_login u JOIN account_info ai ON ai.user_ID = u.user_ID WHERE ai.role_ID != 1";
         $db = $this->connect();
         $query = $db->prepare($sql); 
         
@@ -66,7 +54,7 @@ class Admin extends Database {
 
     }
 
-    public function getUsersDetails($user_ID){
+    public function getUsersDetailsByID($user_ID){
         $sql = "SELECT u.user_ID, u.user_username, u.user_password,
         a.account_status, p.person_ID AS person_ID,
             GROUP_CONCAT(DISTINCT r.role_name 
