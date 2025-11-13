@@ -375,7 +375,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                                            title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </a>
-                                        <a href="user-details.php?id=<?= $u['person_ID'] ?>" 
+                                        <a href="user-details.php?id=<?= $u['user_ID'] ?>" 
                                            class="btn btn-sm btn-outline-info" title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </a>
