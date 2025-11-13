@@ -95,22 +95,22 @@ trait ContactInfoTrait {
         return true;
     }
 
-    public function updateContact_Info( $contactinfo_ID, $houseno, $street, $barangay,  
+    public function updateContact_Info($contactinfo_ID, $houseno, $street, $barangay,  
         $country_ID, $phone_number, 
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
         $contactinfo_email, $db) {
 
         try{
-            $sql_count = "SELECT COUNT(DISTINCT contactinfo_ID) AS contactinfo_ID
+            $sql_count = "SELECT COUNT(DISTINCT contactinfo_ID) AS contactinfo_count
                 FROM person WHERE contactinfo_ID = :contactinfo_ID ";
 
             $q_count = $db->prepare($sql_count);
             $q_count->execute([':contactinfo_ID' => $contactinfo_ID]);
-            $person_count = (int) $q_count->fetchColumn();
+            $contactinfo_count = (int) $q_count->fetchColumn();
 
-            if ($person_count > 1) {
-                echo "Name ID {$name_ID} is shared by {$person_count} people. Creating new   for this person.\n";
-                $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
+            if ($contactinfo_count > 1) {
+                echo "ContactInfo {$contactinfo_ID} is shared by {$contactinfo_count} people. Creating new   for this person.\n";
+                $address_ID = $this->addgetAddress($address_ID, $houseno, $street, $barangay, $db);
                 $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
                 $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
 
@@ -129,7 +129,7 @@ trait ContactInfoTrait {
                 $q_insert->bindParam(":middlename", $name_middle);
                 $q_insert->bindParam(":lastname", $name_last);
                 $q_insert->bindParam(":suffix", $name_suffix);
-                $existing = $q_check->fetch(PDO::FETCH_ASSOC);
+                
                 if ($q_insert->execute()) {
                     return $db->lastInsertId();
                 } else {
@@ -137,9 +137,6 @@ trait ContactInfoTrait {
                 }
                 
             }
-
-            
-
             
            if (!$address_ID || !$phone_ID || !$emergency_ID) {
                 

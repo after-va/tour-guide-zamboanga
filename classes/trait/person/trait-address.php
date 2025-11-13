@@ -225,8 +225,6 @@ trait AddressTrait {
         }
     }
 
-    
-
     public function deleteAddress($address_ID){
         $sql = "DELETE FROM address_info WHERE address_ID = :id";
         $query = $this->connect()->prepare($sql);
@@ -252,6 +250,47 @@ trait AddressTrait {
         }
     }
 
+    public function updateAddressInfo($address_ID, $houseno, $street, $barangay, $db){
+        try{
+            $sql_count = "SELECT COUNT(DISTINCT address_ID) AS address_count
+                FROM Contact_Info WHERE address_ID = :address_ID ";
 
+            $q_count = $db->prepare($sql_count);
+            $q_count->execute([':address_ID' => $address_ID]);
+            $address_count = (int) $q_count->fetchColumn();
 
+            if ($address_count > 1) {
+                echo "Address {$address_ID} is shared by {$address_count} people. Creating new for this person.\n";
+                $address_ID = $this->addgetAddress($houseno, $street, $barangay_ID, $db);
+
+            } else {
+                echo "Reusing existing Address ID: {$address_ID} (Linked to {$contact_ID} person).\n";
+                $sql_insert = "UPDATE address_info SET
+                    address_houseno = :address_houseno,
+                    address_street = :address_street,
+                    barangay_ID = :barangay_ID
+                    WHERE address_ID = :address_ID";
+                $q_insert = $db->prepare($sql_insert);
+                $q_insert->bindParam(":barangay_ID", $barangay_ID);
+                $q_insert->bindParam(":address_street", $address_street);
+                $q_insert->bindParam(":address_houseno", $address_houseno);
+
+                if ($q_insert->execute()) {
+                    return $db->lastInsertId();
+                } else {
+                    return false;
+                }
+                
+            }
+            
+        } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Address error: " . $e->getMessage());
+            }
+            error_log("Address error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    
 }
