@@ -57,7 +57,6 @@ trait ContactInfoTrait {
         }
     }
 
-
     public function deleteContactInfo($contact_ID){
         $sql = "DELETE FROM contact_info WHERE contact_ID = :id";
         $query = $this->connect()->prepare($sql);
@@ -96,5 +95,79 @@ trait ContactInfoTrait {
         return true;
     }
 
+    public function updateContact_Info( $contactinfo_ID, $houseno, $street, $barangay,  
+        $country_ID, $phone_number, 
+        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
+        $contactinfo_email, $db) {
+
+        try{
+            $sql_count = "SELECT COUNT(DISTINCT contactinfo_ID) AS contactinfo_ID
+                FROM person WHERE contactinfo_ID = :contactinfo_ID ";
+
+            $q_count = $db->prepare($sql_count);
+            $q_count->execute([':contactinfo_ID' => $contactinfo_ID]);
+            $person_count = (int) $q_count->fetchColumn();
+
+            if ($person_count > 1) {
+                echo "Name ID {$name_ID} is shared by {$person_count} people. Creating new   for this person.\n";
+                $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
+                $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+                $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
+
+            } else {
+                echo "Reusing existing name ID: {$name_ID} (Linked to {$contact_ID} person).\n";
+                $sql_insert = "UPDATE name_info SET
+                    name_first = :firstname,
+                    name_second = :secondname,
+                    name_middle = :middlename,
+                    name_last = :lastname,
+                    name_suffix = :suffix
+                    WHERE name_ID = :name_ID";
+                $q_insert = $db->prepare($sql_insert);
+                $q_insert->bindParam(":firstname", $name_first);
+                $q_insert->bindParam(":secondname", $name_second);
+                $q_insert->bindParam(":middlename", $name_middle);
+                $q_insert->bindParam(":lastname", $name_last);
+                $q_insert->bindParam(":suffix", $name_suffix);
+                $existing = $q_check->fetch(PDO::FETCH_ASSOC);
+                if ($q_insert->execute()) {
+                    return $db->lastInsertId();
+                } else {
+                    return false;
+                }
+                
+            }
+
+            
+
+            
+           if (!$address_ID || !$phone_ID || !$emergency_ID) {
+                
+                return false;
+            }
+
+            $sql = "INSERT INTO Contact_Info (address_ID, phone_ID, emergency_ID, contactinfo_email) 
+                    VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
+            $query = $db->prepare($sql);
+            $query->bindParam(":address_ID", $address_ID);
+            $query->bindParam(":phone_ID", $phone_ID);
+            $query->bindParam(":emergency_ID", $emergency_ID);
+            $query->bindParam(":contactinfo_email", $contactinfo_email);
+
+            if ($query->execute()){
+                return $db->lastInsertId();
+            } else {
+                
+                return false;
+            }
+
+        } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Contact info error: " . $e->getMessage());
+            }
+            error_log("Contact info error: " . $e->getMessage());
+            return false;
+        }
+    }
 
 }

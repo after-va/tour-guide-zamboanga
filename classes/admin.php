@@ -78,6 +78,58 @@ class Admin extends Database {
         }
     }
 
+    public function updateUser(){
+       $db = $this->connect();
+            if (!$db) {
+                $this->setLastError("Database connection failed");
+                error_log("Database connection failed in addTourist");
+                return false;
+            }
+
+            $db->beginTransaction();
+
+            try{
+               
+
+
+                if (!$user_ID) {
+                    $db->rollBack();
+                    return false;
+                }
+
+                $account_ID = $this->addAccountGuide($user_ID, $db);
+
+                if (!$account_ID) {
+                    $db->rollBack();
+                    return false;
+                }
+
+                $guide_ID = $this->addGuide_ID($account_ID, $db);
+
+                $sql = "INSERT INTO Guide_Languages(guide_ID, languages_ID) 
+                        VALUES (:guide_ID, :languages)";
+                $stmt = $db->prepare($sql);
+
+                foreach ($languages as $l) {
+                    $stmt->execute([$guide_ID, $l]);
+                }
+
+                if (!$guide_ID) {
+                    $db->rollBack();
+                    return false;
+                } else {
+                    $db->commit();
+                    return true;
+                }
+
+            } catch (PDOException $e) {
+            $db->rollBack();
+            error_log("Guide Registration Error: " . $e->getMessage()); 
+            return false;
+        }
+
+
+    }
 
 
 

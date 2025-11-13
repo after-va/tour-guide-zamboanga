@@ -36,7 +36,6 @@ trait PersonTrait {
         return false;
     }
 
-
     // Add Person
     public function addgetPerson(
         $name_first, $name_second, $name_middle, $name_last, $name_suffix,
@@ -44,9 +43,7 @@ trait PersonTrait {
         $country_ID, $phone_number,
         $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
         $contactinfo_email,
-        $person_nationality, $person_gender, $person_dateofbirth, $db
-    ){
-
+        $person_nationality, $person_gender, $person_dateofbirth, $db){
 
         try {
 
@@ -91,7 +88,6 @@ trait PersonTrait {
             return false;
         }
     }
-
 
     // Delete Person
     public function deletePerson($person_ID){
@@ -141,7 +137,6 @@ trait PersonTrait {
         }
     }
 
-
     // View Person
     public function viewPerson($person_ID){
         $db = $this->connect();
@@ -179,7 +174,6 @@ trait PersonTrait {
         $query->execute();
         return $query->fetch(PDO::FETCH_ASSOC);
     }
-
 
     // Search People
     public function searchPersons($searchTerm){
@@ -229,4 +223,58 @@ trait PersonTrait {
         return $query->fetchAll();
     }
 
+    public function updatePerson($name_ID, $name_first,  $name_second, $name_middle, 
+        $name_last, $name_suffix,
+        $houseno, $street, $barangay,
+        $country_ID, $phone_number,
+        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+        $contactinfo_email,
+        $person_nationality, $person_gender, $person_dateofbirth, $db){
+        try {
+
+            $name_ID = $this->updateNameInfo($name_ID, $name_first,  $name_second, $name_middle, 
+            $name_last, $name_suffix,$db);
+
+            $contactinfo_ID = $this->addgetContact_Info(
+                $houseno, $street, $barangay,
+                $country_ID, $phone_number,
+                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+                $contactinfo_email,
+                $db
+            );
+
+            if (!$name_ID || !$contactinfo_ID) {
+                
+                return false;
+            }
+
+            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID)
+                    VALUES (:name_ID, :person_nationality, :person_gender, :person_dateofbirth, :contactinfo_ID)";
+
+            $query = $db->prepare($sql);
+            $query->bindParam(":name_ID", $name_ID);
+            $query->bindParam(":person_nationality", $person_nationality);
+            $query->bindParam(":person_gender", $person_gender);
+            $query->bindParam(":person_dateofbirth", $person_dateofbirth);
+            $query->bindParam(":contactinfo_ID", $contactinfo_ID);
+
+            if ($query->execute()) {
+                return $db->lastInsertId();
+               
+            }
+
+            
+            return false;
+
+        } catch (PDOException $e) {
+            if (method_exists($this, 'setLastError')) {
+                $this->setLastError("Person creation error: " . $e->getMessage());
+            }
+            error_log("Add Person Error: " . $e->getMessage());
+            return false;
+        }
+    
+            
+
+    }
 }
