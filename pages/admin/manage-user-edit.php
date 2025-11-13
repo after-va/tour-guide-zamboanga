@@ -49,38 +49,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $pdo = $adminObj->connect();
-            $pdo->beginTransaction();
+            // $pdo = $adminObj->connect();
+            // $pdo->beginTransaction();
 
-            // 1. Update person
-            $stmt = $pdo->prepare("UPDATE person SET person_firstname = ?, person_lastname = ? 
-                                   WHERE person_ID = (SELECT person_ID FROM users WHERE user_ID = ?)");
-            $stmt->execute([$firstname, $lastname, $user_ID]);
+            // // 1. Update person
+            // $stmt = $pdo->prepare("UPDATE person SET person_firstname = ?, person_lastname = ? 
+            //                        WHERE person_ID = (SELECT person_ID FROM users WHERE user_ID = ?)");
+            // $stmt->execute([$firstname, $lastname, $user_ID]);
 
-            // 2. Update users (username + password only)
-            $sql = "UPDATE users SET user_username = ? WHERE user_ID = ?";
-            $params = [$username, $user_ID];
+            // // 2. Update users (username + password only)
+            // $sql = "UPDATE users SET user_username = ? WHERE user_ID = ?";
+            // $params = [$username, $user_ID];
 
-            if (!empty($password)) {
-                $hashed = password_hash($password, PASSWORD_DEFAULT);
-                $sql = "UPDATE users SET user_username = ?, user_password = ? WHERE user_ID = ?";
-                $params = [$username, $hashed, $user_ID];
-            }
-            $pdo->prepare($sql)->execute($params);
+            // if (!empty($password)) {
+            //     $hashed = password_hash($password, PASSWORD_DEFAULT);
+            //     $sql = "UPDATE users SET user_username = ?, user_password = ? WHERE user_ID = ?";
+            //     $params = [$username, $hashed, $user_ID];
+            // }
+            // $pdo->prepare($sql)->execute($params);
 
-            // 3. Replace roles in Account_Info
-            $pdo->prepare("DELETE FROM Account_Info WHERE user_ID = ?")->execute([$user_ID]);
-            foreach ($role_ids as $rid) {
-                if ($rid > 0) {
-                    $pdo->prepare("INSERT INTO Account_Info (user_ID, role_ID, account_status) VALUES (?, ?, ?)")
-                         ->execute([$user_ID, $rid, $status]);
-                }
-            }
+            // // 3. Replace roles in Account_Info
+            // $pdo->prepare("DELETE FROM Account_Info WHERE user_ID = ?")->execute([$user_ID]);
+            // foreach ($role_ids as $rid) {
+            //     if ($rid > 0) {
+            //         $pdo->prepare("INSERT INTO Account_Info (user_ID, role_ID, account_status) VALUES (?, ?, ?)")
+            //              ->execute([$user_ID, $rid, $status]);
+            //     }
+            // }
 
-            $pdo->commit();
-            $_SESSION['success'] = "User updated successfully.";
-            header("Location: manage-users.php");
-            exit;
+            // $pdo->commit();
+            // $_SESSION['success'] = "User updated successfully.";
+            // header("Location: manage-users.php");
+            // exit;
         } catch (Exception $e) {
             $pdo->rollBack();
             error_log("User update failed: " . $e->getMessage());
