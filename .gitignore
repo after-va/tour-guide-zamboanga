@@ -1,4 +1,5 @@
 # Environment variables
+mailtrap.env
 paymongo.env
 .env
 
