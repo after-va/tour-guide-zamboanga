@@ -17,7 +17,7 @@ trait ContactInfoTrait {
 
     public function addgetContact_Info( $houseno, $street, $barangay,  
         $country_ID, $phone_number, 
-        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
+     $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
         $contactinfo_email, $db)
         {
 
@@ -96,9 +96,7 @@ trait ContactInfoTrait {
     }
 
     public function updateContact_Info($contactinfo_ID, $houseno, $street, $barangay,  
-        $country_ID, $phone_number, 
-        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
-        $contactinfo_email, $db) {
+        $country_ID, $phone_number, $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, $contactinfo_email, $db) {
 
         try{
             $sql_count = "SELECT COUNT(DISTINCT contactinfo_ID) AS contactinfo_count
@@ -112,12 +110,9 @@ trait ContactInfoTrait {
                 echo "ContactInfo {$contactinfo_ID} is shared by {$contactinfo_count} people. Creating new   for this person.\n";
                 $address_ID = $this->updateAddressInfo($address_ID, $houseno, $street, $barangay, $db);
                 $phone_ID = $this->updatePhoneNumber($phone_ID, $country_ID, $phone_number, $db);
-                $emergency_ID = $this->updateEmergencyID($emergency_ID, $country_ID, $phone_number, $ename, $erelationship, $db);
-                $contactinfo_ID = $this->addgetContact_Info(
-                        $houseno, $street, $barangay,
-                        $country_ID, $phone_number,
-                        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-                        $contactinfo_email, $db);
+                $emergency_ID = $this->updateEmergencyID($emergency_ID, $emergency_country_ID, $emergency_phonenumber, $emergency_name,
+                $emergency_name, $emergency_relationship, $db);
+                $contact_ID = $this->addContact_InfoByID( $address_ID, $phone_ID, $contactinfo_email, $emergency_ID, $db );
                 return $contact_ID;
 
             } else {
@@ -151,6 +146,24 @@ trait ContactInfoTrait {
             error_log("ContactUpdate info error: " . $e->getMessage());
             return false;
         }
+    }
+
+    public function addContact_InfoByID( $address_ID, $phone_ID, $contactinfo_email, $emergency_ID, $db ){
+        $sql = "INSERT INTO Conctact_Info(address_ID, phone_ID, contactinfo_email, emergency_ID) 
+            VALUES (:address_ID, :phone_ID, :contactinfo_email, :emergency_ID)";
+        $query = $db->prepare($sql);
+        $query->bindParam(":address_ID", $address_ID);
+        $query->bindParam(":phone_ID", $phone_ID);
+        $query->bindParam(":emergency_ID", $emergency_ID);
+        $query->bindParam(":contactinfo_email", $contactinfo_email);        
+
+        
+            if ($query->execute()){
+                return $db->lastInsertId();
+            } else {
+                
+                return false;
+            }
     }
 
 }
