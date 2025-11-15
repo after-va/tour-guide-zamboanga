@@ -112,25 +112,31 @@ trait ContactInfoTrait {
                 echo "ContactInfo {$contactinfo_ID} is shared by {$contactinfo_count} people. Creating new   for this person.\n";
                 $address_ID = $this->updateAddressInfo($address_ID, $houseno, $street, $barangay, $db);
                 $phone_ID = $this->updatePhoneNumber($phone_ID, $country_ID, $phone_number, $db);
-                $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
+                $emergency_ID = $this->updateEmergencyID($emergency_ID, $country_ID, $phone_number, $ename, $erelationship, $db);
+                $contactinfo_ID = $this->addgetContact_Info(
+                        $houseno, $street, $barangay,
+                        $country_ID, $phone_number,
+                        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+                        $contactinfo_email, $db);
+                return $contact_ID;
 
             } else {
-                echo "Reusing existing name ID: {$name_ID} (Linked to {$contact_ID} person).\n";
-                $sql_insert = "UPDATE name_info SET
-                    name_first = :firstname,
-                    name_second = :secondname,
-                    name_middle = :middlename,
-                    name_last = :lastname,
-                    name_suffix = :suffix
-                    WHERE name_ID = :name_ID";
-                $q_insert = $db->prepare($sql_insert);
-                $q_insert->bindParam(":firstname", $name_first);
-                $q_insert->bindParam(":secondname", $name_second);
-                $q_insert->bindParam(":middlename", $name_middle);
-                $q_insert->bindParam(":lastname", $name_last);
-                $q_insert->bindParam(":suffix", $name_suffix);
+                echo "Reusing existing name ID: {$contactinfo_ID} (Linked to {$contactinfo_count} person).\n";
+                $address_ID = $this->updateAddressInfo($address_ID, $houseno, $street, $barangay, $db);
+                $phone_ID = $this->updatePhoneNumber($phone_ID, $country_ID, $phone_number, $db);
+                $emergency_ID = $this->updateEmergencyID($emergency_ID, $country_ID, $phone_number, $ename, $erelationship, $db);
 
-                if ($q_insert->execute()) {
+                $sql = "UPDATE Contact_Info SET 
+                    address_ID = :address_ID, 
+                    phone_ID = :phone_ID, 
+                    emergency_ID = :emergency_ID,    
+                    contactinfo_email = :contactinfo_email";
+                $query = $db->prepare($sql);
+                $query->bindParam(":address_ID", $address_ID);
+                $query->bindParam(":phone_ID", $phone_ID);
+                $query->bindParam(":emergency_ID", $emergency_ID);
+                $query->bindParam(":contactinfo_email", $contactinfo_email);
+                if ($query->execute()) {
                     return $db->lastInsertId();
                 } else {
                     return false;
@@ -138,31 +144,11 @@ trait ContactInfoTrait {
                 
             }
             
-           if (!$address_ID || !$phone_ID || !$emergency_ID) {
-                
-                return false;
-            }
-
-            $sql = "INSERT INTO Contact_Info (address_ID, phone_ID, emergency_ID, contactinfo_email) 
-                    VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
-            $query = $db->prepare($sql);
-            $query->bindParam(":address_ID", $address_ID);
-            $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":emergency_ID", $emergency_ID);
-            $query->bindParam(":contactinfo_email", $contactinfo_email);
-
-            if ($query->execute()){
-                return $db->lastInsertId();
-            } else {
-                
-                return false;
-            }
-
         } catch (PDOException $e) {
             if (method_exists($this, 'setLastError')) {
-                $this->setLastError("Contact info error: " . $e->getMessage());
+                $this->setLastError("ContactUpdate info error: " . $e->getMessage());
             }
-            error_log("Contact info error: " . $e->getMessage());
+            error_log("ContactUpdate info error: " . $e->getMessage());
             return false;
         }
     }
