@@ -12,5 +12,3 @@ vendor/
 # OS-specific files
 .DS_Store
 Thumbs.db
-##$secretKey = getenv('PAYMONGO_SECRET_KEY');
-##Paymongo\Paymongo::setApiKey($secretKey);
