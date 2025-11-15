@@ -155,6 +155,8 @@ trait NameInfoTrait{
                 echo "Name ID {$name_ID} is shared by {$person_count} people. Creating new name_ID for this person.\n";
                 $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
 
+                return $name_ID;
+
             } else {
                 echo "Reusing existing name ID: {$name_ID} (Linked to {$person_count} person).\n";
                 $sql_insert = "UPDATE name_info SET

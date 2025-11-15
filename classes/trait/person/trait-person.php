@@ -231,40 +231,21 @@ trait PersonTrait {
         $contactinfo_email,
         $person_nationality, $person_gender, $person_dateofbirth, $db){
         try {
+            $sql = "SELECT COUNT(*) as person_count FROM Person 
+                WHERE contactinfo_ID = :contactinfo_ID OR name_ID = :name_ID";
+            $query->prepare($sql);
+            $query->execute([':contactinfo_ID' => $contactinfo_ID], [':name_ID' => $name_ID]);
+            $person_count = (int) $query->fetchColumn();
 
-            $name_ID = $this->updateNameInfo($name_ID, $name_first,  $name_second, $name_middle, 
-            $name_last, $name_suffix,$db);
-
-            $contactinfo_ID = $this->addgetContact_Info(
-                $houseno, $street, $barangay,
-                $country_ID, $phone_number,
-                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-                $contactinfo_email,
-                $db
-            );
-
-            if (!$name_ID || !$contactinfo_ID) {
+            if($person_count > 1){
+                $name_ID = $this->updateNameInfo($name_ID, $name_first,  $name_second, $name_middle, 
+                    $name_last, $name_suffix,$db);
                 
-                return false;
+
+            } else {
+
             }
 
-            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID)
-                    VALUES (:name_ID, :person_nationality, :person_gender, :person_dateofbirth, :contactinfo_ID)";
-
-            $query = $db->prepare($sql);
-            $query->bindParam(":name_ID", $name_ID);
-            $query->bindParam(":person_nationality", $person_nationality);
-            $query->bindParam(":person_gender", $person_gender);
-            $query->bindParam(":person_dateofbirth", $person_dateofbirth);
-            $query->bindParam(":contactinfo_ID", $contactinfo_ID);
-
-            if ($query->execute()) {
-                return $db->lastInsertId();
-               
-            }
-
-            
-            return false;
 
         } catch (PDOException $e) {
             if (method_exists($this, 'setLastError')) {
