@@ -15,46 +15,40 @@ trait ContactInfoTrait {
         return false;
     }
 
-    public function addgetContact_Info( $houseno, $street, $barangay,  
-        $country_ID, $phone_number, 
-     $emergency_country_ID, $emergency_phonenumber, $emergency_relationship, 
-        $contactinfo_email, $db)
-        {
-
-        try{
-            // These functions come from other traits:
-            $address_ID = $this->addgetAddress($houseno, $street, $barangay, $db);
-            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
-            $emergency_ID = $this->addgetEmergencyID($emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db);
-
-            
-           if (!$address_ID || !$phone_ID || !$emergency_ID) {
-                
-                return false;
-            }
-
-            $sql = "INSERT INTO Contact_Info (address_ID, phone_ID, emergency_ID, contactinfo_email) 
-                    VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
-            $query = $db->prepare($sql);
-            $query->bindParam(":address_ID", $address_ID);
-            $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":emergency_ID", $emergency_ID);
-            $query->bindParam(":contactinfo_email", $contactinfo_email);
-
-            if ($query->execute()){
-                return $db->lastInsertId();
-            } else {
-                
-                return false;
-            }
-
-        } catch (PDOException $e) {
-            if (method_exists($this, 'setLastError')) {
-                $this->setLastError("Contact info error: " . $e->getMessage());
-            }
-            error_log("Contact info error: " . $e->getMessage());
+    public function addgetContact_Info(
+    $houseno, $street, $barangay,
+    $country_ID, $phone_number,
+    $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+    $contactinfo_email,
+    $db ) {
+        
+        if (!($db instanceof PDO)) {
+            $this->setLastError("addgetContact_Info: \$db missing");
             return false;
         }
+
+        $address_ID   = $this->addgetAddress($houseno, $street, $barangay, $db);
+        $phone_ID     = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+        $emergency_ID = $this->addgetEmergencyID(
+            $emergency_country_ID, $emergency_phonenumber, $emergency_name, $emergency_relationship, $db
+        );
+
+        if (!$address_ID || !$phone_ID || !$emergency_ID) {
+            $this->setLastError("Contact sub-record missing");
+            return false;
+        }
+
+        $sql = "INSERT INTO Contact_Info (address_ID, phone_ID, emergency_ID, contactinfo_email)
+                VALUES (:address_ID, :phone_ID, :emergency_ID, :contactinfo_email)";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':address_ID'       => $address_ID,
+            ':phone_ID'         => $phone_ID,
+            ':emergency_ID'     => $emergency_ID,
+            ':contactinfo_email'=> $contactinfo_email,
+        ]);
+
+        return $stmt->rowCount() ? $db->lastInsertId() : false;
     }
 
     public function deleteContactInfo($contact_ID){

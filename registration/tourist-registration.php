@@ -443,64 +443,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     </script>
 </head>
 <body>
-    <!-- ==================== TROUBLE-SHOOTER PANEL ==================== -->
-<div id="troubleshooter" style="margin:20px auto; max-width:900px; font-family:Arial,Helvetica,sans-serif; border:1px solid #ccc; border-radius:8px; overflow:hidden; background:#f9f9f9;">
-    <div style="background:#213638; color:#fff; padding:10px 15px; font-weight:bold; cursor:pointer;" onclick="document.getElementById('ts-body').style.display=document.getElementById('ts-body').style.display==='none'?'block':'none';">
-        TROUBLE-SHOOTER (click to toggle)
-    </div>
-    <div id="ts-body" style="display:none; padding:15px;">
-        <?php
-        // ---- 1. SESSION ----
-        $sessOk = isset($_SESSION) && session_id() !== '';
-        echo "<p><strong>Session:</strong> " . ($sessOk ? '<span style="color:green;">OK</span>' : '<span style="color:red;">FAILED</span>') . "</p>";
 
-        // ---- 2. DATABASE ----
-        $dbOk = false; $dbMsg = "Not tested";
-        if (isset($touristObj)) {
-            $db = $touristObj->connect();
-            $dbOk = $db !== false;
-            $dbMsg = $dbOk ? "Connected" : ($touristObj->getLastError() ?? "Unknown error");
-        }
-        echo "<p><strong>Database:</strong> " . ($dbOk ? '<span style="color:green;">OK</span>' : '<span style="color:red;">FAILED</span>') . " – $dbMsg</p>";
-
-        // ---- 3. INTERNET ----
-        $online = isOnline();
-        echo "<p><strong>Internet:</strong> " . ($online ? '<span style="color:green;">ONLINE</span>' : '<span style="color:red;">OFFLINE</span>') . "</p>";
-
-        // ---- 4. MAILER CLASS ----
-        $mailerFile = __DIR__ . '/../classes/Mailer.php';
-        $mailerOk = file_exists($mailerFile) && class_exists('Mailer', false) === false; // class not autoloaded yet
-        if ($mailerOk) {
-            require_once $mailerFile;
-            $mailerOk = class_exists('Mailer');
-        }
-        echo "<p><strong>Mailer class:</strong> " . ($mailerOk ? '<span style="color:green;">LOADED</span>' : '<span style="color:red;">MISSING</span>') . "</p>";
-
-        // ---- 5. SMTP CREDENTIALS (only show if Mailer loaded) ----
-        if ($mailerOk) {
-            $credOk = (defined('SMTP_USER') && SMTP_USER !== 'your@gmail.com') || 
-                      (isset($mailer) && $mailer->mail->Username && $mailer->mail->Username !== 'your@gmail.com');
-            echo "<p><strong>SMTP credentials:</strong> " . ($credOk ? '<span style="color:green;">SET</span>' : '<span style="color:orange;">PLACEHOLDER – replace in code</span>') . "</p>";
-        }
-
-        // ---- 6. LAST ERRORS ----
-        $lastErr = $touristObj->getLastError() ?? $_SESSION['email_error'] ?? '';
-        echo "<p><strong>Last error:</strong> " . ($lastErr ? "<code style='background:#fff3cd;padding:2px 5px;'>$lastErr</code>" : '<em>None</em>') . "</p>";
-        ?>
-        
-        <hr>
-        <button type="button" onclick="location.href='?test_register=1'" style="background:#E5A13E;color:#213638;padding:8px 16px;border:none;border-radius:4px;cursor:pointer;">
-            Run Test Registration
-        </button>
-        <small style="display:block;margin-top:8px;color:#666;">
-            This creates a fake user with a timestamped username/email. Check <code>error_log</code> for details.
-        </small>
-    </div>
-</div>
-<!-- ==================== END TROUBLE-SHOOTER ==================== -->
-    <div class = "test-registration">
-        <h2>Tourist Registration</h2>
-    </div>
 
     <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
         <div class="success">Registration successful! Your tourist account has been created.</div>
@@ -603,7 +546,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
 
         <label for="emergency_phonenumber">Phone Number</label>
-        <input type="text" name="emergency_phonenumber" id="emergency_phonenumber" maxlength="10" inputmode="numeric" pattern="[0-9]*" value = "<?= $tourist["emergency_phonenumber"] ?? "" ?>">
+        <input type="text" name="emergency_phonenumber" id="emergency_phonenumber" maxlength="10" inputmode="numeric" pattern="[0-9]*" value="<?= htmlspecialchars($tourist["emergency_phonenumber"] ?? "") ?>">
         <p style="color: red; font-weight: bold;"> <?= $errors["emergency_phonenumber"] ?? "" ?> </p>
 
 

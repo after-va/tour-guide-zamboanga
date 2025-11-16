@@ -38,55 +38,47 @@ trait PersonTrait {
 
     // Add Person
     public function addgetPerson(
-        $name_first, $name_second, $name_middle, $name_last, $name_suffix,
-        $houseno, $street, $barangay,
-        $country_ID, $phone_number,
-        $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-        $contactinfo_email,
-        $person_nationality, $person_gender, $person_dateofbirth, $db){
-
-        try {
-
-            $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
-
-            $contactinfo_ID = $this->addgetContact_Info(
-                $houseno, $street, $barangay,
-                $country_ID, $phone_number,
-                $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
-                $contactinfo_email,
-                $db
-            );
-
-            if (!$name_ID || !$contactinfo_ID) {
-                
-                return false;
-            }
-
-            $sql = "INSERT INTO Person(name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID)
-                    VALUES (:name_ID, :person_nationality, :person_gender, :person_dateofbirth, :contactinfo_ID)";
-
-            $query = $db->prepare($sql);
-            $query->bindParam(":name_ID", $name_ID);
-            $query->bindParam(":person_nationality", $person_nationality);
-            $query->bindParam(":person_gender", $person_gender);
-            $query->bindParam(":person_dateofbirth", $person_dateofbirth);
-            $query->bindParam(":contactinfo_ID", $contactinfo_ID);
-
-            if ($query->execute()) {
-                return $db->lastInsertId();
-               
-            }
-
-            
-            return false;
-
-        } catch (PDOException $e) {
-            if (method_exists($this, 'setLastError')) {
-                $this->setLastError("Person creation error: " . $e->getMessage());
-            }
-            error_log("Add Person Error: " . $e->getMessage());
+    $name_first, $name_second, $name_middle, $name_last, $name_suffix,
+    $houseno, $street, $barangay,
+    $country_ID, $phone_number,
+    $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+    $contactinfo_email,
+    $person_nationality, $person_gender, $person_dateofbirth,
+    $db ) {
+        if (!($db instanceof PDO)) {
+            $this->setLastError("addgetPerson: \$db is not PDO");
             return false;
         }
+
+        $name_ID = $this->addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db);
+        $contactinfo_ID = $this->addgetContact_Info(
+            $houseno, $street, $barangay,
+            $country_ID, $phone_number,
+            $emergency_name, $emergency_country_ID, $emergency_phonenumber, $emergency_relationship,
+            $contactinfo_email,
+            $db
+        );
+
+        if (!$name_ID || !$contactinfo_ID) {
+            $this->setLastError($this->getLastError() ?: "Name or Contact missing");
+            return false;
+        }
+
+        $sql = "INSERT INTO Person (name_ID, person_Nationality, person_Gender, person_DateOfBirth, contactinfo_ID)
+                VALUES (:name_ID, :person_nationality, :person_gender, :person_dateofbirth, :contactinfo_ID)";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":name_ID", $name_ID, PDO::PARAM_INT);
+        $stmt->bindParam(":person_nationality", $person_nationality);
+        $stmt->bindParam(":person_gender", $person_gender);
+        $stmt->bindParam(":person_dateofbirth", $person_dateofbirth);
+        $stmt->bindParam(":contactinfo_ID", $contactinfo_ID, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            return $db->lastInsertId();
+        }
+
+        $this->setLastError("Person insert failed");
+        return false;
     }
 
     // Delete Person

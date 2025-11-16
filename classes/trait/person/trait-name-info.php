@@ -4,47 +4,42 @@ trait NameInfoTrait{
 
     // $name_first, $name_second, $name_middle, $name_last, $name_suffix,
     public function addgetNameInfo($name_first, $name_second, $name_middle, $name_last, $name_suffix, $db) {
-        $sql_check = "
-            SELECT name_ID 
-            FROM name_info
-            WHERE name_first = :firstname
-            AND (name_second <=> :secondname)
-            AND (name_middle <=> :middlename)
-            AND name_last = :lastname
-            AND (name_suffix <=> :suffix)
-        ";
-
-        $q_check = $db->prepare($sql_check);
-        $q_check->bindParam(":firstname", $name_first);
-        $q_check->bindParam(":secondname", $name_second);
-        $q_check->bindParam(":middlename", $name_middle);
-        $q_check->bindParam(":lastname", $name_last);
-        $q_check->bindParam(":suffix", $name_suffix);
-        $q_check->execute();
-
-        $existing = $q_check->fetch(PDO::FETCH_ASSOC);
-        if ($existing) {
-            return $existing["name_ID"];
-        }
-
-        // Insert new name record
-        $sql_insert = "
-            INSERT INTO name_info (name_first, name_second, name_middle, name_last, name_suffix)
-            VALUES (:firstname, :secondname, :middlename, :lastname, :suffix)
-        ";
-
-        $q_insert = $db->prepare($sql_insert);
-        $q_insert->bindParam(":firstname", $name_first);
-        $q_insert->bindParam(":secondname", $name_second);
-        $q_insert->bindParam(":middlename", $name_middle);
-        $q_insert->bindParam(":lastname", $name_last);
-        $q_insert->bindParam(":suffix", $name_suffix);
-
-        if ($q_insert->execute()) {
-            return $db->lastInsertId();
-        } else {
+        if (!($db instanceof PDO)) {
+            $this->setLastError("addgetNameInfo: \$db is not PDO");
             return false;
         }
+
+        $sql_check = "SELECT name_ID FROM name_info
+                    WHERE name_first = :firstname
+                        AND name_second <=> :secondname
+                        AND name_middle <=> :middlename
+                        AND name_last   = :lastname
+                        AND name_suffix <=> :suffix";
+        $q = $db->prepare($sql_check);
+        $q->execute([
+            ':firstname'   => $name_first,
+            ':secondname'  => $name_second,
+            ':middlename'  => $name_middle,
+            ':lastname'    => $name_last,
+            ':suffix'      => $name_suffix,
+        ]);
+
+        if ($row = $q->fetch(PDO::FETCH_ASSOC)) {
+            return $row['name_ID'];
+        }
+
+        $sql_insert = "INSERT INTO name_info (name_first, name_second, name_middle, name_last, name_suffix)
+                    VALUES (:firstname, :secondname, :middlename, :lastname, :suffix)";
+        $q = $db->prepare($sql_insert);
+        $q->execute([
+            ':firstname'   => $name_first,
+            ':secondname'  => $name_second,
+            ':middlename'  => $name_middle,
+            ':lastname'    => $name_last,
+            ':suffix'      => $name_suffix,
+        ]);
+
+        return $q->rowCount() ? $db->lastInsertId() : false;
     }
 
     public function renameNameSmart($person_ID, $firstname, $middlename, $lastname, $suffix){

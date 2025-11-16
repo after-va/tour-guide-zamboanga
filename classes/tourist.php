@@ -11,22 +11,7 @@ require_once "trait/person/trait-user.php";
 
 class Tourist extends Database {
     use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait;
-    
-    private $lastError = "";
 
-    
-   
-
-    
-    
-    public function getLastError() {
-        return $this->lastError;
-    }
-    
-    public function setLastError($error) {
-        $this->lastError = $error;
-        return $this;
-    }
 
     public function getTouristBirthdateByTouristID($tourist_ID) {
         $sql  = "SELECT p.person_DateOfBirth

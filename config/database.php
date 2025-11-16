@@ -29,7 +29,16 @@ class Database {
         }
     }
 
-    public function getLastError() {
-        return $this->lastError;
+    public function setLastError(string $message): void
+    {
+        $this->lastError = $message;
+        error_log("Registration Error: " . $message);
     }
+
+    public function getLastError(): ?string
+    {
+        return $this->lastError ?: null;
+    }
+
+
 }

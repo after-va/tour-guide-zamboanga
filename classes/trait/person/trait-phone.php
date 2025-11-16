@@ -17,44 +17,32 @@ trait PhoneTrait {
         return false;
     }
     
-    public function addgetPhoneNumber($country_ID, $phone_number, $db){
-        // If phone number is empty, create a placeholder
-        if (empty($phone_number)) {
-            $phone_number = "PLACEHOLDER-" . uniqid();
-        }
-        
-        try {
-            $sql_select = "SELECT phone_ID FROM phone_number WHERE phone_number = :phone_number AND country_ID = :country_ID";
-            $query_select = $db->prepare($sql_select); 
-            $query_select->bindParam(":country_ID", $country_ID);
-            $query_select->bindParam(":phone_number", $phone_number);
-            $query_select->execute();
-            $result = $query_select->fetch();
-    
-            if($result){
-                return $result["phone_ID"];
-            }
-            
-            $sql_insert = "INSERT INTO phone_number(country_ID, phone_number) VALUES (:country_ID, :phone_number)";
-            $query_insert = $db->prepare($sql_insert); 
-            $query_insert->bindParam(":country_ID", $country_ID);
-            $query_insert->bindParam(":phone_number", $phone_number);
-    
-            if ($query_insert->execute()) {
-                return $db->lastInsertId();
-            } else {
-                if (method_exists($this, 'setLastError')) {
-                    $this->setLastError("Failed to insert phone number");
-                }
-                return false;
-            }
-        } catch (PDOException $e) {
-            if (method_exists($this, 'setLastError')) {
-                $this->setLastError("Phone number error: " . $e->getMessage());
-            }
-            error_log("Phone number error: " . $e->getMessage());
+    public function addgetPhoneNumber($country_ID, $phone_number, $db) {
+        if (!($db instanceof PDO)) {
+            $this->setLastError("addgetPhoneNumber: \$db missing");
             return false;
         }
+
+        // Optional placeholder
+        if (empty($phone_number)) {
+            $phone_number = 'PLACEHOLDER-' . uniqid();
+        }
+
+        $sql = "SELECT phone_ID FROM phone_number
+                WHERE country_ID = :country_ID AND phone_number = :phone_number";
+        $q = $db->prepare($sql);
+        $q->execute([':country_ID' => $country_ID, ':phone_number' => $phone_number]);
+
+        if ($row = $q->fetch(PDO::FETCH_ASSOC)) {
+            return $row['phone_ID'];
+        }
+
+        $sql = "INSERT INTO phone_number (country_ID, phone_number)
+                VALUES (:country_ID, :phone_number)";
+        $q = $db->prepare($sql);
+        $q->execute([':country_ID' => $country_ID, ':phone_number' => $phone_number]);
+
+        return $q->rowCount() ? $db->lastInsertId() : false;
     }
 
     public function fetchCountryCode(){

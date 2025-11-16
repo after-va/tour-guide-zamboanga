@@ -2,47 +2,49 @@
 
 trait EmergencyTrait {
 
-    public function addgetEmergencyID($country_ID, $phone_number, $ename, $erelationship, $db){
-
-        try {
-
-            $sql = "SELECT emergency_ID FROM Emergency_Info ei
-                    INNER JOIN Phone_Number pn ON ei.phone_ID = pn.phone_ID
-                    WHERE pn.country_ID = :country_ID AND pn.phone_number = :phone_number
-                    AND ei.emergency_Name = :ename AND ei.emergency_Relationship = :erelationship";
-            $query_select = $db->prepare($sql); 
-            $query_select->bindParam(":country_ID", $country_ID);
-            $query_select->bindParam(":phone_number", $phone_number);
-            $query_select->bindParam(":ename", $ename);
-            $query_select->bindParam(":erelationship", $erelationship);
-            $query_select->execute();
-
-            if($result = $query_select->fetch()){
-                return $result["emergency_ID"];
-            }
-
-            $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
-
-            if(!$phone_ID){
-                 
-                return false;
-            }
-            
-            $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship) VALUES (:phone_ID, :ename, :erelationship)";
-            $query = $db->prepare($sql);
-            $query->bindParam(":phone_ID", $phone_ID);
-            $query->bindParam(":ename", $ename); 
-            $query->bindParam(":erelationship", $erelationship); 
-
-            if ($query->execute()){
-                return $db->lastInsertId();
-            } else {
-                return false;
-            }
-
-        } catch (PDOException $e) {
+    public function addgetEmergencyID($country_ID, $phone_number, $ename, $erelationship, $db) {
+        if (!($db instanceof PDO)) {
+            $this->setLastError("addgetEmergencyID: \$db missing");
             return false;
         }
+
+        // Try to find existing
+        $sql = "SELECT ei.emergency_ID
+                FROM Emergency_Info ei
+                JOIN Phone_Number pn ON ei.phone_ID = pn.phone_ID
+                WHERE pn.country_ID = :country_ID
+                AND pn.phone_number = :phone_number
+                AND ei.emergency_Name = :ename
+                AND ei.emergency_Relationship = :erelationship";
+        $q = $db->prepare($sql);
+        $q->execute([
+            ':country_ID' => $country_ID,
+            ':phone_number' => $phone_number,
+            ':ename' => $ename,
+            ':erelationship' => $erelationship,
+        ]);
+
+        if ($row = $q->fetch(PDO::FETCH_ASSOC)) {
+            return $row['emergency_ID'];
+        }
+
+        // Create phone first
+        $phone_ID = $this->addgetPhoneNumber($country_ID, $phone_number, $db);
+        if (!$phone_ID) {
+            $this->setLastError("Emergency phone creation failed");
+            return false;
+        }
+
+        $sql = "INSERT INTO Emergency_Info (phone_ID, emergency_Name, emergency_Relationship)
+                VALUES (:phone_ID, :ename, :erelationship)";
+        $q = $db->prepare($sql);
+        $q->execute([
+            ':phone_ID' => $phone_ID,
+            ':ename' => $ename,
+            ':erelationship' => $erelationship,
+        ]);
+
+        return $q->rowCount() ? $db->lastInsertId() : false;
     }
 
     public function deleteEmergencyIfUnused($emergency_ID){
