@@ -149,4 +149,13 @@ trait TourSpotsTrait {
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getAllSpotCategories(){
+        $sql = "SELECT DISTINCT spots_category FROM tour_spots";
+        $db = $this->connect();
+        $query = $db->prepare($sql);
+        $query->execute();
+
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }

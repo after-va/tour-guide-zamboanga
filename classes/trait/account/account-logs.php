@@ -114,6 +114,41 @@ trait AccountLogs {
         }
     }
 
+    public function touristRegister($account_ID) {
+    
+        $db = $this->connect();
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
+        
+        $db->beginTransaction();
+
+        try {
+            $action_desc = 'registers';
+            $action_name = 'Register';
+            $action_ID = $this->addgetActionID($action_name, $db);
+
+            if (!$action_ID){
+                error_log("FATAL: Cannot continue. Failed to retrieve or create action_ID for action_name: " . $action_name); 
+                $db->rollBack();
+                return false; 
+            }
+
+            $sql= "INSERT INTO Activity_Log (account_ID, action_ID, activity_description) VALUES (:account_ID, :action_ID, :activity_description)";
+            $query = $db->prepare($sql);
+            $query->bindParam(':account_ID', $account_ID);
+            $query->bindParam(':action_ID', $action_ID);
+            $query->bindParam(':activity_description', $action_desc);
+
+            $query->execute();
+            
+            $db->commit();
+            return true;
+        } 
+        catch (Exception $e) {
+            $db->rollBack();
+            error_log("FATAL logoutActivity error: Transaction failed. Details: " . $e->getMessage());
+            return false;
+        }
+    }
 
 }
 

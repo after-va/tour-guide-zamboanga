@@ -108,8 +108,7 @@ main {
 .main-contents .card {
     width: 100%;
     max-width: none !important;
-    margin: 0 !important;
-    height: 28rem !important;                    /* ← YOUR FIXED HEIGHT */
+    margin: 0 !important;/* ← YOUR FIXED HEIGHT */
     display: flex;
     flex-direction: column;
     overflow: hidden;

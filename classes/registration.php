@@ -12,7 +12,7 @@ require_once "trait/person/trait-account.php";
 
 class Registration extends Database {
 
-    use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait;
+    use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait, Account;
     
     public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
         $houseno, $street, $barangay,
@@ -71,9 +71,10 @@ class Registration extends Database {
             $result = $query->execute();
             
             if ($result) {
+                
                 $db->commit();
                 error_log("Tourist registration successful for user: " . $username);
-                return true; 
+                return $db->lastInsertId();
             } else {
                 $errorInfo = $query->errorInfo();
                 $error = "Database error: " . ($errorInfo[2] ?? 'Unknown error');

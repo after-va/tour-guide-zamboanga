@@ -204,6 +204,45 @@ trait TourPackagesTrait {
         return $query->fetch(PDO::FETCH_ASSOC);
     }
 
+    // TourManager.php  (add inside the class)
+    public function filterPackages(array $filters = []): array{
+        $sql   = "SELECT DISTINCT p.* FROM Tour_Package p
+                JOIN Tour_Package_Spots ps ON p.tourpackage_ID = ps.tourpackage_ID
+                JOIN Tour_Spots s ON ps.spots_ID = s.spots_ID
+                JOIN Schedule sch ON p.schedule_ID = sch.schedule_ID
+                JOIN Number_Of_People nop ON sch.numberofpeople_ID = nop.numberofpeople_ID
+                JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
+                WHERE 1=1";
+
+        $params = [];
+
+        // ----- CATEGORIES -----
+        if (!empty($filters['categories'])) {
+            $placeholders = str_repeat('?,', count($filters['categories']) - 1) . '?';
+            $sql .= " AND s.spots_category IN ($placeholders)";
+            $params = array_merge($params, $filters['categories']);
+        }
+
+        // ----- PRICE -----
+        if (!empty($filters['price'])) {
+            $sql .= " AND pr.pricing_foradult <= ?";
+            $params[] = $filters['price'];
+        }
+
+        // ----- PAX -----
+        if (!empty($filters['minPax'])) {
+            $sql .= " AND nop.numberofpeople_based >= ?";
+            $params[] = $filters['minPax'];
+        }
+        if (!empty($filters['maxPax'])) {
+            $sql .= " AND (nop.numberofpeople_maximum <= ? OR nop.numberofpeople_maximum IS NULL)";
+            $params[] = $filters['maxPax'];
+        }
+        $db = $this->connect();
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
     //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";

@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
@@ -15,22 +14,43 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
 
-$tourist_ID = $_SESSION['user']['account_ID'];
-$touristObj = new Tourist();
 $TourManagerObj = new TourManager();
+$packages = $TourManagerObj->viewAllPackages();
+$packageCategory = $TourManagerObj->getTourSpotsCategory();
 
-$filter = [];
-$packages = $TourManagerObj->viewAllPackages();  
+/* -------------------------------------------------
+   AJAX: Return only filtered cards
+   ------------------------------------------------- */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax'])) {
+    $filters = [
+        'categories' => $_POST['categories'] ?? [],
+        'price_min'  => $_POST['price_min'] ?? null,
+        'price_max'  => $_POST['price_max'] ?? null,
+        'minPax'     => $_POST['minPax'] ?? null,
+        'maxPax'     => $_POST['maxPax'] ?? null,
+    ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST'){
-    
+    $packages = $TourManagerObj->filterPackages($filters);
 
+    if (empty($packages)) {
+        echo '<div class="w-100 text-center py-5 text-muted">
+                <i class="bi bi-emoji-frown fs-1"></i>
+                <p class="mt-3">No packages match the selected filters.</p>
+              </div>';
+        exit;
+    }
 
-
-
-
+    foreach ($packages as $package) {
+        $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
+        $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
+        $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
+        $rating   = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
+        $avg      = $rating['avg'] ?? 0;
+        $count    = $rating['count'] ?? 0;
+        include 'card-template.php';
+    }
+    exit;
 }
-
 
 function buildStarList(float $avg, int $count): string
 {
@@ -45,10 +65,6 @@ function buildStarList(float $avg, int $count): string
 
     return $html;
 }
-
-// Get available packages
-$packages = $TourManagerObj->viewAllPackages();
-$packageCategory = $TourManagerObj->getTourSpotsCategory(); // adjust method name if needed
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,210 +79,241 @@ $packageCategory = $TourManagerObj->getTourSpotsCategory(); // adjust method nam
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../../assets/css/tourist/index.css">
 
-    
+    <style>
+        /* Dual Range Slider */
+        .range-slider {
+            position: relative;
+            height: 40px;
+            margin: 15px 0;
+        }
+        .range-slider input[type=range] {
+            position: absolute;
+            left: 0; right: 0;
+            width: 100%;
+            background: none;
+            pointer-events: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .range-slider input[type=range]::-webkit-slider-thumb {
+            height: 18px; width: 18px;
+            border-radius: 50%;
+            background: #ffc107;
+            cursor: pointer;
+            pointer-events: auto;
+            border: 3px solid #fff;
+            box-shadow: 0 0 6px rgba(0,0,0,.2);
+        }
+        .range-slider input[type=range]::-moz-range-thumb {
+            height: 18px; width: 18px;
+            border-radius: 50%;
+            background: #ffc107;
+            cursor: pointer;
+            pointer-events: auto;
+            border: 3px solid #fff;
+            box-shadow: 0 0 6px rgba(0,0,0,.2);
+        }
+        .range-slider__track,
+        .range-slider__fill {
+            position: absolute;
+            left: 0; right: 0;
+            height: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 3px;
+        }
+        .range-slider__track { background: #ddd; }
+        .range-slider__fill { background: #ffc107; }
+    </style>
 </head>
 <body>
 
-<header class = "header">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<header class="header">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.php">Tourismo Zamboanga</a>
-
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-            <span class="navbar-toggler-icon"></span>
+                <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link active" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="booking.php">My Booking</a></li>
-                <!-- <li class="nav-item"><a class="nav-link" href="#">Tour Spots</a></li> -->
-            </ul>
-            <a href="logout.php" class="btn btn-info ms-lg-3">Log out </a>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="booking.php">My Booking</a></li>
+                </ul>
+                <a href="logout.php" class="btn btn-info ms-lg-3">Log out</a>
             </div>
         </div>
-        </nav>
-
+    </nav>
 </header>
 
-<button 
-    class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center" 
-    id="filterToggle" 
-    aria-label="Open filters"
-    style="width: 3rem; height: 3rem; z-index: 1;">
+<!-- Mobile Filter Toggle -->
+<button class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center"
+        id="filterToggle" style="width: 3rem; height: 3rem; z-index: 1050;">
     <i class="bi bi-funnel-fill fs-4"></i>
 </button>
-
-<!-- 2. Overlay (darkens page) -->
 <div class="filter-overlay d-md-none"></div>
 
 <aside id="filterSidebar" class="aside-tourist p-3 bg-light border rounded shadow-sm">
-    <form action="" method="post">
-            <h4 class="text-dark mb-3 border-bottom pb-2"><i class="bi-filter bi bi-funnel-fill"></i>Filter</h4>
+    <form id="filterForm" onsubmit="return false;">
+        <h4 class="text-dark mb-3 border-bottom pb-2"><i class="bi bi-funnel-fill"></i> Filters</h4>
 
+        <!-- Categories -->
         <div class="mb-4">
             <h6 class="fw-bold mb-2">Categories</h6>
-
-            <?php foreach ($packageCategory as $p){
-                if (!isset($p['spots_category'])) continue;
+            <?php foreach ($packageCategory as $p):
+                if (empty($p['spots_category'])) continue;
                 $category = htmlspecialchars($p['spots_category']);
-                $id = 'cat_' . preg_replace('/\s+/', '_', strtolower($category));
+                $id = 'cat_' . preg_replace('/[^a-z0-9]+/', '_', strtolower($category));
             ?>
-
                 <div class="form-check">
-                    <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    id="<?= $id; ?>" 
-                    name="categories[]" 
-                    value="<?= $category; ?>">
-                    <label class="form-check-label" for="<?= $id; ?>">
-                    <?= $category; ?>
-                    </label>
+                    <input class="form-check-input" type="checkbox" id="<?= $id ?>" name="categories[]" value="<?= $category ?>">
+                    <label class="form-check-label" for="<?= $id ?>"><?= $category ?></label>
                 </div>
-            <?php } ?>
-
-            
+            <?php endforeach; ?>
         </div>
 
-        <!-- Price -->
+        <!-- Price: Dual Slider -->
         <div class="mb-4">
-            <h6 class="fw-bold mb-2">Price</h6>
-
-            <div class="input-group mb-2">
-                <span class="input-group-text">₱</span>
-                <input 
-                type="number" 
-                id="priceValue" 
-                class="form-control" 
-                min="500" max="10000" step="500" 
-                value="5000"
-                >
+            <h6 class="fw-bold mb-2">Price (per adult)</h6>
+            <div class="row g-2 mb-2">
+                <div class="col">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">₱</span>
+                        <input type="number" name="price_min" id="priceMinValue" class="form-control" min="500" max="10000" step="500" value="500">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">₱</span>
+                        <input type="number" name="price_max" id="priceMaxValue" class="form-control" min="500" max="10000" step="500" value="10000">
+                    </div>
+                </div>
             </div>
 
-            <input 
-                type="range" 
-                class="form-range" 
-                id="priceRange" 
-                min="500" max="10000" step="500" 
-                value="5000"
-            >
+            <div class="range-slider">
+                <input type="range" class="range-thumb range-thumb--lower" id="priceMinRange" min="500" max="10000" step="500" value="500">
+                <input type="range" class="range-thumb range-thumb--higher" id="priceMaxRange" min="500" max="10000" step="500" value="10000">
+                <div class="range-slider__track"></div>
+                <div class="range-slider__fill"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-1 small text-muted">
+                <span id="priceMinLabel">₱500</span>
+                <span id="priceMaxLabel">₱10,000</span>
+            </div>
         </div>
 
-        <!-- PAX (with Min & Max input) -->
+        <!-- PAX -->
         <div class="mb-4">
             <h6 class="fw-bold mb-2">PAX</h6>
-            <div class="row g-2 align-items-center">
-            <div class="col">
-                <label for="minPax" class="form-label small text-muted">Min</label>
-                <input type="number" class="form-control" id="minPax" min="1" placeholder="1">
-            </div>
-            <div class="col">
-                <label for="maxPax" class="form-label small text-muted">Max</label>
-                <input type="number" class="form-control" id="maxPax" min="1" placeholder="10">
-            </div>
+            <div class="row g-2">
+                <div class="col">
+                    <label class="form-label small text-muted">Min</label>
+                    <input type="number" class="form-control" id="minPax" name="minPax" min="1" placeholder="1">
+                </div>
+                <div class="col">
+                    <label class="form-label small text-muted">Max</label>
+                    <input type="number" class="form-control" id="maxPax" name="maxPax" min="1" placeholder="50">
+                </div>
             </div>
         </div>
-
-        <!-- Apply Button -->
-        <button class="btn-filter btn btn-warning w-100 text-white fw-semibold">Apply Filters</button>
     </form>
 </aside>
-<main class="main-contents">
 
-    <?php foreach ($packages as $package): 
+<main id="packagesContainer" class="main-contents row">
+    <?php foreach ($packages as $package): ?>
+        <?php
         $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
         $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
         $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
-        $spots    = $TourManagerObj->getSpotsByPackage($package['tourpackage_ID']);
-        $spotNames = array_map(fn($s) => $s['spots_name'], $spots);
         $rating   = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
-        $avg      = $rating['avg']   ?? 0;
+        $avg      = $rating['avg'] ?? 0;
         $count    = $rating['count'] ?? 0;
-    ?>
-        <div class="card h-100 shadow-sm border-0">
-            <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
-                <img src="https://mdbootstrap.com/img/Photos/Horizontal/Food/8-col/img (5).jpg" 
-                     class="img-fluid w-100" alt="<?= htmlspecialchars($package['tourpackage_name']) ?>" />
-                <a href="#!"><div class="mask" style="background-color: rgba(251,251,251,0.15);"></div></a>
-            </div>
-
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title fw-bold">
-                    <a href="#!" class="text-dark text-decoration-none">
-                        <?= htmlspecialchars($package['tourpackage_name']) ?>
-                    </a>
-                </h5>
-
-                <!-- STARS -->
-                <ul class="list-inline mb-2 d-flex align-items-center">
-                    <?= buildStarList($avg, $count) ?>
-                </ul>
-
-                <p class="card-text flex-grow-1">
-                    <?= htmlspecialchars($package['tourpackage_desc']) ?>
-                </p>
-
-                <hr class="my-3">
-
-                <p class="mb-1">
-                    <strong>PAX:</strong> 
-                    <?= $people['numberofpeople_based'] ?>
-                    <?php if ($people['numberofpeople_based'] > 1): ?>
-                        - <?= $people['numberofpeople_maximum'] ?>
-                    <?php endif; ?>
-                </p>
-
-                <p class="mb-2 text-success fw-semibold">
-                    from <?= $pricing['pricing_currency'] ?> <?= number_format($pricing['pricing_foradult'], 2) ?> per adult
-                </p>
-
-                <a href="tour-packages-view.php?id=<?= $package['tourpackage_ID']; ?>" class="btn btn-warning mt-auto w-100">View Details</a>
-            </div>
-        </div>
-
+        ?>
+        <?php include 'card-template.php'; ?>
     <?php endforeach; ?>
-
 </main>
 
-
 <script>
-  const priceInput = document.getElementById('priceValue');
-  const priceRange = document.getElementById('priceRange');
+// === Dual Price Slider ===
+const priceMinValue = document.getElementById('priceMinValue');
+const priceMaxValue = document.getElementById('priceMaxValue');
+const priceMinRange = document.getElementById('priceMinRange');
+const priceMaxRange = document.getElementById('priceMaxRange');
+const priceMinLabel = document.getElementById('priceMinLabel');
+const priceMaxLabel = document.getElementById('priceMaxLabel');
+const fill = document.querySelector('.range-slider__fill');
 
-  // Update number input when slider changes
-  priceRange.addEventListener('input', () => {
-    priceInput.value = priceRange.value;
-  });
+function updateSlider() {
+    let min = parseInt(priceMinRange.value);
+    let max = parseInt(priceMaxRange.value);
 
-  // Update slider when number input changes
-  priceInput.addEventListener('input', () => {
-    let value = parseInt(priceInput.value) || 0;
-    if (value < 500) value = 500;
-    if (value > 10000) value = 10000;
-    priceInput.value = value;
-    priceRange.value = value;
-  });
+    if (min > max) {
+        [min, max] = [max, min];
+        priceMinRange.value = min;
+        priceMaxRange.value = max;
+    }
 
+    priceMinValue.value = min;
+    priceMaxValue.value = max;
+    priceMinLabel.textContent = `₱${min.toLocaleString()}`;
+    priceMaxLabel.textContent = `₱${max.toLocaleString()}`;
 
-  // for resizing aside
-    document.addEventListener("DOMContentLoaded", () => {
-        const toggleBtn = document.getElementById("filterToggle");
-        const sidebar = document.getElementById("filterSidebar");
-        const overlay = document.querySelector(".filter-overlay");
+    const percentMin = ((min - 500) / 9500) * 100;
+    const percentMax = ((max - 500) / 9500) * 100;
+    fill.style.left = `${percentMin}%`;
+    fill.style.right = `${100 - percentMax}%`;
+}
+updateSlider();
 
-        toggleBtn?.addEventListener("click", () => {
-            sidebar.classList.add("active");
-            overlay.classList.add("active");
-        });
+// === Real-time Filter ===
+const form = document.getElementById('filterForm');
+const container = document.getElementById('packagesContainer');
+let debounceTimer;
 
-        overlay?.addEventListener("click", () => {
-            sidebar.classList.remove("active");
-            overlay.classList.remove("active");
-        });
+function sendFilter() {
+    const formData = new FormData(form);
+    formData.append('ajax', '1');
+
+    container.innerHTML = `<div class="w-100 text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+
+    fetch(location.href, { method: 'POST', body: formData })
+        .then(r => r.text())
+        .then(html => container.innerHTML = html)
+        .catch(() => container.innerHTML = '<div class="text-danger">Error loading packages.</div>');
+}
+
+// Trigger on change/input
+form.addEventListener('change', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(sendFilter, 300);
+});
+['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => {
+        updateSlider();
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(sendFilter, 300);
     });
+});
 
+// Mobile Sidebar
+document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("filterToggle");
+    const sidebar = document.getElementById("filterSidebar");
+    const overlay = document.querySelector(".filter-overlay");
+
+    toggleBtn?.addEventListener("click", () => {
+        sidebar.classList.add("active");
+        overlay.classList.add("active");
+    });
+    overlay?.addEventListener("click", () => {
+        sidebar.classList.remove("active");
+        overlay.classList.remove("active");
+    });
+});
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

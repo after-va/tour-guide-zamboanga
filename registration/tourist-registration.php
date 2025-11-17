@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 // Include required files
 require_once '../classes/mailer.php';
 require_once "../classes/registration.php";
+require_once "../classes/activity-log.php";
 
 function isOnline(): bool {
     $connected = @fsockopen("www.google.com", 80, $errno, $errstr, 3);
@@ -20,6 +21,7 @@ $tourist = [];
 $errors = [];
 $success = "";
 $dbError = "";
+$activityObj = new ActivityLogs();
 
 // Function to test registration with sample data
 function testRegistration($touristObj) {
@@ -225,7 +227,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         );
 
         if ($result) {
-            // Store username for success page
+            $activty = $activityObj->touristRegister($results['account_ID']);
             $_SESSION['new_username'] = $tourist['username'];
 
             $online = isOnline();
@@ -258,7 +260,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $_SESSION['email_error'] = 'You are offline. Email will be sent when you reconnect.';
             }
 
-            // === REDIRECT ===
             header("Location: registration-success.php");
             exit();
 
