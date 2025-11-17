@@ -176,3 +176,11 @@ main {
         }
         .range-slider__track { background: #ddd; }
         .range-slider__fill { background: #ffc107; }
+
+         
+
+@media (min-width: 992px) {
+    .notification-dropdown{
+        width: 320px;
+    }
+}

@@ -109,14 +109,80 @@ function buildStarList(float $avg, int $count): string
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.php">Tourismo Zamboanga</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                     <li class="nav-item"><a class="nav-link active" href="index.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="booking.php">My Booking</a></li>
+
+                    <!-- Notification Item - CORRECTED -->
+                    <li class="nav-item dropdown position-relative">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" 
+                           href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+                            <!-- Bell icon → visible ONLY on desktop (≥992px) -->
+                            <i class="bi bi-bell-fill d-none d-lg-inline-block"></i>
+
+                            <!-- Word "Notifications" → visible ONLY on mobile (<992px) -->
+                            <span class="d-lg-none">Notifications</span>
+
+                            <!-- Badge (dynamic - replace 5 with your actual count) -->
+                            <?php 
+                            $unread_count = 5; // Change this with your query
+                            $badge_display = $unread_count > 0 ? '' : 'd-none';
+                            ?>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger <?= $badge_display ?>"
+                                  style="font-size: 0.65rem;">
+                                <?= $unread_count ?>
+                                <span class="visually-hidden">unread notifications</span>
+                            </span>
+                        </a>
+
+                        <!-- Dropdown Menu (unchanged) -->
+                        <ul id = "notification-dropdown" class="dropdown-menu dropdown-menu-end mt-2 shadow" >
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li>
+                                <a class="dropdown-item py-3" href="#">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0"><i class="bi bi-check-circle-fill text-success"></i></div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <strong>Your booking has been confirmed!</strong>
+                                            <div class="text-muted small">Fort Pilar Tour - Nov 20, 2025</div>
+                                            <div class="text-muted small">2 hours ago</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item py-3" href="#">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0"><i class="bi bi-clock-history text-warning"></i></div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <strong>Reminder: Upcoming tour tomorrow</strong>
+                                            <div class="text-muted small">Zamboanga City Tour</div>
+                                            <div class="text-muted small">5 hours ago</div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center text-primary fw-bold" href="notifications.php">
+                                View all notifications
+                            </a></li>
+                        </ul>
+                    </li>
                 </ul>
+
+                <!-- Logout Button -->
                 <a href="logout.php" class="btn btn-info ms-lg-3">Log out</a>
             </div>
         </div>
