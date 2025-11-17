@@ -22,12 +22,27 @@ $packageCategory = $TourManagerObj->getTourSpotsCategory();
    AJAX: Return only filtered cards
    ------------------------------------------------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax'])) {
+    // Properly handle categories[] from checkboxes
+    $rawCategories = isset($_POST['categories']) ? $_POST['categories'] : [];
+
+    // Ensure it's always an array
+    if (!is_array($rawCategories)) {
+        $rawCategories = $rawCategories === '' ? [] : [$rawCategories];
+    }
+
+    // Clean categories - trim whitespace but keep original case
+    $categories = array_filter(array_map('trim', $rawCategories));
+    $categories = array_values($categories); // reindex
+
+    // Debug logging
+    error_log("Categories received: " . print_r($categories, true));
+
     $filters = [
-        'categories' => $_POST['categories'] ?? [],
-        'price_min'  => $_POST['price_min'] ?? null,
-        'price_max'  => $_POST['price_max'] ?? null,
-        'minPax'     => $_POST['minPax'] ?? null,
-        'maxPax'     => $_POST['maxPax'] ?? null,
+        'categories' => $categories,
+        'price_min'  => isset($_POST['price_min']) && $_POST['price_min'] !== '' ? $_POST['price_min'] : null,
+        'price_max'  => isset($_POST['price_max']) && $_POST['price_max'] !== '' ? $_POST['price_max'] : null,
+        'minPax'     => isset($_POST['minPax']) && $_POST['minPax'] !== '' ? $_POST['minPax'] : null,
+        'maxPax'     => isset($_POST['maxPax']) && $_POST['maxPax'] !== '' ? $_POST['maxPax'] : null,
     ];
 
     $packages = $TourManagerObj->filterPackages($filters);
@@ -44,9 +59,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ajax'])) {
         $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
         $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
         $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
-        $rating   = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
-        $avg      = $rating['avg'] ?? 0;
-        $count    = $rating['count'] ?? 0;
+        
+        // Handle rating errors gracefully
+        try {
+            $rating = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
+            $avg    = $rating['avg'] ?? 0;
+            $count  = $rating['count'] ?? 0;
+        } catch (Exception $e) {
+            $avg   = 0;
+            $count = 0;
+        }
+        
         include 'card-template.php';
     }
     exit;
@@ -65,6 +88,7 @@ function buildStarList(float $avg, int $count): string
 
     return $html;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,10 +102,6 @@ function buildStarList(float $avg, int $count): string
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../../assets/css/tourist/index.css">
-
-    <style>
-        
-    </style>
 </head>
 <body>
 
@@ -123,7 +143,7 @@ function buildStarList(float $avg, int $count): string
                 $id = 'cat_' . preg_replace('/[^a-z0-9]+/', '_', strtolower($category));
             ?>
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="<?= $id ?>" name="categories[]" value="<?= $category ?>">
+                    <input class="form-check-input category-checkbox" type="checkbox" id="<?= $id ?>" name="categories[]" value="<?= $category ?>">
                     <label class="form-check-label" for="<?= $id ?>"><?= $category ?></label>
                 </div>
             <?php endforeach; ?>
@@ -183,9 +203,16 @@ function buildStarList(float $avg, int $count): string
         $schedule = $TourManagerObj->getScheduleByID($package['schedule_ID']);
         $people   = $TourManagerObj->getPeopleByID($schedule['numberofpeople_ID']);
         $pricing  = $TourManagerObj->getPricingByID($people['pricing_ID']);
-        $rating   = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
-        $avg      = $rating['avg'] ?? 0;
-        $count    = $rating['count'] ?? 0;
+        
+        // Handle rating errors gracefully
+        try {
+            $rating = $TourManagerObj->getTourPackagesRating($package['tourpackage_ID']);
+            $avg    = $rating['avg'] ?? 0;
+            $count  = $rating['count'] ?? 0;
+        } catch (Exception $e) {
+            $avg   = 0;
+            $count = 0;
+        }
         ?>
         <?php include 'card-template.php'; ?>
     <?php endforeach; ?>
@@ -232,26 +259,55 @@ function sendFilter() {
     const formData = new FormData(form);
     formData.append('ajax', '1');
 
+    // Debug: Log what's being sent
+    console.log('Filter data being sent:');
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
     container.innerHTML = `<div class="w-100 text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
 
     fetch(location.href, { method: 'POST', body: formData })
         .then(r => r.text())
-        .then(html => container.innerHTML = html)
-        .catch(() => container.innerHTML = '<div class="text-danger">Error loading packages.</div>');
+        .then(html => {
+            container.innerHTML = html;
+            console.log('Filter applied successfully');
+        })
+        .catch(err => {
+            console.error('Filter error:', err);
+            container.innerHTML = '<div class="text-danger">Error loading packages.</div>';
+        });
 }
 
-// Trigger on change/input
-form.addEventListener('change', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(sendFilter, 300);
-});
-['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', () => {
-        updateSlider();
+// Trigger on checkbox change
+const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+categoryCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        console.log('Category changed:', checkbox.value, checkbox.checked);
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(sendFilter, 300);
     });
+});
+
+// Trigger on other form changes
+form.addEventListener('change', (e) => {
+    // Only trigger if it's not a category checkbox (already handled above)
+    if (!e.target.classList.contains('category-checkbox')) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(sendFilter, 300);
+    }
+});
+
+// Handle slider and number inputs
+['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('input', () => {
+            updateSlider();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(sendFilter, 300);
+        });
+    }
 });
 
 // Mobile Sidebar
@@ -260,14 +316,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.getElementById("filterSidebar");
     const overlay = document.querySelector(".filter-overlay");
 
-    toggleBtn?.addEventListener("click", () => {
-        sidebar.classList.add("active");
-        overlay.classList.add("active");
-    });
-    overlay?.addEventListener("click", () => {
-        sidebar.classList.remove("active");
-        overlay.classList.remove("active");
-    });
+    if (toggleBtn && sidebar && overlay) {
+        toggleBtn.addEventListener("click", () => {
+            sidebar.classList.add("active");
+            overlay.classList.add("active");
+        });
+        overlay.addEventListener("click", () => {
+            sidebar.classList.remove("active");
+            overlay.classList.remove("active");
+        });
+    }
 });
 </script>
 

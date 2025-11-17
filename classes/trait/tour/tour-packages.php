@@ -140,9 +140,9 @@ trait TourPackagesTrait {
     public function getTourPackagesRating($tourpackage_ID): ?array{
         // 1. Make sure table name is correct (you wrote "rating" — is it "ratings"?)
         $sql = "SELECT 
-                AVG(rating_value) AS avg,
-                COUNT(rating_value) AS total
-                FROM ratings
+                AVG(rating_value) AS avg_rating,
+                COUNT(rating_value) AS total_ratings
+                FROM rating
                 WHERE rating_tourpackage_ID = :tourpackage_ID";
 
         try {
@@ -205,44 +205,74 @@ trait TourPackagesTrait {
     }
 
     // TourManager.php  (add inside the class)
-    public function filterPackages(array $filters = []): array{
-        $sql   = "SELECT DISTINCT p.* FROM Tour_Package p
-                JOIN Tour_Package_Spots ps ON p.tourpackage_ID = ps.tourpackage_ID
-                JOIN Tour_Spots s ON ps.spots_ID = s.spots_ID
+    public function filterPackages(array $filters = []): array {
+        $sql = "SELECT DISTINCT p.* 
+                FROM Tour_Package p
                 JOIN Schedule sch ON p.schedule_ID = sch.schedule_ID
                 JOIN Number_Of_People nop ON sch.numberofpeople_ID = nop.numberofpeople_ID
-                JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID
-                WHERE 1=1";
-
+                JOIN Pricing pr ON nop.pricing_ID = pr.pricing_ID";
+        
         $params = [];
+        $conditions = [];
 
         // ----- CATEGORIES -----
-        if (!empty($filters['categories'])) {
-            $placeholders = str_repeat('?,', count($filters['categories']) - 1) . '?';
-            $sql .= " AND s.spots_category IN ($placeholders)";
-            $params = array_merge($params, $filters['categories']);
+        // Filter packages that have at least one spot in the selected categories
+        if (!empty($filters['categories']) && is_array($filters['categories'])) {
+            $placeholders = implode(',', array_fill(0, count($filters['categories']), '?'));
+            
+            $sql .= " JOIN Tour_Package_Spots ps ON p.tourpackage_ID = ps.tourpackage_ID
+                    JOIN Tour_Spots s ON ps.spots_ID = s.spots_ID";
+            
+            // Use LOWER() and TRIM() for case-insensitive matching
+            $conditions[] = "LOWER(TRIM(s.spots_category)) IN ($placeholders)";
+            
+            // Add lowercase trimmed categories to params
+            foreach ($filters['categories'] as $cat) {
+                $params[] = strtolower(trim($cat));
+            }
         }
 
-        // ----- PRICE -----
-        if (!empty($filters['price'])) {
-            $sql .= " AND pr.pricing_foradult <= ?";
-            $params[] = $filters['price'];
+        // ----- PRICE RANGE -----
+        if (!empty($filters['price_min'])) {
+            $conditions[] = "pr.pricing_foradult >= ?";
+            $params[] = $filters['price_min'];
+        }
+
+        if (!empty($filters['price_max'])) {
+            $conditions[] = "pr.pricing_foradult <= ?";
+            $params[] = $filters['price_max'];
         }
 
         // ----- PAX -----
         if (!empty($filters['minPax'])) {
-            $sql .= " AND nop.numberofpeople_based >= ?";
+            $conditions[] = "nop.numberofpeople_based >= ?";
             $params[] = $filters['minPax'];
         }
+
         if (!empty($filters['maxPax'])) {
-            $sql .= " AND (nop.numberofpeople_maximum <= ? OR nop.numberofpeople_maximum IS NULL)";
+            $conditions[] = "(nop.numberofpeople_maximum <= ? OR nop.numberofpeople_maximum IS NULL)";
             $params[] = $filters['maxPax'];
         }
-        $db = $this->connect();
-        $stmt = $db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Add WHERE clause if there are conditions
+        if (!empty($conditions)) {
+            $sql .= " WHERE " . implode(' AND ', $conditions);
+        }
+
+        // Add ORDER BY for consistent results
+        $sql .= " ORDER BY p.tourpackage_ID";
+
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Filter packages error: " . $e->getMessage());
+            return [];
+        }
     }
+
 
     // public function getScheduleIDInTourPackageByTourPackageID($tourpackage_ID){
     //     $sql = "SELECT schedule_ID FROM Tour_Package WHERE tourpackage_ID = :tourpackage_ID";

@@ -1,6 +1,5 @@
 <!-- card-template.php -->
 <?php
-// Expected: $package, $schedule, $people, $pricing, $avg, $count
 ?>
 <div class="col">
     <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
