@@ -4,10 +4,12 @@ require_once __DIR__ . "/../config/database.php";
 require_once "trait/account/account-logs.php";
 require_once "trait/tour/tour-logs.php";
 require_once "trait/booking/booking-logs.php";
+require_once "trait/activity-logs/activity-viewed.php";
+require_once "trait/activity-logs/notification.php";
 
 class ActivityLogs extends Database {
 
-    use AccountLogs, TourLogs, BookingLogs;
+    use AccountLogs, TourLogs, BookingLogs, Notification, ActivityViewed;
 
     public function addgetActionID($action_name, $db){
     
