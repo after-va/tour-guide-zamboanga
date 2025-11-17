@@ -80,50 +80,7 @@ function buildStarList(float $avg, int $count): string
     <link rel="stylesheet" href="../../assets/css/tourist/index.css">
 
     <style>
-        /* Dual Range Slider */
-        .range-slider {
-            position: relative;
-            height: 40px;
-            margin: 15px 0;
-        }
-        .range-slider input[type=range] {
-            position: absolute;
-            left: 0; right: 0;
-            width: 100%;
-            background: none;
-            pointer-events: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .range-slider input[type=range]::-webkit-slider-thumb {
-            height: 18px; width: 18px;
-            border-radius: 50%;
-            background: #ffc107;
-            cursor: pointer;
-            pointer-events: auto;
-            border: 3px solid #fff;
-            box-shadow: 0 0 6px rgba(0,0,0,.2);
-        }
-        .range-slider input[type=range]::-moz-range-thumb {
-            height: 18px; width: 18px;
-            border-radius: 50%;
-            background: #ffc107;
-            cursor: pointer;
-            pointer-events: auto;
-            border: 3px solid #fff;
-            box-shadow: 0 0 6px rgba(0,0,0,.2);
-        }
-        .range-slider__track,
-        .range-slider__fill {
-            position: absolute;
-            left: 0; right: 0;
-            height: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-radius: 3px;
-        }
-        .range-slider__track { background: #ddd; }
-        .range-slider__fill { background: #ffc107; }
+        
     </style>
 </head>
 <body>
