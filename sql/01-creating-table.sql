@@ -152,6 +152,22 @@ CREATE TABLE Activity_Log (
     FOREIGN KEY (action_ID) REFERENCES Action(action_ID)
 );
 
+CREATE TABLE Activity_View(
+    activity_ID INT NOT NULL, 
+    account_ID INT NOT NULL,
+    activity_isViewed TINYINT DEFAULT 0,
+    
+    PRIMARY KEY (account_ID, activity_ID),
+    
+    FOREIGN KEY (account_ID) 
+        REFERENCES Account_Info(account_ID) 
+        ON DELETE CASCADE, -- Recommended for junction tables
+    
+    FOREIGN KEY (activity_ID) 
+        REFERENCES Activity_Log(activity_ID)
+        ON DELETE CASCADE  -- Recommended for junction tables
+);
+
 --  ==============================
 --  ADMIN SYSTEM TABLES
 --  ==============================
