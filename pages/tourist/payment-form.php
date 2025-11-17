@@ -14,6 +14,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/tourist.php";
 require_once "../../classes/payment-manager.php";
 require_once "../../classes/booking.php";
+require_once "../../classes/activity-log.php";
 
 $tourist_ID = $_SESSION['user']['account_ID'];
 $booking_ID = $_GET['id'] ?? null;
@@ -26,6 +27,7 @@ if (!$booking_ID || !is_numeric($booking_ID)) {
 $touristObj = new Tourist();
 $paymentObj = new PaymentManager();
 $bookingObj = new Booking();
+$activityObj = new ActivityLogs();
 
 $hasPaymentTransaction = $paymentObj->hasPaymentTransaction($booking_ID);
 if($hasPaymentTransaction < 0){
@@ -106,10 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $method_currency, $method_cardnumber, $method_expmonth, $method_expyear,
             $method_cvc, $method_name, $method_email, $method_line1,
             $method_city, $method_postalcode, $method_country,
-            $country_ID, $phone_number
-        );
+            $country_ID, $phone_number );
 
         if ($result) {
+            $paymentResolve = $activityObj->touristpayment($booking_ID, $tourist_ID);
             header("Location: booking.php?id=" . urlencode($booking_ID));
             exit;
         } else {

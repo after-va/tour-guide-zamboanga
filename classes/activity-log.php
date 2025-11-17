@@ -5,10 +5,11 @@ require_once "trait/account/account-logs.php";
 require_once "trait/tour/tour-logs.php";
 require_once "trait/booking/booking-logs.php";
 require_once "trait/activity-logs/notification.php";
+require_once "trait/payment-info/payment-log.php";
 
 class ActivityLogs extends Database {
 
-    use AccountLogs, TourLogs, BookingLogs,NotificationTrait;
+    use AccountLogs, TourLogs, BookingLogs, NotificationTrait, PaymentLogs;
 
     public function addgetActionID($action_name, $db){
     
