@@ -2,7 +2,7 @@
 session_start();
 
 require_once "classes/tour-manager.php";
-require_once "../../classes/booking.php";
+require_once "classes/booking.php";
 
 
 $bookingObj = new Booking();

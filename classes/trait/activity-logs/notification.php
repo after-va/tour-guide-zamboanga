@@ -1,6 +1,6 @@
 <?php 
 
-trait Notification{
+trait NotificationTrait{
 
     public function touristNotification(int $tourist_ID): array {
         $db = $this->connect();
