@@ -351,15 +351,13 @@ class Guide extends Database {
         }
     }
 
-    public function getGuideByID($guide_ID){
-        $sql = "SELECT g.guide_ID FROM Guide AS g WHERE g.guide_ID = :guide_ID";
-        $db = $this->connect();
-        $query = $db->prepare($sql);
-        $query->bindParam(":guide_ID", $guide_ID);
-        $query->execute();
-
-        $result = $query->fetch(PDO::FETCH_ASSOC);
-        return $result ? $result['guide_ID'] : null;
+    // classes/guide.php
+    public function getGuideByID(int $guide_ID): ?array
+    {
+        $sql = "SELECT * FROM guide WHERE guide_ID = :id LIMIT 1";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([':id' => $guide_ID]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
 }

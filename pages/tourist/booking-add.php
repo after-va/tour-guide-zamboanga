@@ -10,6 +10,9 @@ require_once "../../classes/guide.php";
 require_once "../../classes/tourist.php";
 require_once "../../classes/booking.php";
 require_once "../../classes/activity-log.php";
+require_once "../../classes/mailer.php";
+
+$mailerObj = new Mailer();
 
 $activityObj = new ActivityLogs();
 
@@ -130,6 +133,55 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $_SESSION['success'] = "Booking successful. Proceeding to payment.";
         $action = $activityObj->touristBook($booking_ID, $tourist_ID);
+        // After successful booking
+        // SEND ITINERARY EMAIL — ONLY ONCE!
+if ($booking_ID && !$bookingObj->hasItineraryBeenSent($booking_ID)) {
+
+    // === LOAD ALL DATA CORRECTLY ===
+    $bookingData    = $bookingObj->getBookingByIDAndTourist($booking_ID, $tourist_ID);
+    $packageData    = $tourManager->getTourPackageDetailsByID($tourpackage_ID);
+
+    // CRITICAL: This must return the FULL guide array, not just ID!
+    $guideData      = $guideObj->getGuideByID($packageData['guide_ID']); // ← ARRAY, not int!
+
+    $spotsData      = $tourManager->getSpotsByPackage($tourpackage_ID);
+    $companionsData = $bookingObj->getCompanionsByBooking($booking_ID);
+
+    // Safety check$guideData      = $guideObj->getGuideByID($packageData['guide_ID']);
+    if (!$bookingData || !$packageData || !$guideData) {
+        error_log("Itinerary email skipped: missing data for booking #{$booking_ID}");
+    } else {
+        // Get tourist info safely
+        $touristEmail = $_SESSION['user']['email'] 
+                     ?? $touristObj->getEmailByID($tourist_ID) 
+                     ?? 'no-reply@tourismozamboanga.com';
+
+        $touristName  = $_SESSION['user']['fullname'] 
+                     ?? $_SESSION['user']['tourist_name'] 
+                     ?? $touristObj->getFullNameByID($tourist_ID) 
+                     ?? 'Valued Traveler';
+
+        // NOW IT WORKS — All parameters are correct types
+        $result = $mailerObj->sendBookingItineraryEmail(
+            $bookingData,
+            $packageData,
+            $guideData,        // ← This is now an ARRAY, not int
+            $spotsData,
+            $companionsData,
+            $touristEmail,
+            $touristName
+        );
+
+        if ($result['success']) {
+            $bookingObj->markItinerarySent($booking_ID);
+            $_SESSION['success'] = "Booking confirmed! Your itinerary has been emailed to you.";
+        } else {
+            $_SESSION['success'] = "Booking confirmed! (Email sending failed — we'll resend shortly)";
+            error_log("Itinerary email failed: " . $result['message']);
+        }
+    }
+}
+
         header("Location: payment-form.php?id=" . $booking_ID);
         exit();
     }

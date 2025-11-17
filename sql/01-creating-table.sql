@@ -323,6 +323,8 @@ CREATE TABLE Booking(
     tourpackage_ID INT,
     booking_start_date DATE NOT NULL,
     booking_end_date DATE NOT NULL,
+    itinerary_sent TINYINT(1) DEFAULT 0,
+    itinerary_sent_at DATETIME NULL
     FOREIGN KEY (tourpackage_ID) REFERENCES Tour_Package(tourpackage_ID),
     FOREIGN KEY (tourist_ID) REFERENCES Account_Info(account_ID)
 );

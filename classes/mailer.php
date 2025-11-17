@@ -1,152 +1,44 @@
 <?php
-// Mailer.php
 
 require_once __DIR__ . "/../assets/vendor/autoload.php";
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\SMTP;
+use Dotenv\Dotenv;
 
-class Mailer {
-    protected PHPMailer $mail;
+$dotenv = Dotenv::createImmutable(dirname(__DIR__, 1));
+$dotenv->load();
 
-    // Default configuration array for known providers
-    const PROVIDER_CONFIGS = [
-        'gmail' => [
-            'Host'       => 'smtp.gmail.com',
-            'Port'       => 587,
-            'SMTPSecure' => PHPMailer::ENCRYPTION_STARTTLS,
-        ],
-        'yahoo' => [
-            'Host'       => 'smtp.mail.yahoo.com',
-            'Port'       => 587,
-            'SMTPSecure' => PHPMailer::ENCRYPTION_STARTTLS,
-        ],
-        'office365' => [
-            'Host'       => 'smtp.office365.com',
-            'Port'       => 587,
-            'SMTPSecure' => PHPMailer::ENCRYPTION_STARTTLS,
-        ],
-        // Add more providers here if you like
-    ];
+class Mailer
+{
+    private $mail;
 
-    /**
-     * Initializes PHPMailer and sets common defaults.
-     *
-     * @param string $providerKey Optional key for predefined provider settings.
-     * @param string $username    SMTP username (optional, can be set later).
-     * @param string $password    SMTP password (optional, can be set later).
-     */
-    public function __construct(string $providerKey = '', string $username = '', string $password = '') {
+    public function __construct()
+    {
         $this->mail = new PHPMailer(true);
-
         $this->mail->isSMTP();
+        $this->mail->SMTPDebug = 0;               // 0 = off, 2 = debug
+        $this->mail->Host       = 'smtp.gmail.com';
         $this->mail->SMTPAuth   = true;
+        $this->mail->Username   = $_ENV['SMTP_USERNAME'];     // CHANGE THIS
+        $this->mail->Password   = $_ENV['SMTP_PASSWORD'];        // CHANGE THIS
+        $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $this->mail->Port       = 587;
+        $this->mail->setFrom('no-reply@yourdomain.com', 'Your App Name');
         $this->mail->isHTML(true);
-
-        // Default placeholder – will be overwritten by setProvider()
-        $this->mail->Host = 'smtp.placeholder.com';
-
-        if ($providerKey) {
-            $this->setProvider($providerKey);
-        }
-
-        if ($username && $password) {
-            $this->setCredentials($username, $password);
-        }
     }
 
-    /**
-     * Set a predefined provider (gmail, yahoo, office365, …)
-     */
-    public function setProvider(string $providerKey): bool {
-        $providerKey = strtolower($providerKey);
-
-        if (!isset(self::PROVIDER_CONFIGS[$providerKey])) {
-            error_log("Mailer Error: Unknown provider key '{$providerKey}'.");
-            return false;
-        }
-
-        $config = self::PROVIDER_CONFIGS[$providerKey];
-
-        $this->mail->Host       = $config['Host'];
-        $this->mail->Port       = $config['Port'];
-        $this->mail->SMTPSecure = $config['SMTPSecure'];
-
-        return true;
-    }
-
-    /**
-     * Set SMTP credentials (username + password / app-password)
-     */
-    public function setCredentials(string $username, string $password): void {
-        $this->mail->Username = $username;
-        $this->mail->Password = $password;
-    }
-
-    /**
-     * Set the From address
-     */
-    public function setFrom(string $email, string $name = 'Tourist Platform'): void {
-        $this->mail->setFrom($email, $name);
-    }
-
-    /**
-     * Add a recipient
-     */
-    public function addRecipient(string $email, string $name = ''): void {
-        $this->mail->addAddress($email, $name);
-    }
-
-    /**
-     * Add CC recipient
-     */
-    public function addCC(string $email, string $name = ''): void {
-        $this->mail->addCC($email, $name);
-    }
-
-    /**
-     * Add BCC recipient
-     */
-    public function addBCC(string $email, string $name = ''): void {
-        $this->mail->addBCC($email, $name);
-    }
-
-    /**
-     * Set subject + HTML body + optional plain-text fallback
-     */
-    public function setContent(string $subject, string $bodyHTML, string $bodyAltText = ''): void {
-        $this->mail->Subject = $subject;
-        $this->mail->Body    = $bodyHTML;
-        $this->mail->AltBody = $bodyAltText ?: strip_tags($bodyHTML);
-    }
-
-    /**
-     * Attach a file
-     */
-    public function addAttachment(string $filePath, string $fileName = ''): void {
-        $this->mail->addAttachment($filePath, $fileName);
-    }
-
-    /**
-     * Send the e-mail
-     *
-     * @return bool  true on success, false on failure
-     */
-    public function send(): bool {
+    public function send($to, $name, $subject, $body)
+    {
         try {
-            $this->mail->send();
-            return true;
-        } catch (Exception $e) {
-            error_log("Email could not be sent. Mailer Error: {$this->mail->ErrorInfo}");
-            return false;
-        }
-    }
+            $this->mail->addAddress($to, $name);
+            $this->mail->Subject = $subject;
+            $this->mail->Body    = $body;
 
-    /**
-     * Get the last PHPMailer error message
-     */
-    public function getError(): string {
-        return $this->mail->ErrorInfo;
+            $this->mail->send();
+            return ['success' => true];
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => $this->mail->ErrorInfo];
+        }
     }
 }

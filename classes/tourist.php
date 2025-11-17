@@ -95,5 +95,60 @@ class Tourist extends Database {
         }
     }
 
+    /**
+     * Get tourist's email by tourist account_ID
+     * 
+     * @param int $tourist_ID The account_ID from the account_info table (your current session ID)
+     * @return string|null Email address or null if not found
+     */
+    public function getEmailByID(int $tourist_ID): ?string
+    {
+        $sql = "
+            SELECT ci.contactinfo_email 
+            FROM contact_info ci
+            INNER JOIN person p ON p.contactinfo_ID = ci.contactinfo_ID
+            INNER JOIN user_login u ON u.person_ID = p.person_ID
+            INNER JOIN account_info a ON a.user_ID = u.user_ID
+            WHERE a.account_ID = :tourist_ID
+            LIMIT 1
+        ";
+
+        try {
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([':tourist_ID' => $tourist_ID]);
+            $result = $stmt->fetchColumn();
+
+            return $result ?: null;
+        } catch (PDOException $e) {
+            error_log("Tourist::getEmailByID() error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Get tourist's full name by account_ID
+     */
+    public function getFullNameByID(int $tourist_ID): ?string
+    {
+        $sql = "
+            SELECT CONCAT(p.person_firstname, ' ', p.person_lastname) AS fullname
+            FROM person p
+            INNER JOIN user_login u ON u.person_ID = p.person_ID
+            INNER JOIN account_info a ON a.user_ID = u.user_ID
+            WHERE a.account_ID = :tourist_ID
+            LIMIT 1
+        ";
+
+        try {
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([':tourist_ID' => $tourist_ID]);
+            $result = $stmt->fetchColumn();
+
+            return $result ?: null;
+        } catch (PDOException $e) {
+            error_log("Tourist::getFullNameByID() error: " . $e->getMessage());
+            return null;
+        }
+    }
 
 }

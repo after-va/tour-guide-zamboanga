@@ -41,6 +41,29 @@ trait BookingDetails{
         }
     }
 
+    // Add to your Booking class
+    public function markItinerarySent(int $booking_ID): bool
+    {
+        try {
+            $sql = "UPDATE booking SET itinerary_sent = 1, itinerary_sent_at = NOW() WHERE booking_ID = :id";
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([':id' => $booking_ID]);
+            return true;
+        } catch (Exception $e) {
+            error_log("Failed to mark itinerary sent: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function hasItineraryBeenSent(int $booking_ID): bool
+    {
+        $sql = "SELECT itinerary_sent FROM booking WHERE booking_ID = :id";
+        $stmt = $this->connect()->prepare($sql);
+        $stmt->execute([':id' => $booking_ID]);
+        $result = $stmt->fetchColumn();
+        return $result == 1;
+    }
+
 }
 
 ?>
