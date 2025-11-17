@@ -13,6 +13,11 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 
 require_once "../../classes/tourist.php";
 require_once "../../classes/tour-manager.php";
+require_once "../../classes/booking.php";
+
+
+$bookingObj = new Booking();
+$updateBookings = $bookingObj->updateBookings();
 
 $TourManagerObj = new TourManager();
 $packages = $TourManagerObj->viewAllPackages();
@@ -283,7 +288,7 @@ function buildStarList(float $avg, int $count): string
         <?php include 'card-template.php'; ?>
     <?php endforeach; ?>
 </main>
-
+<p><?= $updateBookings['message'] ?></p>
 <script>
 // === Dual Price Slider ===
 const priceMinValue = document.getElementById('priceMinValue');

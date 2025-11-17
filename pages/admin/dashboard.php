@@ -19,6 +19,7 @@ $totalAccount = $adminObj->countAccount();
 $countspots = $tourPackageObj->countSpots();
 $countPackage = $tourPackageObj->countPackages();
 $countBookings = $bookingObj->countBookings();
+$updateBookings = $bookingObj->updateBookings();
 
 
 ?>

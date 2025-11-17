@@ -2,8 +2,13 @@
 session_start();
 
 require_once "classes/tour-manager.php";
+require_once "../../classes/booking.php";
 
+
+$bookingObj = new Booking();
+$updateBookings = $bookingObj->updateBookings();
 $tourmanagerObj = new TourManager();
+
 
 $tourspots = $tourmanagerObj->getAllSpots();
 $tourcategory = $tourmanagerObj->getCategoryandImage();

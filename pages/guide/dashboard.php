@@ -21,8 +21,11 @@ require_once "../../classes/guide.php";
 require_once "../../classes/booking.php";
 require_once "../../classes/tour-manager.php";
 
-$guideObj = new Guide();
+
 $bookingObj = new Booking();
+$updateBookings = $bookingObj->updateBookings();
+
+$guideObj = new Guide();
 $tourManagerObj = new TourManager();
 
 $guide_ID = $guideObj->getGuide_ID($_SESSION['user']['account_ID']);
