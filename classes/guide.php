@@ -354,10 +354,91 @@ class Guide extends Database {
     // classes/guide.php
     public function getGuideByID(int $guide_ID): ?array
     {
-        $sql = "SELECT * FROM guide WHERE guide_ID = :id LIMIT 1";
-        $stmt = $this->connect()->prepare($sql);
-        $stmt->execute([':id' => $guide_ID]);
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        $sql = " SELECT 
+                -- Guide & Account
+                g.guide_ID,
+                ai.account_ID,
+                ai.account_status,
+                ai.account_rating_score,
+                ai.account_created_at,
+                
+                -- Login
+                ul.user_username,
+                
+                -- Personal Info
+                p.person_Nationality,
+                p.person_Gender,
+                p.person_DateOfBirth,
+                
+                -- Name
+                ni.name_first,
+                ni.name_second,
+                ni.name_middle,
+                ni.name_last,
+                ni.name_suffix,
+                
+                -- Full Name (Clean Concatenation)
+                TRIM(
+                    CONCAT(
+                        ni.name_first, ' ',
+                        COALESCE(ni.name_second, ''), ' ',
+                        COALESCE(ni.name_middle, ''), ' ',
+                        ni.name_last,
+                        IF(ni.name_suffix IS NOT NULL AND ni.name_suffix != '', CONCAT(' ', ni.name_suffix), '')
+                    )
+                ) AS guide_name,
+                
+                -- Contact
+                ci.contactinfo_email AS guide_email,
+                
+                -- Primary Phone Number (with country code)
+                CONCAT(COALESCE(pn.country_codenumber, ''), pn.phone_number) AS guide_phonenumber,
+                pn.phone_number AS phone_number_only,
+                c.country_name,
+                
+                -- Address (concatenated for convenience)
+                CONCAT(
+                    TRIM(CONCAT(addr.street, ' ', addr.building)),
+                    IF(addr.barangay_ID IS NOT NULL, CONCAT(', ', b.barangay_name), ''),
+                    IF(city.city_ID IS NOT NULL, CONCAT(', ', city.city_name), ''),
+                    IF(prov.province_ID IS NOT NULL, CONCAT(', ', prov.province_name), ''),
+                    IF(reg.region_ID IS NOT NULL, CONCAT(', ', reg.region_name), '')
+                ) AS guide_address
+                
+            FROM guide g
+            JOIN Account_Info ai ON ai.account_ID = g.account_ID
+            JOIN User_Login ul ON ul.user_ID = ai.user_ID
+            JOIN Person p ON p.person_ID = ul.person_ID
+            
+            LEFT JOIN Name_Info ni ON ni.name_ID = p.name_ID
+            LEFT JOIN Contact_Info ci ON ci.contactinfo_ID = p.contactinfo_ID
+            
+            -- Primary Phone (assume one primary or get the first)
+            LEFT JOIN Phone_Number pn ON pn.phone_ID = ci.phone_ID
+            LEFT JOIN Country c ON c.country_ID = pn.country_ID
+            
+            -- Address
+            LEFT JOIN Address_Info addr ON addr.address_ID = ci.address_ID
+            LEFT JOIN Barangay b ON b.barangay_ID = addr.barangay_ID
+            LEFT JOIN City city ON city.city_ID = b.city_ID
+            LEFT JOIN Province prov ON prov.province_ID = city.province_ID
+            LEFT JOIN Region reg ON reg.region_ID = prov.region_ID
+            
+            WHERE g.guide_ID = :guide_ID
+            LIMIT 1
+        ";
+
+        try {
+            $stmt = $this->connect()->prepare($sql);
+            $stmt->execute([':guide_ID' => $guide_ID]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $result ?: null; // Return null if no guide found
+
+        } catch (PDOException $e) {
+            error_log("getGuideByID Error: " . $e->getMessage());
+            return null;
+        }
     }
 
 }
