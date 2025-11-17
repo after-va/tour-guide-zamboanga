@@ -8,7 +8,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_name'] !== 'Tourist') {
 require_once "../../classes/booking.php";
 require_once "../../classes/tourist.php";
 
-$tourist_ID = $_SESSION['user']['account_ID'];
+$tourist_ID = $_SESSION['account_ID'];
 $touristObj = new Tourist();
 $bookingObj = new Booking();
 

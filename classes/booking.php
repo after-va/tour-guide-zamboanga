@@ -4,11 +4,12 @@ require_once __DIR__ . "/../config/database.php";
 require_once "trait/booking/booking_bundle.php";
 require_once "trait/booking/companion.php";
 require_once "trait/booking/update.php";
+require_once "trait/booking/booking.php";
 require_once "activity-log.php";
 
 class Booking extends Database{
     private ActivityLogs $activity;
-    use BookingBundleTrait, CompanionTrait, UpdateBookings;
+    use BookingBundleTrait, CompanionTrait, UpdateBookings, BookingDetails;
     
     public function __construct() {
         $this->activity = new ActivityLogs(); 
