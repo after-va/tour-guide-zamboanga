@@ -43,6 +43,32 @@ trait NotificationTrait{
         }
     }
 
+    // In your ActivityLogs class
+    public function markTouristNotificationsAsViewed(int $tourist_ID): bool {
+        $db = $this->connect();
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $sql = "UPDATE Activity_View AS av
+                INNER JOIN activity_log AS al 
+                    ON al.activity_ID = av.activity_ID 
+                AND al.account_ID = av.account_ID
+                INNER JOIN action AS a 
+                    ON al.action_ID = a.action_ID
+                SET av.activity_isViewed = 1
+                WHERE al.account_ID = :touristID
+                AND a.action_name NOT IN ('Logout', 'Login', 'Change Account Into Tourist')";
+
+        try {
+            $query = $db->prepare($sql);
+            $query->bindParam(':touristID', $tourist_ID, PDO::PARAM_INT);
+            $query->execute();
+            return true;
+        } catch (Exception $e) {
+            error_log("FATAL markTouristNotificationsAsViewed error: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
 
 }

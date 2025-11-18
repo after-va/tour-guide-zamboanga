@@ -1,11 +1,7 @@
 <?php
 
 trait UpdateBookings{
-
-
-
-
-    // Inside your Booking class
+ 
     public function updateBookings($timedate = null) {
         $now = $timedate ? new DateTime($timedate, new DateTimeZone('Asia/Manila')) 
                         : new DateTime('now', new DateTimeZone('Asia/Manila'));

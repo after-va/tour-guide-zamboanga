@@ -162,8 +162,7 @@ trait BookingDetails{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getPaymentInfoByBookingID(int $bookingID): ?array
-    {
+    public function getPaymentInfoByBookingID(int $bookingID): ?array {
         $sql = "
             SELECT 
                 paymentinfo_ID,

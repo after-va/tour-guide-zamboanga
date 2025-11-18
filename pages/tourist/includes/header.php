@@ -22,7 +22,7 @@ if ($account_ID && is_numeric($account_ID)) {
         $bookingObj  = new Booking();
         $activityObj = new ActivityLogs();
 
-        // Optional: update booking statuses
+
         $bookingObj->updateBookings();
 
         // Fetch notifications using the correct ID
@@ -155,7 +155,57 @@ if ($account_ID && is_numeric($account_ID)) {
 </header>
 
 <script>
-    
+// Mark all notifications as read when dropdown is opened
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdownToggle = document.querySelector('.dropdown-toggle[aria-expanded]');
+    const dropdownMenu = document.querySelector('#notification-dropdown');
 
+    if (!dropdownToggle || !dropdownMenu) return;
 
+    let hasMarkedAsRead = false;
+
+    dropdownToggle.addEventListener('click', function () {
+        // Only mark as read once per page load (when dropdown first opens)
+        if (hasMarkedAsRead) return;
+        
+        const unreadCount = <?= $unread_count ?>;
+
+        if (unreadCount > 0) {
+            fetch('includes/ajax/mark-notifications-read.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hasMarkedAsRead = true;
+                    
+                    // Remove all "New" badges and bg-light
+                    document.querySelectorAll('.mark-as-read').forEach(item => {
+                        item.classList.remove('bg-light', 'fw-semibold');
+                    });
+                    document.querySelectorAll('.badge.bg-danger').forEach(badge => {
+                        if (badge.textContent.trim() === 'New') {
+                            badge.remove();
+                        }
+                    });
+
+                    // Hide the red counter badge
+                    const counterBadge = document.querySelector('.badge.rounded-pill.bg-danger');
+                    if (counterBadge) {
+                        counterBadge.classList.add('d-none');
+                        counterBadge.textContent = '0';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Failed to mark notifications as read:', err);
+            });
+        }
+    });
+});
 </script>
