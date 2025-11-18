@@ -223,100 +223,100 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <a href="tour-packages-browse.php">← Back to Tour Packages</a>
     </div>
 <script>
-const maxPeople = <?= intval($package['numberofpeople_maximum']); ?>;
-const minPeople = <?= intval($package['numberofpeople_based']); ?>;
-const inputContainer = document.getElementById('inputContainer');
-const addBtn = document.querySelector('button[onclick="addInput()"]');
-const selfIncludedRadios = document.querySelectorAll('input[name="is_selfIncluded"]');
+    const maxPeople = <?= intval($package['numberofpeople_maximum']); ?>;
+    const minPeople = <?= intval($package['numberofpeople_based']); ?>;
+    const inputContainer = document.getElementById('inputContainer');
+    const addBtn = document.querySelector('button[onclick="addInput()"]');
+    const selfIncludedRadios = document.querySelectorAll('input[name="is_selfIncluded"]');
 
-// Initially hide add companion button if max = 1
-if (maxPeople === 1) {
-    addBtn.style.display = 'none';
-    inputContainer.innerHTML = ''; // remove any companion field
-}
-
-// Handle self-inclusion change
-selfIncludedRadios.forEach(radio => {
-    radio.addEventListener('change', function() {
-        const selfIncluded = this.value === 'yes';
-
-        // Max = 1 logic
-        if (maxPeople === 1) {
-            if (selfIncluded) {
-                // User included themselves → remove companion fields
-                inputContainer.innerHTML = '';
-            } else {
-                // User not included → add exactly one companion
-                if (inputContainer.children.length === 0) {
-                    addInput();
-                }
-            }
-        }
-    });
-});
-
-// Function to add companion fields
-function addInput() {
-    const div = document.createElement('div');
-    div.innerHTML = `
-        <input type="text" name="companion_name[]" placeholder="Name" required>
-        <select name="companion_category[]" required>
-            <option value="">-- SELECT CATEGORY ---</option>
-            <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
-                <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
-            <?php } ?>
-        </select>
-        <button type="button" onclick="this.parentNode.remove();">Remove</button>
-    `;
-    inputContainer.appendChild(div);
-}
-
-// Auto-calculate booking end date
-const scheduleDays = <?= intval($package['schedule_days']); ?>;
-document.getElementById('booking_start_date').addEventListener('change', function () {
-    const startDate = new Date(this.value);
-    if (isNaN(startDate.getTime())) return;
-    startDate.setDate(startDate.getDate() + scheduleDays - 1);
-    document.getElementById('booking_end_date').value = startDate.toISOString().split('T')[0];
-});
-
-    const guideID = <?= intval($package['guide_ID']); ?>;
-    const startDateInput = document.getElementById('booking_start_date');
-    const endDateInput = document.getElementById('booking_end_date');
-    const overlapWarning = document.getElementById('overlapWarning');
-
-    async function checkOverlap() {
-        const startDate = startDateInput.value;
-        const endDate = endDateInput.value;
-
-        if (!startDate || !endDate) return;
-
-        try {
-            const response = await fetch('booking-overlap.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    guide_ID: guideID,
-                    start_date: startDate,
-                    end_date: endDate
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.overlap) {
-                overlapWarning.style.display = 'block';
-            } else {
-                overlapWarning.style.display = 'none';
-            }
-        } catch (error) {
-            console.error("Error checking overlap:", error);
-        }
+    // Initially hide add companion button if max = 1
+    if (maxPeople === 1) {
+        addBtn.style.display = 'none';
+        inputContainer.innerHTML = ''; // remove any companion field
     }
 
-    // Recheck when date changes
-    startDateInput.addEventListener('change', checkOverlap);
-    endDateInput.addEventListener('change', checkOverlap);
+    // Handle self-inclusion change
+    selfIncludedRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const selfIncluded = this.value === 'yes';
+
+            // Max = 1 logic
+            if (maxPeople === 1) {
+                if (selfIncluded) {
+                    // User included themselves → remove companion fields
+                    inputContainer.innerHTML = '';
+                } else {
+                    // User not included → add exactly one companion
+                    if (inputContainer.children.length === 0) {
+                        addInput();
+                    }
+                }
+            }
+        });
+    });
+
+    // Function to add companion fields
+    function addInput() {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <input type="text" name="companion_name[]" placeholder="Name" required>
+            <select name="companion_category[]" required>
+                <option value="">-- SELECT CATEGORY ---</option>
+                <?php foreach ($bookingObj->getAllCompanionCategories() as $c) { ?>
+                    <option value="<?= $c['companion_category_ID'] ?>"> <?= $c['companion_category_name'] ?> </option>
+                <?php } ?>
+            </select>
+            <button type="button" onclick="this.parentNode.remove();">Remove</button>
+        `;
+        inputContainer.appendChild(div);
+    }
+
+    // Auto-calculate booking end date
+    const scheduleDays = <?= intval($package['schedule_days']); ?>;
+    document.getElementById('booking_start_date').addEventListener('change', function () {
+        const startDate = new Date(this.value);
+        if (isNaN(startDate.getTime())) return;
+        startDate.setDate(startDate.getDate() + scheduleDays - 1);
+        document.getElementById('booking_end_date').value = startDate.toISOString().split('T')[0];
+    });
+
+        const guideID = <?= intval($package['guide_ID']); ?>;
+        const startDateInput = document.getElementById('booking_start_date');
+        const endDateInput = document.getElementById('booking_end_date');
+        const overlapWarning = document.getElementById('overlapWarning');
+
+        async function checkOverlap() {
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+
+            if (!startDate || !endDate) return;
+
+            try {
+                const response = await fetch('booking-overlap.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        guide_ID: guideID,
+                        start_date: startDate,
+                        end_date: endDate
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.overlap) {
+                    overlapWarning.style.display = 'block';
+                } else {
+                    overlapWarning.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Error checking overlap:", error);
+            }
+        }
+
+        // Recheck when date changes
+        startDateInput.addEventListener('change', checkOverlap);
+        endDateInput.addEventListener('change', checkOverlap);
 
 </script>
 

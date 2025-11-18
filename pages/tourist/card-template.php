@@ -1,8 +1,8 @@
 <!-- card-template.php -->
 <?php
 ?>
-<div class="col">
-    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+<div class="col" style = "height: 30rem" >
+    <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden" >
         <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
             <img src="https://mdbootstrap.com/img/Photos/Horizontal/Food/8-col/img (5).jpg"
                  class="img-fluid w-100 rounded-top" style="height: 200px; object-fit: cover;"

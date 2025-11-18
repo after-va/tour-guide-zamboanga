@@ -105,6 +105,8 @@ function buildStarList(float $avg, int $count): string
 </head>
 <body>
 
+ <?php require_once "includes/header.php"; 
+    include_once "includes/header.php";?>
 
 <!-- Mobile Filter Toggle -->
 <button class="filter-toggle btn btn-warning d-md-none position-fixed bottom-0 start-0 m-3 shadow-lg rounded-circle p-0 d-flex align-items-center justify-content-center"
@@ -201,114 +203,114 @@ function buildStarList(float $avg, int $count): string
     <?php endforeach; ?>
 </main>
 <script>
-// === Dual Price Slider ===
-const priceMinValue = document.getElementById('priceMinValue');
-const priceMaxValue = document.getElementById('priceMaxValue');
-const priceMinRange = document.getElementById('priceMinRange');
-const priceMaxRange = document.getElementById('priceMaxRange');
-const priceMinLabel = document.getElementById('priceMinLabel');
-const priceMaxLabel = document.getElementById('priceMaxLabel');
-const fill = document.querySelector('.range-slider__fill');
+    // === Dual Price Slider ===
+    const priceMinValue = document.getElementById('priceMinValue');
+    const priceMaxValue = document.getElementById('priceMaxValue');
+    const priceMinRange = document.getElementById('priceMinRange');
+    const priceMaxRange = document.getElementById('priceMaxRange');
+    const priceMinLabel = document.getElementById('priceMinLabel');
+    const priceMaxLabel = document.getElementById('priceMaxLabel');
+    const fill = document.querySelector('.range-slider__fill');
 
-function updateSlider() {
-    let min = parseInt(priceMinRange.value);
-    let max = parseInt(priceMaxRange.value);
+    function updateSlider() {
+        let min = parseInt(priceMinRange.value);
+        let max = parseInt(priceMaxRange.value);
 
-    if (min > max) {
-        [min, max] = [max, min];
-        priceMinRange.value = min;
-        priceMaxRange.value = max;
+        if (min > max) {
+            [min, max] = [max, min];
+            priceMinRange.value = min;
+            priceMaxRange.value = max;
+        }
+
+        priceMinValue.value = min;
+        priceMaxValue.value = max;
+        priceMinLabel.textContent = `₱${min.toLocaleString()}`;
+        priceMaxLabel.textContent = `₱${max.toLocaleString()}`;
+
+        const percentMin = ((min - 500) / 9500) * 100;
+        const percentMax = ((max - 500) / 9500) * 100;
+        fill.style.left = `${percentMin}%`;
+        fill.style.right = `${100 - percentMax}%`;
+    }
+    updateSlider();
+
+    // === Real-time Filter ===
+    const form = document.getElementById('filterForm');
+    const container = document.getElementById('packagesContainer');
+    let debounceTimer;
+
+    function sendFilter() {
+        const formData = new FormData(form);
+        formData.append('ajax', '1');
+
+        // Debug: Log what's being sent
+        console.log('Filter data being sent:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+
+        container.innerHTML = `<div class="w-100 text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+
+        fetch(location.href, { method: 'POST', body: formData })
+            .then(r => r.text())
+            .then(html => {
+                container.innerHTML = html;
+                console.log('Filter applied successfully');
+            })
+            .catch(err => {
+                console.error('Filter error:', err);
+                container.innerHTML = '<div class="text-danger">Error loading packages.</div>';
+            });
     }
 
-    priceMinValue.value = min;
-    priceMaxValue.value = max;
-    priceMinLabel.textContent = `₱${min.toLocaleString()}`;
-    priceMaxLabel.textContent = `₱${max.toLocaleString()}`;
-
-    const percentMin = ((min - 500) / 9500) * 100;
-    const percentMax = ((max - 500) / 9500) * 100;
-    fill.style.left = `${percentMin}%`;
-    fill.style.right = `${100 - percentMax}%`;
-}
-updateSlider();
-
-// === Real-time Filter ===
-const form = document.getElementById('filterForm');
-const container = document.getElementById('packagesContainer');
-let debounceTimer;
-
-function sendFilter() {
-    const formData = new FormData(form);
-    formData.append('ajax', '1');
-
-    // Debug: Log what's being sent
-    console.log('Filter data being sent:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
-
-    container.innerHTML = `<div class="w-100 text-center py-5"><div class="spinner-border text-warning" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
-
-    fetch(location.href, { method: 'POST', body: formData })
-        .then(r => r.text())
-        .then(html => {
-            container.innerHTML = html;
-            console.log('Filter applied successfully');
-        })
-        .catch(err => {
-            console.error('Filter error:', err);
-            container.innerHTML = '<div class="text-danger">Error loading packages.</div>';
-        });
-}
-
-// Trigger on checkbox change
-const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
-categoryCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-        console.log('Category changed:', checkbox.value, checkbox.checked);
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(sendFilter, 300);
-    });
-});
-
-// Trigger on other form changes
-form.addEventListener('change', (e) => {
-    // Only trigger if it's not a category checkbox (already handled above)
-    if (!e.target.classList.contains('category-checkbox')) {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(sendFilter, 300);
-    }
-});
-
-// Handle slider and number inputs
-['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('input', () => {
-            updateSlider();
+    // Trigger on checkbox change
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            console.log('Category changed:', checkbox.value, checkbox.checked);
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(sendFilter, 300);
         });
-    }
-});
+    });
 
-// Mobile Sidebar
-document.addEventListener("DOMContentLoaded", () => {
-    const toggleBtn = document.getElementById("filterToggle");
-    const sidebar = document.getElementById("filterSidebar");
-    const overlay = document.querySelector(".filter-overlay");
+    // Trigger on other form changes
+    form.addEventListener('change', (e) => {
+        // Only trigger if it's not a category checkbox (already handled above)
+        if (!e.target.classList.contains('category-checkbox')) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(sendFilter, 300);
+        }
+    });
 
-    if (toggleBtn && sidebar && overlay) {
-        toggleBtn.addEventListener("click", () => {
-            sidebar.classList.add("active");
-            overlay.classList.add("active");
-        });
-        overlay.addEventListener("click", () => {
-            sidebar.classList.remove("active");
-            overlay.classList.remove("active");
-        });
-    }
-});
+    // Handle slider and number inputs
+    ['priceMinRange', 'priceMaxRange', 'priceMinValue', 'priceMaxValue', 'minPax', 'maxPax'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                updateSlider();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(sendFilter, 300);
+            });
+        }
+    });
+
+    // Mobile Sidebar
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggleBtn = document.getElementById("filterToggle");
+        const sidebar = document.getElementById("filterSidebar");
+        const overlay = document.querySelector(".filter-overlay");
+
+        if (toggleBtn && sidebar && overlay) {
+            toggleBtn.addEventListener("click", () => {
+                sidebar.classList.add("active");
+                overlay.classList.add("active");
+            });
+            overlay.addEventListener("click", () => {
+                sidebar.classList.remove("active");
+                overlay.classList.remove("active");
+            });
+        }
+    });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

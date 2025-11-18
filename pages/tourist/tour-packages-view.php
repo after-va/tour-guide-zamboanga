@@ -55,10 +55,13 @@ $spots = $tourManager->getSpotsByPackage($tourpackage_ID);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <link rel="stylesheet" href="../../assets/css/tourist/tour-packages-view.css">
     
 </head>
 <body>
+    <?php require_once "includes/header.php"; 
+    include_once "includes/header.php";?>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
