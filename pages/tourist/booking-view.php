@@ -62,8 +62,8 @@ $statusColor = match($booking['booking_status']) {
     </style>
 </head>
 <body class="bg-light">
-    <?php require_once "includes/header.php"; ?>
-
+     <?php require_once "includes/header.php"; 
+    include_once "includes/header.php";?>
 <main>
     
     <div class="container py-5">

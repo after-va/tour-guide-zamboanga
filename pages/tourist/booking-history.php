@@ -19,21 +19,16 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
 <html>
 <head>
     <title>Dashboard</title>
-    
+    <link rel="stylesheet" href="/../../assets/css/header.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     
 </head>
 <body>
-    <h1>Dashboard</h1>
-    
-    <nav>
-        <a href="dashboard.php">Dashboard</a> |
-        <a href="booking.php">My Bookings</a> |
-        <a href="schedules.php">Schedules</a> |
-        <a href="logout.php">Logout</a>
-    </nav>
-    
-    <hr>
-    
+     <?php require_once "includes/header.php"; 
+    include_once "includes/header.php";?>
+
     <h2>My Bookings</h2>
     
     <?php if (isset($_SESSION['success'])): ?>

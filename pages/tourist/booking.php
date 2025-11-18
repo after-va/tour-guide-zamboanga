@@ -31,27 +31,8 @@ $bookings = $bookingObj->viewBookingByTourist($tourist_ID);
     
 </head>
 <body>
-<header class = "header">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.php">Tourismo Zamboanga</a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-            <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link active" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="booking.php">My Booking</a></li>
-                <!-- <li class="nav-item"><a class="nav-link" href="#">Tour Spots</a></li> -->
-            </ul>
-            <a href="logout.php" class="btn btn-info ms-lg-3">Log out </a>
-            </div>
-        </div>
-        </nav>
-
-</header>
+ <?php require_once "includes/header.php"; 
+    include_once "includes/header.php";?>
 <main class = "">   
 <div class="container py-5">
     <h2 class="mb-4">My Bookings</h2>

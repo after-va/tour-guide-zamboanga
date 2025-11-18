@@ -44,9 +44,7 @@ if ($account_ID && is_numeric($account_ID)) {
     }
 }
 ?>
-<head>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
-</head>
+
 
 <header class="header">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
