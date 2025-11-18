@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($result) {
             $paymentResolve = $activityObj->touristpayment($booking_ID, $tourist_ID);
-            header("Location: booking.php?id=" . urlencode($booking_ID));
+            header("Location: itinerary-view.php?id=" . urlencode($booking_ID));
             exit;
         } else {
             echo "❌ Failed to save payment information.";

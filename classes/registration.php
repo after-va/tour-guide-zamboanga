@@ -9,10 +9,11 @@ require_once "trait/person/trait-contact-info.php";
 require_once "trait/person/trait-person.php";
 require_once "trait/person/trait-user.php";
 require_once "trait/person/trait-account.php";
+require_once "trait/account/account-logs.php";
 
 class Registration extends Database {
 
-    use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait, Account;
+    use PersonTrait, UserTrait, NameInfoTrait, AddressTrait, PhoneTrait, EmergencyTrait, ContactInfoTrait, Account_InfoTrait, AccountLogs;
     
     public function addTourist($name_first, $name_second, $name_middle, $name_last, $name_suffix,
         $houseno, $street, $barangay,

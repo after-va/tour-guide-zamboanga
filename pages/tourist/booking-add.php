@@ -135,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $action = $activityObj->touristBook($booking_ID, $tourist_ID);
 
 
-        header("Location: itinerary-view.php?id=" . $booking_ID);
+        header("Location: payment-form.php?id=" . $booking_ID);
         exit();
     }
 }
