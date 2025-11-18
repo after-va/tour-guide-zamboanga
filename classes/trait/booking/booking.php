@@ -39,8 +39,7 @@ trait BookingDetails{
             error_log("getBookingByIDAndTourist Error: " . $e->getMessage());
             return false;
         }
-    }
-
+    } 
     // Add to your Booking class
     public function markItinerarySent(int $booking_ID): bool
     {
@@ -53,7 +52,7 @@ trait BookingDetails{
             error_log("Failed to mark itinerary sent: " . $e->getMessage());
             return false;
         }
-    }
+    } 
 
     public function hasItineraryBeenSent(int $booking_ID): bool
     {
@@ -188,6 +187,27 @@ trait BookingDetails{
         } catch (PDOException $e) {
             // Log error in production, don't expose details to user
             error_log("Error in getPaymentInfoByBookingID: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getTourPackageDetailsByBookingID($booking_ID){
+        $sql = "SELECT tp.* FROM booking b 
+            JOIN tour_package tp ON b.tourpackage_ID = tp.tourpackage_ID
+            WHERE b.booking_ID = :booking_ID";
+        try {
+            $db = $this->connect();
+            $stmt = $db->prepare($sql);
+            $stmt->execute([':booking_ID' => $booking_ID]);
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Return null if no payment found
+            return $result ?: null;
+
+        } catch (PDOException $e) {
+            // Log error in production, don't expose details to user
+            error_log("Error in getTourPackageDetailsByBookingID: " . $e->getMessage());
             return null;
         }
     }
